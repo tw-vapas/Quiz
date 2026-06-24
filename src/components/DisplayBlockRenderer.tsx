@@ -1,6 +1,6 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import Prism from "prismjs";
 import "prismjs/components/prism-python";
 import "prismjs/components/prism-javascript";
@@ -36,8 +36,8 @@ function highlightCode(content: string): string[] {
 }
 
 export const CodeBlock = memo(({ content }: { content: string }) => {
-  const lines = content.split('\n');
-  const highlightedLines = highlightCode(content);
+  const lines = useMemo(() => content.split('\n'), [content]);
+  const highlightedLines = useMemo(() => highlightCode(content), [content]);
 
   return (
     <div className="my-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/80 font-mono text-xs md:text-sm overflow-hidden transition-colors duration-300 shadow-inner flex flex-col max-h-[320px] md:max-h-[450px]">

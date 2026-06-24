@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, memo, useRef } from "react";
 import { useQuizStore } from "@/store/quizStore";
-import { cn } from "@/lib/utils";
+import { cn, getTagColor } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Pause, Play, LogOut, CheckSquare, AlertTriangle, CheckCircle } from "lucide-react";
 import { isQuestionCorrect, Question } from "@/lib/parser";
@@ -276,13 +276,37 @@ const QuestionCard = memo(function QuestionCard({
         }
       }}
     >
+      {question.tags && question.tags.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {question.tags.map((tag, tIdx) => {
+            const colors = getTagColor(tag);
+            return (
+              <span
+                key={tIdx}
+                className={cn(
+                  "inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border shadow-sm transition-colors duration-250",
+                  colors.bg,
+                  colors.text,
+                  colors.border
+                )}
+              >
+                {tag}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
       <h2 className="text-xl md:text-2xl leading-relaxed text-slate-900 dark:text-slate-100 font-medium mb-6 md:mb-8 whitespace-pre-wrap">
         {question.text}
       </h2>
 
-      {question.display_block && (
-        <DisplayBlockRenderer block={question.display_block} />
-      )}
+      {(() => {
+        const blocks = question.display_blocks || (question.display_block ? [question.display_block] : []);
+        return blocks.map((block, bIdx) => (
+          <DisplayBlockRenderer key={bIdx} block={block} />
+        ));
+      })()}
 
       <div className="space-y-3 md:space-y-4">
         {question.options.map((option, idx) => {

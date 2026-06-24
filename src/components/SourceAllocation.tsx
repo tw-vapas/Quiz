@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { SourceFile } from "@/store/quizStore";
 
-import { cn } from "@/lib/utils";
+import { cn, useRenderProfiler } from "@/lib/utils";
 
 const SOURCE_COLORS = [
   { bg: "bg-blue-500", text: "text-blue-500", bgHover: "hover:bg-blue-400" },
@@ -24,10 +24,25 @@ interface Props {
 }
 
 export default function SourceAllocation({ sources, totalQuestions, allocations, onChange }: Props) {
+  useRenderProfiler("SourceAllocation");
   const activeSources = React.useMemo(() => sources.filter((s) => s.active && s.isValid), [sources]);
   const barRef = useRef<HTMLDivElement>(null);
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null);
   const [barWidth, setBarWidth] = useState(0);
+
+  const [localAllocs, setLocalAllocs] = useState<Record<string, number>>(allocations);
+  const localAllocsRef = useRef<Record<string, number>>(allocations);
+
+  // Sync prop changes when not dragging
+  useEffect(() => {
+    if (draggingIdx === null) {
+      setLocalAllocs(allocations);
+    }
+  }, [allocations, draggingIdx]);
+
+  useEffect(() => {
+    localAllocsRef.current = localAllocs;
+  }, [localAllocs]);
 
   // Measure bar actual width in real-time to decide label visibility
   useEffect(() => {
@@ -122,6 +137,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
   useEffect(() => {
     const handleMouseUp = () => {
       setDraggingIdx(null);
+      onChange(localAllocsRef.current);
     };
 
     const handleMouseMove = (e: MouseEvent | TouchEvent) => {
@@ -143,12 +159,12 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
       // Find the prefix sum up to draggingIdx
       let prefixSum = 0;
       for (let i = 0; i < draggingIdx; i++) {
-        prefixSum += allocations[activeSources[i].id] || 0;
+        prefixSum += localAllocsRef.current[activeSources[i].id] || 0;
       }
       
       const sourceA = activeSources[draggingIdx];
       const sourceB = activeSources[draggingIdx + 1];
-      const combinedAlloc = (allocations[sourceA.id] || 0) + (allocations[sourceB.id] || 0);
+      const combinedAlloc = (localAllocsRef.current[sourceA.id] || 0) + (localAllocsRef.current[sourceB.id] || 0);
 
       // The new boundary is targetBlockIndex
       let newAllocA = targetBlockIndex - prefixSum;
@@ -165,11 +181,11 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
       }
 
       if (
-        newAllocA !== allocations[sourceA.id] || 
-        newAllocB !== allocations[sourceB.id]
+        newAllocA !== localAllocsRef.current[sourceA.id] || 
+        newAllocB !== localAllocsRef.current[sourceB.id]
       ) {
-        onChange({
-          ...allocations,
+        setLocalAllocs({
+          ...localAllocsRef.current,
           [sourceA.id]: newAllocA,
           [sourceB.id]: newAllocB
         });
@@ -189,7 +205,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
       window.removeEventListener("touchmove", handleMouseMove as EventListener);
       window.removeEventListener("touchend", handleMouseUp);
     };
-  }, [draggingIdx, allocations, activeSources, totalQuestions, onChange]);
+  }, [draggingIdx, activeSources, totalQuestions, onChange]);
 
   const handleInputChange = (sourceId: string, value: string) => {
     let newVal = parseInt(value);
@@ -251,7 +267,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
     onChange(newAlloc);
   };
 
-  if (activeSources.length === 0) return null;
+  if (activeSources.length === 0 || totalQuestions <= 0) return null;
 
   return (
     <div className="mt-6 bg-slate-100/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50">
@@ -265,7 +281,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
       >
         {activeSources.map((source, idx) => {
           const color = SOURCE_COLORS[idx % SOURCE_COLORS.length];
-          const count = allocations[source.id] || 0;
+          const count = localAllocs[source.id] || 0;
           if (count === 0) return null;
 
           const widthPercent = (count / totalQuestions) * 100;
@@ -312,7 +328,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
           
           let prefixSum = 0;
           for (let i = 0; i <= idx; i++) {
-            prefixSum += allocations[activeSources[i].id] || 0;
+            prefixSum += localAllocs[activeSources[i].id] || 0;
           }
           
           if (prefixSum === 0 || prefixSum === totalQuestions) return null;
@@ -344,7 +360,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
       <div className="mt-6 space-y-3">
         {activeSources.map((source, idx) => {
           const color = SOURCE_COLORS[idx % SOURCE_COLORS.length];
-          const alloc = allocations[source.id] || 0;
+          const alloc = localAllocs[source.id] || 0;
           const percentage = totalQuestions > 0 ? Math.round((alloc / totalQuestions) * 100) : 0;
           
           return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuizStore } from "@/store/quizStore";
 import Sidebar from "@/components/Sidebar";
 import StartScreen from "@/components/StartScreen";
@@ -13,6 +13,16 @@ export default function Home() {
   const state = useQuizStore((state) => state.state);
   const theme = useQuizStore((state) => state.theme);
   const isSettingsOpen = useQuizStore((state) => state.isSettingsOpen);
+  
+  // Specific selectors to avoid full-store subscriptions causing unnecessary updates
+  const sources = useQuizStore((state) => state.sources);
+  const showResultAfterQuestion = useQuizStore((state) => state.showResultAfterQuestion);
+  const autoNext = useQuizStore((state) => state.autoNext);
+  const questionCountMode = useQuizStore((state) => state.questionCountMode);
+  const customQuestionCount = useQuizStore((state) => state.customQuestionCount);
+  const sourceAllocations = useQuizStore((state) => state.sourceAllocations);
+
+  const [hasHydrated, setHasHydrated] = useState(false);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -43,37 +53,39 @@ export default function Home() {
           console.error("Error loading settings:", e);
         }
       }
+      setHasHydrated(true);
     }
   }, []);
 
-  // Save settings and sources to localStorage when they change, ignoring timer ticks
+  // Save sources to localStorage when they change, only after hydration is complete
   useEffect(() => {
-    let lastSourcesStr = "";
-    let lastSettingsStr = "";
-    
-    const unsub = useQuizStore.subscribe((state) => {
-      const sourcesStr = JSON.stringify(state.sources);
+    if (hasHydrated) {
+      localStorage.setItem("vapas_quiz_sources", JSON.stringify(sources));
+    }
+  }, [sources, hasHydrated]);
+
+  // Save settings to localStorage when they change, only after hydration is complete
+  useEffect(() => {
+    if (hasHydrated) {
       const settingsObj = {
-        showResultAfterQuestion: state.showResultAfterQuestion,
-        autoNext: state.autoNext,
-        questionCountMode: state.questionCountMode,
-        customQuestionCount: state.customQuestionCount,
-        sourceAllocations: state.sourceAllocations,
-        theme: state.theme,
+        showResultAfterQuestion,
+        autoNext,
+        questionCountMode,
+        customQuestionCount,
+        sourceAllocations,
+        theme,
       };
-      const settingsStr = JSON.stringify(settingsObj);
-      
-      if (sourcesStr !== lastSourcesStr) {
-        localStorage.setItem("vapas_quiz_sources", sourcesStr);
-        lastSourcesStr = sourcesStr;
-      }
-      if (settingsStr !== lastSettingsStr) {
-        localStorage.setItem("vapas_quiz_settings", settingsStr);
-        lastSettingsStr = settingsStr;
-      }
-    });
-    return unsub;
-  }, []);
+      localStorage.setItem("vapas_quiz_settings", JSON.stringify(settingsObj));
+    }
+  }, [
+    showResultAfterQuestion,
+    autoNext,
+    questionCountMode,
+    customQuestionCount,
+    sourceAllocations,
+    theme,
+    hasHydrated
+  ]);
 
   // We use suppressHydrationWarning in layout.tsx to handle mismatches
 

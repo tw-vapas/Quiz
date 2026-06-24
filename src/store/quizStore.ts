@@ -1,12 +1,11 @@
 import { create } from 'zustand';
-import { Question } from '../lib/parser';
+import { Question, LearningPackage } from '../lib/parser';
 
-export interface SourceFile {
+export interface SourceFile extends LearningPackage {
   id: string;
   name: string;
   questionsCount: number;
   active: boolean;
-  questions: Question[];
   isValid: boolean;
   error?: string;
   customName?: string;
@@ -32,7 +31,12 @@ export interface QuizStore {
   setTheme: (val: 'light' | 'dark') => void;
   
   isSettingsOpen: boolean;
+  settingsOpenedAt: number | null;
   setSettingsOpen: (val: boolean) => void;
+
+  // Selected Document Source
+  selectedDocumentSourceId: string | null;
+  setSelectedDocumentSourceId: (id: string | null) => void;
 
   // Sources
   sources: SourceFile[];
@@ -92,7 +96,14 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   setTheme: (val) => set({ theme: val }),
   
   isSettingsOpen: false,
-  setSettingsOpen: (val) => set({ isSettingsOpen: val }),
+  settingsOpenedAt: null,
+  setSettingsOpen: (val) => set({ 
+    isSettingsOpen: val,
+    settingsOpenedAt: val ? performance.now() : null
+  }),
+
+  selectedDocumentSourceId: null,
+  setSelectedDocumentSourceId: (id) => set({ selectedDocumentSourceId: id }),
 
   sources: [],
   addSource: (source) => set((state) => ({ sources: [...state.sources, source] })),
@@ -132,7 +143,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         activeSources.forEach(source => {
           const alloc = sourceAllocations[source.id] || 0;
           if (alloc > 0) {
-            const qs = source.questions.map(q => ({ ...q, sourceId: source.id, sourceName: source.customName || source.name }));
+            const qs = source.questions.map(q => ({ ...q, id: `${source.id}__${q.id}`, sourceId: source.id, sourceName: source.customName || source.name }));
             const shuffledQs = shuffleArray(qs).slice(0, alloc);
             combinedQuestions = [...combinedQuestions, ...shuffledQs];
           }
@@ -140,13 +151,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       } else {
         // Fallback if allocations are broken
         activeSources.forEach(source => {
-          const withSource = source.questions.map(q => ({ ...q, sourceId: source.id, sourceName: source.customName || source.name }));
+          const withSource = source.questions.map(q => ({ ...q, id: `${source.id}__${q.id}`, sourceId: source.id, sourceName: source.customName || source.name }));
           combinedQuestions = [...combinedQuestions, ...withSource];
         });
       }
     } else {
       activeSources.forEach(source => {
-        const withSource = source.questions.map(q => ({ ...q, sourceId: source.id, sourceName: source.customName || source.name }));
+        const withSource = source.questions.map(q => ({ ...q, id: `${source.id}__${q.id}`, sourceId: source.id, sourceName: source.customName || source.name }));
         combinedQuestions = [...combinedQuestions, ...withSource];
       });
     }
@@ -160,6 +171,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         finalQuestions = finalQuestions.slice(0, customQuestionCount);
       }
     }
+
+    if (finalQuestions.length === 0) return;
 
     finalQuestions = finalQuestions.map(q => ({
       ...q,
@@ -263,7 +276,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       } else {
         let allPool: Question[] = [];
         sources.filter(s => s.active && s.isValid).forEach(source => {
-           const qs = source.questions.map(q => ({ ...q, sourceId: source.id, sourceName: source.customName || source.name }));
+           const qs = source.questions.map(q => ({ ...q, id: `${source.id}__${q.id}`, sourceId: source.id, sourceName: source.customName || source.name }));
            allPool = [...allPool, ...qs];
         });
         const poolExcludeIncorrect = allPool.filter(q => !incorrectIds.includes(q.id));

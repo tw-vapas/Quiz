@@ -1,60 +1,109 @@
 "use client";
 
-import { useRef, useState } from "react";
+import React, { useRef, useState, useLayoutEffect, useCallback } from "react";
 import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
+import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
 import { Plus, Trash2, FileText, FileWarning, Sun, Moon, X, GripVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Reorder, useDragControls } from "framer-motion";
+import { cn, useRenderProfiler } from "@/lib/utils";
 
-interface SourceCardItemProps {
+// --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
+interface VirtualSourceCardProps {
   source: SourceFile;
+  index: number;
   editingSourceIds: Record<string, boolean>;
   setEditingSourceIds: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
   updateLocalCustomName: (id: string, name: string) => void;
   toggleLocalSource: (id: string) => void;
   removeLocalSource: (id: string) => void;
-  dragConstraints: React.RefObject<HTMLUListElement | null>;
+  draggedIndex: number | null;
+  setDraggedIndex: (idx: number | null) => void;
+  dragOverIndex: number | null;
+  setDragOverIndex: (idx: number | null) => void;
+  onReorder: (newSources: SourceFile[]) => void;
+  localSources: SourceFile[];
 }
 
-const SourceCardItem = ({
+const ITEM_HEIGHT = 96;
+
+const VirtualSourceCard = React.memo(({
   source,
+  index,
   editingSourceIds,
   setEditingSourceIds,
   updateLocalCustomName,
   toggleLocalSource,
   removeLocalSource,
-  dragConstraints,
-}: SourceCardItemProps) => {
-  const dragControls = useDragControls();
+  draggedIndex,
+  setDraggedIndex,
+  dragOverIndex,
+  setDragOverIndex,
+  onReorder,
+  localSources
+}: VirtualSourceCardProps) => {
+  useRenderProfiler(`VirtualSourceCard`);
+  const [isDraggable, setIsDraggable] = useState(false);
+
+  const handleDragStart = (e: React.DragEvent) => {
+    setDraggedIndex(index);
+    e.dataTransfer.setData("text/plain", index.toString());
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (draggedIndex !== null && draggedIndex !== index) {
+      e.preventDefault();
+      setDragOverIndex(index);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (draggedIndex !== null && draggedIndex !== index) {
+      const nextSources = [...localSources];
+      const [removed] = nextSources.splice(draggedIndex, 1);
+      nextSources.splice(index, 0, removed);
+      onReorder(nextSources);
+    }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   const toggleEditing = (id: string) => {
     setEditingSourceIds(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const isDragOver = dragOverIndex === index;
+  const isDragging = draggedIndex === index;
+
   return (
-    <Reorder.Item
-      value={source}
-      dragListener={false}
-      dragControls={dragControls}
-      dragConstraints={dragConstraints}
-      dragElastic={0.05}
-      whileDrag={{
-        scale: 1.01,
-        boxShadow: "0px 8px 20px -5px rgba(0, 0, 0, 0.08), 0px 6px 8px -6px rgba(0, 0, 0, 0.04)",
-      }}
+    <div
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      style={{ minHeight: `${ITEM_HEIGHT - 12}px` }}
       className={cn(
-        "p-4 rounded-xl border flex items-center gap-3 transition-shadow shadow-sm hover:shadow-md group/card relative select-none",
+        "p-4 rounded-xl border flex items-center gap-3 transition-all duration-150 group/card relative select-none",
         source.isValid 
           ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80" 
-          : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50"
+          : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50",
+        isDragOver && "border-indigo-500 dark:border-indigo-400 bg-indigo-50/20 dark:bg-indigo-950/20 scale-[1.01]",
+        isDragging && "opacity-40"
       )}
     >
       {/* Drag Handle Icon in front */}
       <div
         className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg cursor-grab active:cursor-grabbing opacity-65 hover:opacity-100 transition-all duration-150 flex items-center justify-center touch-none select-none w-8 h-8 -ml-2 shrink-0"
-        onPointerDown={(e) => dragControls.start(e)}
+        onMouseEnter={() => setIsDraggable(true)}
+        onMouseLeave={() => setIsDraggable(false)}
         title="Kéo để sắp xếp"
       >
         <GripVertical className="w-5 h-5 shrink-0" />
@@ -90,21 +139,17 @@ const SourceCardItem = ({
                 className="w-full px-2 py-1 text-sm font-bold border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 mb-1"
                 autoFocus
               />
-            ) : source.customName ? (
-              <h4 className="font-extrabold text-sm text-slate-900 dark:text-slate-100 leading-snug">
-                {source.customName}
-              </h4>
-            ) : null}
-
-            {/* Original file name */}
-            {(!editingSourceIds[source.id] && !source.customName) ? (
-              <h3 className="font-semibold text-sm truncate text-slate-800 dark:text-slate-200" title={source.name}>
-                {source.name}
-              </h3>
             ) : (
-              <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate" title={source.name}>
-                {source.name}
-              </p>
+              <>
+                <h3 className="font-semibold text-sm truncate text-slate-800 dark:text-slate-200" title={getSourceDisplayName(source)}>
+                  {getSourceDisplayName(source)}
+                </h3>
+                {getSourceDisplayName(source) !== source.name && (
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate" title={source.name}>
+                    {source.name}
+                  </p>
+                )}
+              </>
             )}
           </div>
 
@@ -131,23 +176,307 @@ const SourceCardItem = ({
         ) : (
           <div className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-start gap-1">
             <FileWarning className="w-4 h-4 shrink-0" />
-            <span>{source.error}</span>
+            <span className="truncate" title={source.error}>{source.error}</span>
           </div>
         )}
       </div>
-    </Reorder.Item>
+    </div>
+  );
+});
+
+VirtualSourceCard.displayName = "VirtualSourceCard";
+
+
+// --- Virtualized Sources List container ---
+interface VirtualSourcesListProps {
+  sources: SourceFile[];
+  editingSourceIds: Record<string, boolean>;
+  setEditingSourceIds: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  updateLocalCustomName: (id: string, name: string) => void;
+  toggleLocalSource: (id: string) => void;
+  removeLocalSource: (id: string) => void;
+  onReorder: (newSources: SourceFile[]) => void;
+  parentScrollRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const VirtualSourcesList = ({
+  sources,
+  editingSourceIds,
+  setEditingSourceIds,
+  updateLocalCustomName,
+  toggleLocalSource,
+  removeLocalSource,
+  onReorder,
+  parentScrollRef: _parentScrollRef
+}: VirtualSourcesListProps) => {
+  useRenderProfiler("VirtualSourcesList");
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  return (
+    <div className="relative w-full space-y-3">
+      {sources.map((source, index) => (
+        <VirtualSourceCard
+          key={source.id}
+          source={source}
+          index={index}
+          editingSourceIds={editingSourceIds}
+          setEditingSourceIds={setEditingSourceIds}
+          updateLocalCustomName={updateLocalCustomName}
+          toggleLocalSource={toggleLocalSource}
+          removeLocalSource={removeLocalSource}
+          draggedIndex={draggedIndex}
+          setDraggedIndex={setDraggedIndex}
+          dragOverIndex={dragOverIndex}
+          setDragOverIndex={setDragOverIndex}
+          onReorder={onReorder}
+          localSources={sources}
+        />
+      ))}
+    </div>
   );
 };
 
+
+// --- Memoized Settings & Controls ---
+interface SidebarControlsProps {
+  localShowResult: boolean;
+  setLocalShowResult: (val: boolean) => void;
+  localAutoNext: boolean;
+  setLocalAutoNext: (val: boolean) => void;
+  localCountMode: "ALL" | "CUSTOM";
+  setLocalCountMode: (val: "ALL" | "CUSTOM") => void;
+  localCustomCount: number;
+  setLocalCustomCount: React.Dispatch<React.SetStateAction<number>>;
+  totalAvailable: number;
+  localSources: SourceFile[];
+  localAllocations: Record<string, number>;
+  setLocalAllocations: (val: Record<string, number>) => void;
+}
+
+const SidebarControls = React.memo(({
+  localShowResult,
+  setLocalShowResult,
+  localAutoNext,
+  setLocalAutoNext,
+  localCountMode,
+  setLocalCountMode,
+  localCustomCount,
+  setLocalCustomCount,
+  totalAvailable,
+  localSources,
+  localAllocations,
+  setLocalAllocations
+}: SidebarControlsProps) => {
+  useRenderProfiler("SidebarControls");
+  return (
+    <div className="p-5 md:p-6 space-y-5 bg-white dark:bg-slate-900 shrink-0">
+      <label className="flex items-start space-x-3 cursor-pointer group">
+        <div className="relative flex items-center mt-1">
+          <input
+            type="checkbox"
+            className="peer sr-only"
+            checked={localShowResult}
+            onChange={(e) => setLocalShowResult(e.target.checked)}
+          />
+          <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+            {localShowResult && (
+              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+        </div>
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">Hiển thị kết quả sau mỗi câu</span>
+      </label>
+
+      <label className="flex items-start space-x-3 cursor-pointer group">
+        <div className="relative flex items-center mt-1">
+          <input
+            type="checkbox"
+            className="peer sr-only"
+            checked={localAutoNext}
+            onChange={(e) => setLocalAutoNext(e.target.checked)}
+          />
+          <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+            {localAutoNext && (
+              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+        </div>
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
+      </label>
+
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
+        <div className="space-y-3">
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="radio"
+              name="questionCountMode"
+              value="ALL"
+              checked={localCountMode === 'ALL'}
+              onChange={() => setLocalCountMode('ALL')}
+              className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
+            />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tất cả ({totalAvailable})</span>
+          </label>
+
+          <div className="flex items-center space-x-3">
+            <label className="flex items-center space-x-3 cursor-pointer shrink-0">
+              <input
+                type="radio"
+                name="questionCountMode"
+                value="CUSTOM"
+                checked={localCountMode === 'CUSTOM'}
+                onChange={() => setLocalCountMode('CUSTOM')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tùy chỉnh:</span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={totalAvailable || 1}
+              disabled={localCountMode !== 'CUSTOM'}
+              value={localCustomCount === 0 ? '' : localCustomCount}
+              onChange={(e) => {
+                const valStr = e.target.value;
+                if (valStr === '') {
+                  setLocalCustomCount(0);
+                  return;
+                }
+                let val = parseInt(valStr);
+                if (isNaN(val)) val = 0;
+                val = Math.max(0, Math.min(val, totalAvailable));
+                setLocalCustomCount(val);
+              }}
+              onBlur={() => {
+                if (localCustomCount < 1) {
+                  setLocalCustomCount(Math.min(1, totalAvailable));
+                }
+              }}
+              className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
+            />
+          </div>
+
+          {localCountMode === 'CUSTOM' && localSources.filter(s => s.active && s.isValid).length > 0 && (
+            <SourceAllocation
+              sources={localSources}
+              totalQuestions={localCustomCount}
+              allocations={localAllocations}
+              onChange={setLocalAllocations}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+SidebarControls.displayName = "SidebarControls";
+
+
+// --- Memoized Sources List Section ---
+interface SidebarListProps {
+  localSources: SourceFile[];
+  isUploading: boolean;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  editingSourceIds: Record<string, boolean>;
+  setEditingSourceIds: React.Dispatch<React.SetStateAction<Record<string, boolean>>>;
+  updateLocalCustomName: (id: string, name: string) => void;
+  toggleLocalSource: (id: string) => void;
+  removeLocalSource: (id: string) => void;
+  onReorder: (newSources: SourceFile[]) => void;
+  parentScrollRef: React.RefObject<HTMLDivElement | null>;
+}
+
+const SidebarList = React.memo(({
+  localSources,
+  isUploading,
+  fileInputRef,
+  handleFileUpload,
+  editingSourceIds,
+  setEditingSourceIds,
+  updateLocalCustomName,
+  toggleLocalSource,
+  removeLocalSource,
+  onReorder,
+  parentScrollRef
+}: SidebarListProps) => {
+  useRenderProfiler("SidebarList");
+  return (
+    <div className="flex-1 flex flex-col relative bg-slate-50/50 dark:bg-slate-900/50 min-h-0">
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-10 px-5 md:px-6 py-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
+        <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploading}
+          className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm"
+          title="Tải lên tệp .docx, .txt, .json"
+        >
+          <Plus className="w-5 h-5" />
+        </button>
+        <input
+          type="file"
+          ref={fileInputRef}
+          onChange={handleFileUpload}
+          accept=".txt,.docx,.json"
+          multiple
+          className="hidden"
+        />
+      </div>
+
+      <div className="p-5 md:p-6 flex-1 min-h-0 relative">
+        {localSources.length === 0 ? (
+          <div className="text-center py-8 text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
+            <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+            <p className="text-sm">Chưa có tệp nào được tải lên.</p>
+            <p className="text-xs mt-1">Hỗ trợ .docx, .txt, .json</p>
+          </div>
+        ) : (
+          <VirtualSourcesList
+            sources={localSources}
+            editingSourceIds={editingSourceIds}
+            setEditingSourceIds={setEditingSourceIds}
+            updateLocalCustomName={updateLocalCustomName}
+            toggleLocalSource={toggleLocalSource}
+            removeLocalSource={removeLocalSource}
+            onReorder={onReorder}
+            parentScrollRef={parentScrollRef}
+          />
+        )}
+      </div>
+    </div>
+  );
+});
+
+SidebarList.displayName = "SidebarList";
+
+
+// --- Top-Level Sidebar Orchestrator Container ---
 export default function Sidebar() {
+  useRenderProfiler("SidebarContainer");
+
   const theme = useQuizStore(state => state.theme);
   const setTheme = useQuizStore(state => state.setTheme);
   const setSettingsOpen = useQuizStore(state => state.setSettingsOpen);
 
-  // Local state for settings, initialized from the store on mount using getState to avoid unnecessary component subscriptions
+  useLayoutEffect(() => {
+    const openedAt = useQuizStore.getState().settingsOpenedAt;
+    if (openedAt) {
+      const timeToOpenSidebar = performance.now() - openedAt;
+      console.log(`[Profiler] timeToOpenSidebar: ${timeToOpenSidebar.toFixed(2)}ms`);
+    }
+  }, []);
+
+  // Local state initialized via getState to prevent subscriptions to home page modifications
   const [localShowResult, setLocalShowResult] = useState(() => useQuizStore.getState().showResultAfterQuestion);
   const [localAutoNext, setLocalAutoNext] = useState(() => useQuizStore.getState().autoNext);
-  const listContainerRef = useRef<HTMLUListElement>(null);
   const [localCountMode, setLocalCountMode] = useState(() => useQuizStore.getState().questionCountMode);
   const [localCustomCount, setLocalCustomCount] = useState(() => useQuizStore.getState().customQuestionCount);
   const [localAllocations, setLocalAllocations] = useState(() => useQuizStore.getState().sourceAllocations);
@@ -155,60 +484,90 @@ export default function Sidebar() {
   const [isSaved, setIsSaved] = useState(false);
 
   const [editingSourceIds, setEditingSourceIds] = useState<Record<string, boolean>>({});
-
-  const updateLocalCustomName = (id: string, name: string) => {
-    setLocalSources(prev => prev.map(s => s.id === id ? { ...s, customName: name || undefined } : s));
-  };
+  const [isUploading, setIsUploading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const totalAvailable = localSources.filter(s => s.active && s.isValid).reduce((acc, curr) => acc + curr.questionsCount, 0);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const updateLocalCustomName = useCallback((id: string, name: string) => {
+    setLocalSources(prev => prev.map(s => s.id === id ? { ...s, customName: name || undefined } : s));
+  }, []);
+
+  const handleFileUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const newSources = [...localSources];
+    const parsedSources: SourceFile[] = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const result = await parseFile(file);
-      
-      newSources.push({
-        id: Math.random().toString(36).substring(2, 9),
-        name: file.name,
-        questionsCount: result.questions.length,
-        active: result.isValid,
-        questions: result.questions,
-        isValid: result.isValid,
-        error: result.error
-      });
+      try {
+        const result = await parseFile(file);
+        parsedSources.push({
+          id: Math.random().toString(36).substring(2, 9),
+          name: file.name,
+          questionsCount: result.questions.length,
+          active: result.isValid,
+          questions: result.questions,
+          isValid: result.isValid,
+          error: result.error,
+          metadata: result.metadata,
+          document: result.document,
+          note: result.note
+        });
+      } catch (err) {
+        console.error("Parse error:", err);
+        parsedSources.push({
+          id: Math.random().toString(36).substring(2, 9),
+          name: file.name,
+          questionsCount: 0,
+          active: false,
+          questions: [],
+          isValid: false,
+          error: err instanceof Error ? err.message : String(err)
+        });
+      }
     }
-    setLocalSources(newSources);
+    setLocalSources(prev => [...prev, ...parsedSources]);
     setIsUploading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  };
+  }, []);
 
-  const toggleLocalSource = (id: string) => {
-    const nextSources = localSources.map(s => s.id === id ? { ...s, active: !s.active } : s);
-    setLocalSources(nextSources);
-    const nextTotal = nextSources.filter(s => s.active && s.isValid).reduce((acc, curr) => acc + curr.questionsCount, 0);
-    if (localCustomCount > nextTotal && nextTotal > 0) {
-      setLocalCustomCount(nextTotal);
-    }
-  };
+  const toggleLocalSource = useCallback((id: string) => {
+    setLocalSources(prev => {
+      const nextSources = prev.map(s => s.id === id ? { ...s, active: !s.active } : s);
+      const nextTotal = nextSources.filter(s => s.active && s.isValid).reduce((acc, curr) => acc + curr.questionsCount, 0);
+      setLocalCustomCount(currCount => {
+        if (currCount > nextTotal && nextTotal > 0) {
+          return nextTotal;
+        }
+        return currCount;
+      });
+      return nextSources;
+    });
+  }, []);
 
-  const removeLocalSource = (id: string) => {
-    const nextSources = localSources.filter(s => s.id !== id);
-    setLocalSources(nextSources);
-    const nextTotal = nextSources.filter(s => s.active && s.isValid).reduce((acc, curr) => acc + curr.questionsCount, 0);
-    if (localCustomCount > nextTotal && nextTotal > 0) {
-      setLocalCustomCount(nextTotal);
-    }
-  };
+  const removeLocalSource = useCallback((id: string) => {
+    setLocalSources(prev => {
+      const nextSources = prev.filter(s => s.id !== id);
+      const nextTotal = nextSources.filter(s => s.active && s.isValid).reduce((acc, curr) => acc + curr.questionsCount, 0);
+      setLocalCustomCount(currCount => {
+        if (currCount > nextTotal && nextTotal > 0) {
+          return nextTotal;
+        }
+        return currCount;
+      });
+      return nextSources;
+    });
+  }, []);
+
+  const handleReorder = useCallback((newSources: SourceFile[]) => {
+    setLocalSources(newSources);
+  }, []);
 
   const handleSave = () => {
     useQuizStore.setState({
@@ -247,169 +606,35 @@ export default function Sidebar() {
       </div>
       
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-y-auto flex flex-col relative">
-        
-        {/* Settings Section */}
-        <div className="p-5 md:p-6 space-y-5 bg-white dark:bg-slate-900 shrink-0">
-          <label className="flex items-start space-x-3 cursor-pointer group">
-            <div className="relative flex items-center mt-1">
-              <input
-                type="checkbox"
-                className="peer sr-only"
-                checked={localShowResult}
-                onChange={(e) => setLocalShowResult(e.target.checked)}
-              />
-              <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
-                {localShowResult && (
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-            </div>
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">Hiển thị kết quả sau mỗi câu</span>
-          </label>
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto flex flex-col relative">
+        <SidebarControls
+          localShowResult={localShowResult}
+          setLocalShowResult={setLocalShowResult}
+          localAutoNext={localAutoNext}
+          setLocalAutoNext={setLocalAutoNext}
+          localCountMode={localCountMode}
+          setLocalCountMode={setLocalCountMode}
+          localCustomCount={localCustomCount}
+          setLocalCustomCount={setLocalCustomCount}
+          totalAvailable={totalAvailable}
+          localSources={localSources}
+          localAllocations={localAllocations}
+          setLocalAllocations={setLocalAllocations}
+        />
 
-          <label className="flex items-start space-x-3 cursor-pointer group">
-            <div className="relative flex items-center mt-1">
-              <input
-                type="checkbox"
-                className="peer sr-only"
-                checked={localAutoNext}
-                onChange={(e) => setLocalAutoNext(e.target.checked)}
-              />
-              <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
-                {localAutoNext && (
-                  <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                )}
-              </div>
-            </div>
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
-          </label>
-
-          <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
-            <div className="space-y-3">
-              <label className="flex items-center space-x-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="questionCountMode"
-                  value="ALL"
-                  checked={localCountMode === 'ALL'}
-                  onChange={() => setLocalCountMode('ALL')}
-                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
-                />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tất cả ({totalAvailable})</span>
-              </label>
-
-              <div className="flex items-center space-x-3">
-                <label className="flex items-center space-x-3 cursor-pointer shrink-0">
-                  <input
-                    type="radio"
-                    name="questionCountMode"
-                    value="CUSTOM"
-                    checked={localCountMode === 'CUSTOM'}
-                    onChange={() => setLocalCountMode('CUSTOM')}
-                    className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
-                  />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tùy chỉnh:</span>
-                </label>
-                <input
-                  type="number"
-                  min={1}
-                  max={totalAvailable || 1}
-                  disabled={localCountMode !== 'CUSTOM'}
-                  value={localCustomCount === 0 ? '' : localCustomCount}
-                  onChange={(e) => {
-                    const valStr = e.target.value;
-                    if (valStr === '') {
-                      setLocalCustomCount(0);
-                      return;
-                    }
-                    let val = parseInt(valStr);
-                    if (isNaN(val)) val = 0;
-                    val = Math.max(0, Math.min(val, totalAvailable));
-                    setLocalCustomCount(val);
-                  }}
-                  onBlur={() => {
-                    if (localCustomCount < 1) {
-                      setLocalCustomCount(Math.min(1, totalAvailable));
-                    }
-                  }}
-                  className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
-                />
-              </div>
-
-              {localCountMode === 'CUSTOM' && localSources.filter(s => s.active && s.isValid).length > 0 && (
-                <SourceAllocation
-                  sources={localSources}
-                  totalQuestions={localCustomCount}
-                  allocations={localAllocations}
-                  onChange={setLocalAllocations}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Data Sources Section */}
-        <div className="flex-1 flex flex-col relative bg-slate-50/50 dark:bg-slate-900/50">
-          
-          {/* Sticky Header */}
-          <div className="sticky top-0 z-10 px-5 md:px-6 py-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-            <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
-              className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm"
-              title="Tải lên tệp .docx, .txt, .json"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileUpload}
-              accept=".txt,.docx,.json"
-              multiple
-              className="hidden"
-            />
-          </div>
-
-          <div className="p-5 md:p-6 flex-1">
-
-        {localSources.length === 0 ? (
-          <div className="text-center py-8 text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
-            <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-            <p className="text-sm">Chưa có tệp nào được tải lên.</p>
-            <p className="text-xs mt-1">Hỗ trợ .docx, .txt, .json</p>
-          </div>
-        ) : (
-          <Reorder.Group
-            ref={listContainerRef}
-            axis="y"
-            values={localSources}
-            onReorder={setLocalSources}
-            className="space-y-3"
-          >
-            {localSources.map((source) => (
-              <SourceCardItem
-                key={source.id}
-                source={source}
-                editingSourceIds={editingSourceIds}
-                setEditingSourceIds={setEditingSourceIds}
-                updateLocalCustomName={updateLocalCustomName}
-                toggleLocalSource={toggleLocalSource}
-                removeLocalSource={removeLocalSource}
-                dragConstraints={listContainerRef}
-              />
-            ))}
-          </Reorder.Group>
-        )}
-          </div>
-        </div>
+        <SidebarList
+          localSources={localSources}
+          isUploading={isUploading}
+          fileInputRef={fileInputRef}
+          handleFileUpload={handleFileUpload}
+          editingSourceIds={editingSourceIds}
+          setEditingSourceIds={setEditingSourceIds}
+          updateLocalCustomName={updateLocalCustomName}
+          toggleLocalSource={toggleLocalSource}
+          removeLocalSource={removeLocalSource}
+          onReorder={handleReorder}
+          parentScrollRef={scrollContainerRef}
+        />
       </div>
 
       {/* Fixed Footer with Cancel and Save Buttons */}

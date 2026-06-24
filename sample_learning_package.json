@@ -1,0 +1,73 @@
+{
+  "metadata": {
+    "file_name": "Tài liệu học tập Javascript Nâng Cao",
+    "question_count": 2,
+    "last_modified": 1782290400000
+  },
+  "document": "# Hướng dẫn Lập trình JavaScript Nâng Cao\n\nChào mừng bạn đến với tài liệu học tập JavaScript nâng cao. Hãy đọc kỹ tài liệu trước khi bắt đầu bài thi trắc nghiệm ôn tập.\n\n## 1. Biến và Phạm vi (Scope)\n\nTrong JavaScript, việc hiểu phạm vi hoạt động của biến là cực kỳ quan trọng. Chúng ta có 3 cách khai báo biến chính:\n* `var`: Phạm vi hàm (Function scope), có cơ chế hoisting.\n* `let`: Phạm vi khối (Block scope), không cho phép khai báo lại trong cùng một phạm vi.\n* `const`: Phạm vi khối (Block scope), giá trị hằng số (không thể gán lại).\n\n> **Chú ý:** Luôn ưu tiên sử dụng `const` trừ khi bạn cần gán lại giá trị cho biến, lúc đó hãy chọn `let`. Tránh sử dụng `var` để hạn chế lỗi hoisting ngoài ý muốn.\n\n## 2. Các hàm xử lý mảng thông dụng\n\nDưới đây là bảng so sánh các hàm biến đổi mảng phổ biến trong JS:\n\n| Hàm | Ý nghĩa | Trả về | Thay đổi mảng gốc? |\n| :--- | :--- | :--- | :--- |\n| `map()` | Biến đổi từng phần tử trong mảng | Mảng mới có cùng độ dài | Không |\n| `filter()` | Lọc phần tử theo điều kiện | Mảng mới chứa các phần tử thỏa mãn | Không |\n| `reduce()` | Tích lũy mảng thành một giá trị đơn | Một giá trị duy nhất (số, chuỗi, object,...) | Không |\n| `sort()` | Sắp xếp các phần tử | Mảng ban đầu đã được sắp xếp | **Có** |\n\n## 3. Khái niệm Closures\n\nClosure là một hàm có thể ghi nhớ và truy cập vào phạm vi lexical của nó ngay cả khi hàm đó đang được thực thi bên ngoài lexical scope đó.\n\nVí dụ về closure trong JavaScript:\n\n```javascript\nfunction createCounter() {\n  let count = 0;\n  return {\n    increment: function() {\n      count++;\n      return count;\n    },\n    decrement: function() {\n      count--;\n      return count;\n    }\n  };\n}\n\nconst counter = createCounter();\nconsole.log(counter.increment()); // 1\nconsole.log(counter.increment()); // 2\n```\n\nĐể biết thêm chi tiết, bạn có thể tham khảo thêm tại [MDN Web Docs](https://developer.mozilla.org/vi/docs/Web/JavaScript).",
+  "note": "Tài liệu này bao gồm các câu hỏi trắc nghiệm ôn tập về phạm vi biến (let/const), closures và các phương thức xử lý mảng. Đọc kỹ phần Closure và bảng so sánh mảng trước khi bắt đầu làm đề để đạt điểm tối đa (10/10)!",
+  "questions": [
+    {
+      "id": "js_adv_q1",
+      "type": "single_choice",
+      "question": "Kết quả in ra console của đoạn mã sau là gì?",
+      "answers": [
+        {
+          "id": "ans_a",
+          "content": "undefined",
+          "is_correct": false
+        },
+        {
+          "id": "ans_b",
+          "content": "ReferenceError",
+          "is_correct": true
+        },
+        {
+          "id": "ans_c",
+          "content": "10",
+          "is_correct": false
+        },
+        {
+          "id": "ans_d",
+          "content": "null",
+          "is_correct": false
+        }
+      ],
+      "tags": ["scope", "let", "hoisting"],
+      "display_block": {
+        "type": "code",
+        "content": "function testScope() {\n  console.log(x);\n  let x = 10;\n}\ntestScope();"
+      },
+      "explanation": "Biến khai báo bằng 'let' có cơ chế hoisting nhưng nằm trong Vùng chết tạm thời (Temporal Dead Zone - TDZ) cho đến khi dòng lệnh khai báo được thực thi. Truy cập biến trước khi khai báo bằng 'let' hoặc 'const' sẽ sinh ra lỗi ReferenceError, khác với 'var' sẽ trả về 'undefined'."
+    },
+    {
+      "id": "js_adv_q2",
+      "type": "multiple_choice",
+      "question": "Những phương thức mảng nào sau đây KHÔNG làm thay đổi mảng ban đầu?",
+      "answers": [
+        {
+          "id": "ans_map",
+          "content": "map()",
+          "is_correct": true
+        },
+        {
+          "id": "ans_filter",
+          "content": "filter()",
+          "is_correct": true
+        },
+        {
+          "id": "ans_push",
+          "content": "push()",
+          "is_correct": false
+        },
+        {
+          "id": "ans_sort",
+          "content": "sort()",
+          "is_correct": false
+        }
+      ],
+      "tags": ["arrays", "functional-programming"],
+      "explanation": "map() và filter() trả về một mảng mới và không làm thay đổi mảng gốc. Trong khi đó, push() thêm phần tử và làm thay đổi kích thước mảng gốc, sort() trực tiếp sắp xếp lại các phần tử trên mảng gốc."
+    }
+  ]
+}
