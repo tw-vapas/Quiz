@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useRef, useState, useLayoutEffect, useCallback, Fragment } from "react";
+import { useRouter } from "next/navigation";
 import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
-import { Plus, Trash2, FileText, FileWarning, Sun, Moon, X, GripVertical } from "lucide-react";
+import { Plus, Trash2, FileText, FileWarning, Sun, Moon, X, GripVertical, BookOpen } from "lucide-react";
 import { cn, useRenderProfiler } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
@@ -43,7 +44,9 @@ const VirtualSourceCard = React.memo(({
   localSources
 }: VirtualSourceCardProps) => {
   useRenderProfiler(`VirtualSourceCard`);
+  const router = useRouter();
   const [isDraggable, setIsDraggable] = useState(false);
+  const hasDocument = !!(source.document || source.note);
 
   const handleDragStart = (e: React.DragEvent) => {
     setDraggedIndex(index);
@@ -167,6 +170,18 @@ const VirtualSourceCard = React.memo(({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0">
+            {hasDocument && (
+              <button
+                onClick={() => {
+                  useQuizStore.getState().setSelectedDocumentSourceId(source.id);
+                  router.push("/document");
+                }}
+                className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 select-none shrink-0"
+                title="Xem tài liệu"
+              >
+                <BookOpen className="w-4 h-4" />
+              </button>
+            )}
             <button
               onClick={() => toggleEditing(source.id)}
               className="min-h-11 md:min-h-0 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none"
