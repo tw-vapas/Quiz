@@ -176,7 +176,7 @@ const VirtualSourceCard = React.memo(({
                   useQuizStore.getState().setSelectedDocumentSourceId(source.id);
                   router.push("/document");
                 }}
-                className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 select-none shrink-0"
+                className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 select-none shrink-0 cursor-pointer"
                 title="Xem tài liệu"
               >
                 <BookOpen className="w-4 h-4" />
@@ -184,13 +184,13 @@ const VirtualSourceCard = React.memo(({
             )}
             <button
               onClick={() => toggleEditing(source.id)}
-              className="min-h-11 md:min-h-0 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none"
+              className="min-h-11 md:min-h-0 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none cursor-pointer"
             >
               Đặt tên
             </button>
             <button
               onClick={() => removeLocalSource(source.id)}
-              className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0"
+              className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -517,7 +517,7 @@ const SidebarList = React.memo(({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm"
+          className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
           title="Tải lên tệp .docx, .txt, .json"
         >
           <Plus className="w-5 h-5" />
@@ -696,13 +696,13 @@ export default function Sidebar() {
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <button 
               onClick={() => setSettingsOpen(false)} 
-              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -750,14 +750,14 @@ export default function Sidebar() {
       <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0 flex gap-3 z-20">
         <button
           onClick={() => setSettingsOpen(false)}
-          className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm"
+          className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm cursor-pointer"
         >
           Hủy
         </button>
         <button
           onClick={handleSave}
           className={cn(
-            "flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-[0.98] text-sm",
+            "flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-[0.98] text-sm cursor-pointer",
             isSaved 
               ? "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600" 
               : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"

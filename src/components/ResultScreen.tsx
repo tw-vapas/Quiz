@@ -108,7 +108,7 @@ const ResultScreen = memo(function ResultScreen() {
           <div className="flex flex-col md:flex-row justify-center gap-3 md:gap-4 mt-8">
             <button
               onClick={retryQuiz}
-              className="min-h-11 flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base"
+              className="min-h-11 flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
             >
               <RotateCcw className="w-5 h-5" />
               Làm lại toàn bộ bài
@@ -127,7 +127,7 @@ const ResultScreen = memo(function ResultScreen() {
             </button>
             <button
               onClick={resetApp}
-              className="min-h-11 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 text-sm md:text-base"
+              className="min-h-11 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 text-sm md:text-base cursor-pointer"
             >
               Quay lại trang chủ
             </button>
@@ -392,7 +392,7 @@ const ResultScreen = memo(function ResultScreen() {
                 <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Làm lại câu sai</h2>
                 <button 
                   onClick={() => setIsRetryModalOpen(false)}
-                  className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center"
+                  className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -465,7 +465,7 @@ const ResultScreen = memo(function ResultScreen() {
               <div className="p-5 md:p-6 border-t border-slate-200 dark:border-slate-700 flex gap-3">
                 <button 
                   onClick={() => setIsRetryModalOpen(false)}
-                  className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+                  className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
                   Hủy
                 </button>
@@ -475,7 +475,7 @@ const ResultScreen = memo(function ResultScreen() {
                     retryIncorrectQuestions(incorrectIds, addExtra, extraCount, extraMode);
                     setIsRetryModalOpen(false);
                   }}
-                  className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <PlayCircle className="w-5 h-5" />
                   Bắt đầu

@@ -24,7 +24,7 @@ const StartScreen = memo(function StartScreen() {
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:p-8 relative overflow-x-hidden">
       <button 
         onClick={() => setSettingsOpen(true)}
-        className="absolute top-4 right-4 md:top-8 md:right-8 min-w-11 min-h-11 p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md active:scale-95"
+        className="absolute top-4 right-4 md:top-8 md:right-8 min-w-11 min-h-11 p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md active:scale-95 cursor-pointer"
       >
         <Settings className="w-6 h-6" />
       </button>
@@ -58,14 +58,14 @@ const StartScreen = memo(function StartScreen() {
         <button
           onClick={startQuiz}
           disabled={totalAvailable === 0 || displayedTotalQuestions === 0}
-          className="w-full min-h-11 bg-indigo-600 dark:bg-indigo-500 text-white font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98]"
+          className="w-full min-h-11 bg-indigo-600 dark:bg-indigo-500 text-white font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98] cursor-pointer"
         >
           Bắt đầu
         </button>
 
         <Link
           href="/document"
-          className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
+          className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
           <BookOpen className="w-5 h-5" />
           Xem tài liệu

@@ -579,7 +579,7 @@ export default function DocumentViewerPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 bg-indigo-650 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-md active:scale-95 text-sm md:text-base"
+            className="inline-flex items-center gap-2 bg-indigo-650 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-md active:scale-95 text-sm md:text-base cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             Tải lên tệp tại Trang chủ
@@ -641,7 +641,7 @@ export default function DocumentViewerPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-250 transition-colors flex items-center justify-center"
+            className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-250 transition-colors flex items-center justify-center cursor-pointer"
             title="Quay lại trang chủ"
           >
             <ArrowLeft className="w-5 h-5" />

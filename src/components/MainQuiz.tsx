@@ -527,21 +527,21 @@ const MainQuiz = memo(function MainQuiz() {
         <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
           <button
             onClick={() => setShowSubmitConfirm(true)}
-            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 rounded-lg font-medium transition-colors text-xs md:text-sm"
+            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 rounded-lg font-medium transition-colors text-xs md:text-sm cursor-pointer"
           >
             <CheckSquare className="w-4 h-4 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Nộp bài</span>
           </button>
           <button
             onClick={pauseQuiz}
-            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors text-xs md:text-sm"
+            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors text-xs md:text-sm cursor-pointer"
           >
             <Pause className="w-4 h-4 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Tạm dừng</span>
           </button>
           <button
             onClick={() => setShowExitConfirm(true)}
-            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors text-xs md:text-sm"
+            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors text-xs md:text-sm cursor-pointer"
           >
             <LogOut className="w-4 h-4 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Thoát</span>
@@ -561,14 +561,14 @@ const MainQuiz = memo(function MainQuiz() {
             <div className="space-y-3">
               <button
                 onClick={resumeQuiz}
-                className="w-full flex justify-center items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base"
+                className="w-full flex justify-center items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 <Play className="w-5 h-5 fill-current" />
                 Tiếp tục làm bài
               </button>
               <button
                 onClick={() => setShowExitConfirm(true)}
-                className="w-full flex justify-center items-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base"
+                className="w-full flex justify-center items-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 <LogOut className="w-5 h-5" />
                 Thoát
@@ -590,7 +590,7 @@ const MainQuiz = memo(function MainQuiz() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowExitConfirm(false)}
-                className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base"
+                className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 Hủy
               </button>
@@ -599,7 +599,7 @@ const MainQuiz = memo(function MainQuiz() {
                   setShowExitConfirm(false);
                   exitQuiz();
                 }}
-                className="flex-1 bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base"
+                className="flex-1 bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 Thoát ngay
               </button>
@@ -620,7 +620,7 @@ const MainQuiz = memo(function MainQuiz() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSubmitConfirm(false)}
-                className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base"
+                className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 Hủy
               </button>
@@ -629,7 +629,7 @@ const MainQuiz = memo(function MainQuiz() {
                   setShowSubmitConfirm(false);
                   submitQuizEarly();
                 }}
-                className="flex-1 bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base"
+                className="flex-1 bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 Nộp bài
               </button>
