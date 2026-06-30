@@ -420,22 +420,19 @@ export default function DocumentViewerPage() {
     }
   }, [theme]);
 
-  // Hydrate store from localStorage on mount (Client-side only)
+  // Hydrate store from localStorage on mount only if store is empty (first load)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      let currentSources: SourceFile[] = [];
       const savedSources = localStorage.getItem("vapas_quiz_sources");
       const savedSettings = localStorage.getItem("vapas_quiz_settings");
-      if (savedSources) {
+      
+      if (savedSources && sources.length === 0) {
         try {
           const parsed = JSON.parse(savedSources);
           useQuizStore.setState({ sources: parsed });
-          currentSources = parsed;
         } catch (e) {
           console.error("Error loading sources:", e);
         }
-      } else {
-        currentSources = sources;
       }
       if (savedSettings) {
         try {
@@ -446,21 +443,24 @@ export default function DocumentViewerPage() {
         }
       }
       
-      // Force document picker first UX on entry
-      setSelectedDocumentSourceId(null);
-      
-      if (currentSources.length === 0) {
-        setUiState("EMPTY");
-      } else {
-        setUiState("PICKER_ENTRY");
-      }
-      
-      const timer = setTimeout(() => {
-        setIsLoaded(true);
-      }, 50);
-      return () => clearTimeout(timer);
+      setIsLoaded(true);
     }
-  }, [setSelectedDocumentSourceId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Determine UI state after hydration and when selectedSourceId changes
+  useEffect(() => {
+    const currentSources = useQuizStore.getState().sources;
+    const currentSelectedId = useQuizStore.getState().selectedDocumentSourceId;
+    
+    if (currentSources.length === 0) {
+      setUiState("EMPTY");
+    } else if (currentSelectedId && currentSources.some(s => s.id === currentSelectedId)) {
+      setUiState("VIEWER");
+    } else {
+      setUiState("PICKER_ENTRY");
+    }
+  }, [selectedDocumentSourceId, sources]);
 
   // Persist selected source ID to lastOpenedDocumentId (optional memory)
   useEffect(() => {
