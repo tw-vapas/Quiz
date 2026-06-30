@@ -271,7 +271,10 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
       initial={false}
       animate={isOpen ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15 }}
-      className="absolute inset-0 flex items-end md:items-center justify-center p-0 md:p-6 pointer-events-auto"
+      className={cn(
+        "absolute inset-0 flex items-end md:items-center justify-center p-0 md:p-6",
+        isOpen ? "pointer-events-auto" : "pointer-events-none"
+      )}
     >
       <div
         className="w-full max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none md:rounded-3xl shadow-2xl relative p-4 md:p-10 flex flex-col overflow-hidden"
