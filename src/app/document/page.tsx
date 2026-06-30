@@ -420,7 +420,7 @@ export default function DocumentViewerPage() {
     }
   }, [theme]);
 
-  // Hydrate store from localStorage on mount only if store is empty (first load)
+      // Hydrate store from localStorage on mount only if store is empty (first load)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const savedSources = localStorage.getItem("vapas_quiz_sources");
