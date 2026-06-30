@@ -13,7 +13,12 @@ const Timer = memo(() => {
   const startTime = useQuizStore(state => state.startTime);
   const isPaused = useQuizStore(state => state.isPaused);
   const accumulatedTime = useQuizStore(state => state.accumulatedTime);
+  const timeLimitMode = useQuizStore(state => state.timeLimitMode);
+  const timeLimitMinutes = useQuizStore(state => state.timeLimitMinutes);
+  const quizState = useQuizStore(state => state.state);
+  const submitQuizEarly = useQuizStore(state => state.submitQuizEarly);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const hasSubmittedRef = useRef(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -29,11 +34,44 @@ const Timer = memo(() => {
     return () => clearInterval(interval);
   }, [startTime, isPaused, accumulatedTime]);
 
+  // Reset submit guard when quiz restarts
+  useEffect(() => {
+    if (quizState === 'IN_PROGRESS') {
+      hasSubmittedRef.current = false;
+    }
+  }, [quizState]);
+
+  // Auto-submit when countdown reaches zero
+  useEffect(() => {
+    if (timeLimitMode === 'LIMITED' && quizState === 'IN_PROGRESS' && startTime && !hasSubmittedRef.current) {
+      const remaining = timeLimitMinutes * 60 - elapsedTime;
+      if (remaining <= 0) {
+        hasSubmittedRef.current = true;
+        submitQuizEarly();
+      }
+    }
+  }, [elapsedTime, timeLimitMode, timeLimitMinutes, startTime, submitQuizEarly, quizState]);
+
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, "0");
     const s = (seconds % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
+
+  if (timeLimitMode === 'LIMITED') {
+    const remaining = Math.max(0, timeLimitMinutes * 60 - elapsedTime);
+    const isWarning = remaining < 60;
+    const isCritical = remaining < 30;
+
+    return (
+      <span className={cn(
+        "tabular-nums",
+        isCritical ? "text-red-500 font-bold" : isWarning ? "text-amber-500 font-bold" : ""
+      )}>
+        {formatTime(remaining)}
+      </span>
+    );
+  }
 
   return <>{formatTime(elapsedTime)}</>;
 });

@@ -24,6 +24,11 @@ export interface QuizStore {
   setQuestionCountMode: (val: 'ALL' | 'CUSTOM') => void;
   setCustomQuestionCount: (val: number) => void;
   
+  timeLimitMode: 'UNLIMITED' | 'LIMITED';
+  timeLimitMinutes: number;
+  setTimeLimitMode: (val: 'UNLIMITED' | 'LIMITED') => void;
+  setTimeLimitMinutes: (val: number) => void;
+  
   sourceAllocations: Record<string, number>;
   setSourceAllocations: (allocs: Record<string, number>) => void;
   
@@ -88,6 +93,11 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   customQuestionCount: 10,
   setQuestionCountMode: (val) => set({ questionCountMode: val }),
   setCustomQuestionCount: (val) => set({ customQuestionCount: val }),
+  
+  timeLimitMode: 'UNLIMITED',
+  timeLimitMinutes: 15,
+  setTimeLimitMode: (val) => set({ timeLimitMode: val }),
+  setTimeLimitMinutes: (val) => set({ timeLimitMinutes: val }),
   
   sourceAllocations: {},
   setSourceAllocations: (allocs) => set({ sourceAllocations: allocs }),

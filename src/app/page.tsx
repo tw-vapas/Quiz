@@ -22,6 +22,8 @@ export default function Home() {
   const questionCountMode = useQuizStore((state) => state.questionCountMode);
   const customQuestionCount = useQuizStore((state) => state.customQuestionCount);
   const sourceAllocations = useQuizStore((state) => state.sourceAllocations);
+  const timeLimitMode = useQuizStore((state) => state.timeLimitMode);
+  const timeLimitMinutes = useQuizStore((state) => state.timeLimitMinutes);
 
   const [hasHydrated, setHasHydrated] = useState(false);
 
@@ -75,6 +77,8 @@ export default function Home() {
         customQuestionCount,
         sourceAllocations,
         theme,
+        timeLimitMode,
+        timeLimitMinutes,
       };
       localStorage.setItem("vapas_quiz_settings", JSON.stringify(settingsObj));
     }
@@ -85,6 +89,8 @@ export default function Home() {
     customQuestionCount,
     sourceAllocations,
     theme,
+    timeLimitMode,
+    timeLimitMinutes,
     hasHydrated
   ]);
 

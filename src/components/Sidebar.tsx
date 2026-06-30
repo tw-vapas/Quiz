@@ -270,6 +270,10 @@ interface SidebarControlsProps {
   setLocalShowResult: (val: boolean) => void;
   localAutoNext: boolean;
   setLocalAutoNext: (val: boolean) => void;
+  localTimeLimitMode: 'UNLIMITED' | 'LIMITED';
+  setLocalTimeLimitMode: (val: 'UNLIMITED' | 'LIMITED') => void;
+  localTimeLimitMinutes: number;
+  setLocalTimeLimitMinutes: React.Dispatch<React.SetStateAction<number>>;
   localCountMode: "ALL" | "CUSTOM";
   setLocalCountMode: (val: "ALL" | "CUSTOM") => void;
   localCustomCount: number;
@@ -285,6 +289,10 @@ const SidebarControls = React.memo(({
   setLocalShowResult,
   localAutoNext,
   setLocalAutoNext,
+  localTimeLimitMode,
+  setLocalTimeLimitMode,
+  localTimeLimitMinutes,
+  setLocalTimeLimitMinutes,
   localCountMode,
   setLocalCountMode,
   localCustomCount,
@@ -334,6 +342,58 @@ const SidebarControls = React.memo(({
         </div>
         <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
       </label>
+
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
+        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
+        <div className="space-y-3">
+          <label className="flex items-center space-x-3 cursor-pointer">
+            <input
+              type="radio"
+              name="timeLimitMode"
+              checked={localTimeLimitMode === 'UNLIMITED'}
+              onChange={() => setLocalTimeLimitMode('UNLIMITED')}
+              className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
+            />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn thời gian</span>
+          </label>
+          <div className="flex items-center space-x-3">
+            <label className="flex items-center space-x-3 cursor-pointer shrink-0">
+              <input
+                type="radio"
+                name="timeLimitMode"
+                checked={localTimeLimitMode === 'LIMITED'}
+                onChange={() => setLocalTimeLimitMode('LIMITED')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Giới hạn thời gian:</span>
+            </label>
+            <input
+              type="number"
+              min={1}
+              disabled={localTimeLimitMode !== 'LIMITED'}
+              value={localTimeLimitMinutes === 0 ? '' : localTimeLimitMinutes}
+              onChange={(e) => {
+                const valStr = e.target.value;
+                if (valStr === '') {
+                  setLocalTimeLimitMinutes(0);
+                  return;
+                }
+                let val = parseInt(valStr);
+                if (isNaN(val)) val = 0;
+                val = Math.max(1, val);
+                setLocalTimeLimitMinutes(val);
+              }}
+              onBlur={() => {
+                if (localTimeLimitMinutes < 1) {
+                  setLocalTimeLimitMinutes(15);
+                }
+              }}
+              className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
+            />
+            <span className="text-sm text-slate-500 dark:text-slate-400">phút</span>
+          </div>
+        </div>
+      </div>
 
       <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
         <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
@@ -503,6 +563,8 @@ export default function Sidebar() {
   // Local state initialized via getState to prevent subscriptions to home page modifications
   const [localShowResult, setLocalShowResult] = useState(() => useQuizStore.getState().showResultAfterQuestion);
   const [localAutoNext, setLocalAutoNext] = useState(() => useQuizStore.getState().autoNext);
+  const [localTimeLimitMode, setLocalTimeLimitMode] = useState(() => useQuizStore.getState().timeLimitMode);
+  const [localTimeLimitMinutes, setLocalTimeLimitMinutes] = useState(() => useQuizStore.getState().timeLimitMinutes);
   const [localCountMode, setLocalCountMode] = useState(() => useQuizStore.getState().questionCountMode);
   const [localCustomCount, setLocalCustomCount] = useState(() => useQuizStore.getState().customQuestionCount);
   const [localAllocations, setLocalAllocations] = useState(() => useQuizStore.getState().sourceAllocations);
@@ -599,6 +661,8 @@ export default function Sidebar() {
     useQuizStore.setState({
       showResultAfterQuestion: localShowResult,
       autoNext: localAutoNext,
+      timeLimitMode: localTimeLimitMode,
+      timeLimitMinutes: localTimeLimitMinutes,
       questionCountMode: localCountMode,
       customQuestionCount: localCustomCount,
       sourceAllocations: localAllocations,
@@ -638,6 +702,10 @@ export default function Sidebar() {
           setLocalShowResult={setLocalShowResult}
           localAutoNext={localAutoNext}
           setLocalAutoNext={setLocalAutoNext}
+          localTimeLimitMode={localTimeLimitMode}
+          setLocalTimeLimitMode={setLocalTimeLimitMode}
+          localTimeLimitMinutes={localTimeLimitMinutes}
+          setLocalTimeLimitMinutes={setLocalTimeLimitMinutes}
           localCountMode={localCountMode}
           setLocalCountMode={setLocalCountMode}
           localCustomCount={localCustomCount}
