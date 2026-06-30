@@ -104,7 +104,7 @@ export default function Home() {
     )}>
       {state === "NOT_STARTED" && (
       <nav className="shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-2 shadow-sm">
-        <div className="max-w-5xl mx-auto flex items-center gap-2">
+        <div className="flex items-center">
           <div className="flex items-center justify-center gap-2 flex-1">
             <button
               onClick={() => setActiveSection("quiz")}
