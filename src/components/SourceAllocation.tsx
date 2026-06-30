@@ -270,13 +270,13 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
   if (activeSources.length === 0 || totalQuestions <= 0) return null;
 
   return (
-    <div className="mt-6 bg-slate-100/50 dark:bg-slate-800/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50">
+    <div className="mt-6 bg-slate-100/50 dark:bg-slate-800/50 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4">Tỉ lệ câu hỏi</h3>
       
       {/* Allocation Bar */}
       <div 
         ref={barRef}
-        className="relative h-10 md:h-12 w-full flex rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 select-none shadow-inner touch-pan-y"
+        className="relative h-12 w-full flex rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 select-none shadow-inner touch-pan-y"
         style={{ cursor: draggingIdx !== null ? 'col-resize' : 'default' }}
       >
         {activeSources.map((source, idx) => {
@@ -338,7 +338,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
           return (
             <div 
               key={`div-${source.id}`}
-              className="absolute top-0 bottom-0 w-8 -ml-4 cursor-col-resize flex items-center justify-center z-20 group touch-none"
+              className="absolute top-0 bottom-0 w-11 -ml-[22px] cursor-col-resize flex items-center justify-center z-20 group touch-none"
               style={{ left: `${leftPercent}%` }}
               onMouseDown={() => handleDragStart(idx)}
               onTouchStart={() => {
@@ -364,7 +364,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
           const percentage = totalQuestions > 0 ? Math.round((alloc / totalQuestions) * 100) : 0;
           
           return (
-            <div key={source.id} className="flex items-center gap-3 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm transition-colors hover:border-slate-300 dark:hover:border-slate-600">
+            <div key={source.id} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-white dark:bg-slate-800 p-3 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm transition-colors hover:border-slate-300 dark:hover:border-slate-600">
               <div className={cn("w-4 h-4 rounded-md shrink-0 shadow-sm", color.bg)} />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={source.customName || source.name}>
@@ -373,7 +373,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
                 <div className="text-[10px] text-slate-500">Tối đa {source.questionsCount} câu</div>
               </div>
               
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
                 <div className="text-xs font-medium text-slate-400 w-10 text-right">{percentage}%</div>
                 <input
                   type="number"
@@ -382,7 +382,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
                   value={alloc === 0 ? "" : alloc}
                   placeholder="0"
                   onChange={(e) => handleInputChange(source.id, e.target.value)}
-                  className="w-16 px-2 py-1.5 text-sm font-bold text-center border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="min-h-11 w-full sm:w-16 px-2 py-1.5 text-sm font-bold text-center border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>

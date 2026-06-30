@@ -21,10 +21,10 @@ const StartScreen = memo(function StartScreen() {
   }
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:p-8 relative overflow-x-hidden">
       <button 
         onClick={() => setSettingsOpen(true)}
-        className="absolute top-6 right-6 md:top-8 md:right-8 p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md active:scale-95"
+        className="absolute top-4 right-4 md:top-8 md:right-8 min-w-11 min-h-11 p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md active:scale-95"
       >
         <Settings className="w-6 h-6" />
       </button>
@@ -32,7 +32,7 @@ const StartScreen = memo(function StartScreen() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center border border-slate-100 dark:border-slate-700 transition-colors duration-300"
+        className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl p-5 sm:p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.2)] text-center border border-slate-100 dark:border-slate-700 transition-colors duration-300"
       >
         <div className="w-16 h-16 md:w-20 md:h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl mx-auto flex items-center justify-center mb-6">
           <Play className="w-8 h-8 md:w-10 md:h-10 text-indigo-600 dark:text-indigo-400 ml-1" />
@@ -44,12 +44,11 @@ const StartScreen = memo(function StartScreen() {
           Vui lòng chọn các nguồn dữ liệu ở phần cài đặt. Hệ thống sẽ trộn các câu hỏi và lựa chọn để bắt đầu.
         </p>
 
-        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 md:p-5 mb-8 flex justify-around">
+        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 md:p-5 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-0 sm:divide-x divide-slate-200 dark:divide-slate-700">
           <div>
             <div className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">{activeSources.length}</div>
             <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Tệp chọn</div>
           </div>
-          <div className="w-px bg-slate-200 dark:bg-slate-700"></div>
           <div>
             <div className="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400">{displayedTotalQuestions}</div>
             <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Câu hỏi</div>
@@ -59,14 +58,14 @@ const StartScreen = memo(function StartScreen() {
         <button
           onClick={startQuiz}
           disabled={totalAvailable === 0 || displayedTotalQuestions === 0}
-          className="w-full bg-indigo-600 dark:bg-indigo-500 text-white font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98]"
+          className="w-full min-h-11 bg-indigo-600 dark:bg-indigo-500 text-white font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98]"
         >
           Bắt đầu
         </button>
 
         <Link
           href="/document"
-          className="mt-3 w-full border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
+          className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <BookOpen className="w-5 h-5" />
           Xem tài liệu

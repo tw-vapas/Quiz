@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState, useLayoutEffect, useCallback } from "react";
+import React, { useRef, useState, useLayoutEffect, useCallback, Fragment } from "react";
 import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
@@ -19,8 +19,8 @@ interface VirtualSourceCardProps {
   removeLocalSource: (id: string) => void;
   draggedIndex: number | null;
   setDraggedIndex: (idx: number | null) => void;
-  dragOverIndex: number | null;
-  setDragOverIndex: (idx: number | null) => void;
+  dropTargetIndex: number | null;
+  onDropTargetChange: (idx: number | null) => void;
   onReorder: (newSources: SourceFile[]) => void;
   localSources: SourceFile[];
 }
@@ -37,8 +37,8 @@ const VirtualSourceCard = React.memo(({
   removeLocalSource,
   draggedIndex,
   setDraggedIndex,
-  dragOverIndex,
-  setDragOverIndex,
+  dropTargetIndex,
+  onDropTargetChange,
   onReorder,
   localSources
 }: VirtualSourceCardProps) => {
@@ -53,33 +53,46 @@ const VirtualSourceCard = React.memo(({
 
   const handleDragEnd = () => {
     setDraggedIndex(null);
-    setDragOverIndex(null);
+    onDropTargetChange(null);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     if (draggedIndex !== null && draggedIndex !== index) {
       e.preventDefault();
-      setDragOverIndex(index);
+      const rect = e.currentTarget.getBoundingClientRect();
+      const y = e.clientY - rect.top;
+      const ratio = y / rect.height;
+      if (ratio < 0.25) {
+        onDropTargetChange(index);
+      } else if (ratio > 0.75) {
+        onDropTargetChange(index + 1);
+      }
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (e.currentTarget === e.target || !e.currentTarget.contains(e.relatedTarget as Node)) {
+      onDropTargetChange(null);
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    if (draggedIndex !== null && draggedIndex !== index) {
+    if (draggedIndex !== null && dropTargetIndex !== null && draggedIndex !== dropTargetIndex && draggedIndex + 1 !== dropTargetIndex) {
+      const adjustedTarget = draggedIndex < dropTargetIndex ? dropTargetIndex - 1 : dropTargetIndex;
       const nextSources = [...localSources];
       const [removed] = nextSources.splice(draggedIndex, 1);
-      nextSources.splice(index, 0, removed);
+      nextSources.splice(adjustedTarget, 0, removed);
       onReorder(nextSources);
     }
     setDraggedIndex(null);
-    setDragOverIndex(null);
+    onDropTargetChange(null);
   };
 
   const toggleEditing = (id: string) => {
     setEditingSourceIds(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const isDragOver = dragOverIndex === index;
   const isDragging = draggedIndex === index;
 
   return (
@@ -88,6 +101,7 @@ const VirtualSourceCard = React.memo(({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       style={{ minHeight: `${ITEM_HEIGHT - 12}px` }}
       className={cn(
@@ -95,13 +109,12 @@ const VirtualSourceCard = React.memo(({
         source.isValid 
           ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80" 
           : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50",
-        isDragOver && "border-indigo-500 dark:border-indigo-400 bg-indigo-50/20 dark:bg-indigo-950/20 scale-[1.01]",
         isDragging && "opacity-40"
       )}
     >
       {/* Drag Handle Icon in front */}
       <div
-        className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg cursor-grab active:cursor-grabbing opacity-65 hover:opacity-100 transition-all duration-150 flex items-center justify-center touch-none select-none w-8 h-8 -ml-2 shrink-0"
+        className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg cursor-grab active:cursor-grabbing opacity-65 hover:opacity-100 transition-all duration-150 flex items-center justify-center touch-none select-none w-11 h-11 md:w-8 md:h-8 md:-ml-2 shrink-0"
         onMouseEnter={() => setIsDraggable(true)}
         onMouseLeave={() => setIsDraggable(false)}
         title="Kéo để sắp xếp"
@@ -156,13 +169,13 @@ const VirtualSourceCard = React.memo(({
           <div className="flex items-center gap-2.5 shrink-0">
             <button
               onClick={() => toggleEditing(source.id)}
-              className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none"
+              className="min-h-11 md:min-h-0 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none"
             >
               Đặt tên
             </button>
             <button
               onClick={() => removeLocalSource(source.id)}
-              className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0"
+              className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -211,28 +224,41 @@ const VirtualSourcesList = ({
 }: VirtualSourcesListProps) => {
   useRenderProfiler("VirtualSourcesList");
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [dropTargetIndex, setDropTargetIndex] = useState<number | null>(null);
+
+  const showLine = dropTargetIndex !== null && draggedIndex !== null;
 
   return (
-    <div className="relative w-full space-y-3">
+    <div className="relative w-full space-y-3 pb-4">
       {sources.map((source, index) => (
-        <VirtualSourceCard
-          key={source.id}
-          source={source}
-          index={index}
-          editingSourceIds={editingSourceIds}
-          setEditingSourceIds={setEditingSourceIds}
-          updateLocalCustomName={updateLocalCustomName}
-          toggleLocalSource={toggleLocalSource}
-          removeLocalSource={removeLocalSource}
-          draggedIndex={draggedIndex}
-          setDraggedIndex={setDraggedIndex}
-          dragOverIndex={dragOverIndex}
-          setDragOverIndex={setDragOverIndex}
-          onReorder={onReorder}
-          localSources={sources}
-        />
+        <Fragment key={source.id}>
+          {showLine && dropTargetIndex === index && (
+            <div className="h-0.5 -my-0.5 relative z-10">
+              <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 h-[3px] w-[95%] bg-indigo-500 rounded-full shadow-[0_0_6px_rgba(99,102,241,0.4)]" />
+            </div>
+          )}
+          <VirtualSourceCard
+            source={source}
+            index={index}
+            editingSourceIds={editingSourceIds}
+            setEditingSourceIds={setEditingSourceIds}
+            updateLocalCustomName={updateLocalCustomName}
+            toggleLocalSource={toggleLocalSource}
+            removeLocalSource={removeLocalSource}
+            draggedIndex={draggedIndex}
+            setDraggedIndex={setDraggedIndex}
+            dropTargetIndex={dropTargetIndex}
+            onDropTargetChange={setDropTargetIndex}
+            onReorder={onReorder}
+            localSources={sources}
+          />
+        </Fragment>
       ))}
+      {showLine && dropTargetIndex === sources.length && (
+        <div className="h-0.5 -mt-0.5 relative z-10">
+          <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 h-[3px] w-[95%] bg-indigo-500 rounded-full shadow-[0_0_6px_rgba(99,102,241,0.4)]" />
+        </div>
+      )}
     </div>
   );
 };
@@ -270,16 +296,16 @@ const SidebarControls = React.memo(({
 }: SidebarControlsProps) => {
   useRenderProfiler("SidebarControls");
   return (
-    <div className="p-5 md:p-6 space-y-5 bg-white dark:bg-slate-900 shrink-0">
+    <div className="p-4 md:p-6 space-y-5 bg-white dark:bg-slate-900 shrink-0">
       <label className="flex items-start space-x-3 cursor-pointer group">
-        <div className="relative flex items-center mt-1">
+        <div className="relative flex items-center pt-0.5">
           <input
             type="checkbox"
             className="peer sr-only"
             checked={localShowResult}
             onChange={(e) => setLocalShowResult(e.target.checked)}
           />
-          <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+          <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
             {localShowResult && (
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -287,18 +313,18 @@ const SidebarControls = React.memo(({
             )}
           </div>
         </div>
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">Hiển thị kết quả sau mỗi câu</span>
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Hiển thị kết quả sau mỗi câu</span>
       </label>
 
       <label className="flex items-start space-x-3 cursor-pointer group">
-        <div className="relative flex items-center mt-1">
+        <div className="relative flex items-center pt-0.5">
           <input
             type="checkbox"
             className="peer sr-only"
             checked={localAutoNext}
             onChange={(e) => setLocalAutoNext(e.target.checked)}
           />
-          <div className="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+          <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
             {localAutoNext && (
               <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -306,7 +332,7 @@ const SidebarControls = React.memo(({
             )}
           </div>
         </div>
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
       </label>
 
       <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -416,7 +442,7 @@ const SidebarList = React.memo(({
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading}
-          className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm"
+          className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm"
           title="Tải lên tệp .docx, .txt, .json"
         >
           <Plus className="w-5 h-5" />
@@ -585,19 +611,19 @@ export default function Sidebar() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Fixed Modal Header */}
-      <div className="p-5 md:p-6 border-b border-slate-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-900 z-20">
+      <div className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-900 z-20">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Cài đặt</h2>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
             >
               {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
             <button 
               onClick={() => setSettingsOpen(false)} 
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -641,14 +667,14 @@ export default function Sidebar() {
       <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0 flex gap-3 z-20">
         <button
           onClick={() => setSettingsOpen(false)}
-          className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm"
+          className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm"
         >
           Hủy
         </button>
         <button
           onClick={handleSave}
           className={cn(
-            "flex-1 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-[0.98] text-sm",
+            "flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-[0.98] text-sm",
             isSaved 
               ? "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600" 
               : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"

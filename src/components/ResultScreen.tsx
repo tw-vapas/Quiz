@@ -67,18 +67,18 @@ const ResultScreen = memo(function ResultScreen() {
 
   return (
     <div 
-      className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 p-4 md:p-8 lg:p-12 transition-colors duration-300"
+      className="flex-1 overflow-y-auto overflow-x-hidden bg-slate-50 dark:bg-slate-950 p-3 sm:p-4 md:p-8 lg:p-12 transition-colors duration-300"
       onClick={() => setActiveTooltip(null)}
       onScroll={() => {
         if (activeTooltip) setActiveTooltip(null);
       }}
     >
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-5 md:space-y-8">
         
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 text-center transition-colors duration-300"
+          className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 text-center transition-colors duration-300"
         >
           <div className="inline-flex items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full mb-6">
             <Target className="w-12 h-12" />
@@ -86,7 +86,7 @@ const ResultScreen = memo(function ResultScreen() {
           <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">Hoàn thành bài kiểm tra!</h1>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-8">Dưới đây là kết quả chi tiết của bạn.</p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 rounded-2xl">
               <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Điểm số</div>
               <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{score10}</div>
@@ -108,7 +108,7 @@ const ResultScreen = memo(function ResultScreen() {
           <div className="flex flex-col md:flex-row justify-center gap-3 md:gap-4 mt-8">
             <button
               onClick={retryQuiz}
-              className="flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base"
+              className="min-h-11 flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base"
             >
               <RotateCcw className="w-5 h-5" />
               Làm lại toàn bộ bài
@@ -117,7 +117,7 @@ const ResultScreen = memo(function ResultScreen() {
               onClick={() => setIsRetryModalOpen(true)}
               disabled={incorrectQuestions.length === 0}
               className={cn(
-                "flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all text-sm md:text-base cursor-pointer",
+                "min-h-11 flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all text-sm md:text-base cursor-pointer",
                 "bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white shadow-md hover:shadow-lg active:scale-95 active:bg-rose-700 dark:active:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-500/50",
                 "disabled:bg-slate-200 dark:disabled:bg-slate-800 disabled:text-slate-400 dark:disabled:text-slate-650 disabled:shadow-none disabled:cursor-not-allowed disabled:scale-100 disabled:ring-0 disabled:border-transparent"
               )}
@@ -127,7 +127,7 @@ const ResultScreen = memo(function ResultScreen() {
             </button>
             <button
               onClick={resetApp}
-              className="flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 text-sm md:text-base"
+              className="min-h-11 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 text-sm md:text-base"
             >
               Quay lại trang chủ
             </button>
@@ -167,11 +167,12 @@ const ResultScreen = memo(function ResultScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + sIdx * 0.1 }}
-              className="bg-white dark:bg-slate-800 rounded-3xl p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300"
+              className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300 overflow-hidden"
             >
               <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">Thống kê thời gian: {sourceName}</h2>
               
-              <div className="flex mt-8 h-48 md:h-64">
+              <div className="mt-6 md:mt-8 overflow-x-auto pb-2">
+                <div className="flex h-48 md:h-64 min-w-[340px]">
                 {/* Y-axis Labels */}
                 <div className="flex flex-col justify-between items-end pr-2 md:pr-3 pb-1 text-[10px] md:text-xs font-medium text-slate-400 w-10 md:w-12 shrink-0 pt-2">
                   <span>{formatTime(Math.floor(maxTime / 1000))}</span>
@@ -242,6 +243,7 @@ const ResultScreen = memo(function ResultScreen() {
                     
                   </div>
                 </div>
+                </div>
               </div>
 
               <div className="text-center mt-2 md:mt-4 text-[9px] md:text-[10px] font-medium text-slate-400 uppercase tracking-widest">
@@ -292,7 +294,7 @@ const ResultScreen = memo(function ResultScreen() {
                  const correctOptions = q.options.filter(o => correctOptionIds.includes(o.id));
 
                 return (
-                  <div key={q.id} className="bg-white dark:bg-slate-800 rounded-2xl p-5 md:p-6 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300">
+                  <div key={q.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-6 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300 overflow-hidden">
                     <div className="font-medium text-slate-900 dark:text-slate-100 mb-4 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
                       <span className="text-slate-400 dark:text-slate-500 mr-2">#{idx + 1}</span>
                       {q.text}
@@ -378,19 +380,19 @@ const ResultScreen = memo(function ResultScreen() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[70] bg-slate-900/60 flex items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-[70] bg-slate-900/60 flex items-end md:items-center justify-center p-0 md:p-8"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative"
+              className="bg-white dark:bg-slate-900 w-full max-w-lg h-[100dvh] md:h-auto md:max-h-[85vh] rounded-none md:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative"
             >
               <div className="p-5 md:p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                 <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Làm lại câu sai</h2>
                 <button 
                   onClick={() => setIsRetryModalOpen(false)}
-                  className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors"
+                  className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -463,7 +465,7 @@ const ResultScreen = memo(function ResultScreen() {
               <div className="p-5 md:p-6 border-t border-slate-200 dark:border-slate-700 flex gap-3">
                 <button 
                   onClick={() => setIsRetryModalOpen(false)}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+                  className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
                 >
                   Hủy
                 </button>
@@ -473,7 +475,7 @@ const ResultScreen = memo(function ResultScreen() {
                     retryIncorrectQuestions(incorrectIds, addExtra, extraCount, extraMode);
                     setIsRetryModalOpen(false);
                   }}
-                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2"
+                  className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2"
                 >
                   <PlayCircle className="w-5 h-5" />
                   Bắt đầu

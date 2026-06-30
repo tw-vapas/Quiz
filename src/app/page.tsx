@@ -13,6 +13,7 @@ export default function Home() {
   const state = useQuizStore((state) => state.state);
   const theme = useQuizStore((state) => state.theme);
   const isSettingsOpen = useQuizStore((state) => state.isSettingsOpen);
+  const [activeSection, setActiveSection] = useState<"quiz" | "create">("quiz");
   
   // Specific selectors to avoid full-store subscriptions causing unnecessary updates
   const sources = useQuizStore((state) => state.sources);
@@ -93,14 +94,50 @@ export default function Home() {
     <div className={cn(
       "flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300"
     )}>
-      <main className="flex-1 flex flex-col relative overflow-y-auto md:overflow-hidden h-full">
-        {state === "NOT_STARTED" && <StartScreen />}
-        {state === "IN_PROGRESS" && <MainQuiz />}
-        {state === "COMPLETED" && <ResultScreen />}
+      {state === "NOT_STARTED" && (
+      <nav className="shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-2 shadow-sm">
+        <div className="max-w-5xl mx-auto flex items-center justify-center gap-2">
+          <button
+            onClick={() => setActiveSection("quiz")}
+            className={cn(
+              "min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
+              activeSection === "quiz"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            )}
+          >
+            Làm Quiz
+          </button>
+          <button
+            onClick={() => setActiveSection("create")}
+            className={cn(
+              "min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
+              activeSection === "create"
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+            )}
+          >
+            Tạo Quiz
+          </button>
+        </div>
+      </nav>
+      )}
+
+      <main className="flex-1 flex flex-col relative overflow-y-auto md:overflow-hidden min-h-0">
+        {activeSection === "quiz" && (
+          <>
+            {state === "NOT_STARTED" && <StartScreen />}
+            {state === "IN_PROGRESS" && <MainQuiz />}
+            {state === "COMPLETED" && <ResultScreen />}
+          </>
+        )}
+        {activeSection === "create" && (
+          <div className="flex-1 bg-slate-50 dark:bg-slate-950" />
+        )}
       </main>
       
       <AnimatePresence>
-        {state === "NOT_STARTED" && isSettingsOpen && (
+        {activeSection === "quiz" && state === "NOT_STARTED" && isSettingsOpen && (
           <motion.div 
             key="settings-backdrop"
             initial={{ opacity: 0 }}
@@ -108,7 +145,7 @@ export default function Home() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             style={{ willChange: "opacity" }}
-            className="fixed inset-0 z-[60] bg-slate-900/60 flex items-center justify-center p-4 md:p-8"
+            className="fixed inset-0 z-[60] bg-slate-900/60 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-8"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.96, y: 15 }}
@@ -116,7 +153,7 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.96, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ willChange: "transform, opacity" }}
-              className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[85vh] rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative transition-colors duration-200"
+              className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[100dvh] sm:h-[85vh] rounded-none sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative transition-colors duration-200"
             >
               <Sidebar />
             </motion.div>

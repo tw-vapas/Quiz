@@ -19,7 +19,7 @@ const MARKDOWN_COMPONENTS = {
   h4: ({ children }: any) => <h4 className="text-lg font-semibold text-slate-900 dark:text-slate-100 mt-4 mb-2">{children}</h4>,
   
   // Paragraph styling
-  p: ({ children }: any) => <p className="text-base leading-relaxed text-slate-700 dark:text-slate-300 mb-4">{children}</p>,
+  p: ({ children }: any) => <p className="text-sm sm:text-base leading-relaxed text-slate-700 dark:text-slate-300 mb-4 break-words">{children}</p>,
   
   // List styling
   ul: ({ children }: any) => <ul className="list-disc pl-6 mb-4 space-y-1.5 text-slate-700 dark:text-slate-300">{children}</ul>,
@@ -68,8 +68,8 @@ const MARKDOWN_COMPONENTS = {
 
   // Table styling
   table: ({ children }: any) => (
-    <div className="overflow-x-auto my-6 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-      <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 font-sans text-sm">
+    <div className="max-w-full overflow-x-auto my-6 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+      <table className="min-w-[520px] md:min-w-full divide-y divide-slate-200 dark:divide-slate-800 font-sans text-xs sm:text-sm">
         {children}
       </table>
     </div>
@@ -77,8 +77,8 @@ const MARKDOWN_COMPONENTS = {
   thead: ({ children }: any) => <thead className="bg-slate-100/80 dark:bg-slate-900/80 text-slate-900 dark:text-slate-100 font-semibold">{children}</thead>,
   tbody: ({ children }: any) => <tbody className="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-950/40">{children}</tbody>,
   tr: ({ children }: any) => <tr>{children}</tr>,
-  th: ({ children }: any) => <th className="px-4 py-3 text-left font-bold border-b border-slate-200 dark:border-slate-800">{children}</th>,
-  td: ({ children }: any) => <td className="px-4 py-3 border-b border-slate-100 dark:border-slate-900/50 text-slate-650 dark:text-slate-300">{children}</td>,
+  th: ({ children }: any) => <th className="px-3 md:px-4 py-3 text-left font-bold border-b border-slate-200 dark:border-slate-800">{children}</th>,
+  td: ({ children }: any) => <td className="px-3 md:px-4 py-3 border-b border-slate-100 dark:border-slate-900/50 text-slate-650 dark:text-slate-300">{children}</td>,
 };
 
 export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: MarkdownRendererProps) {
@@ -112,7 +112,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Mark
   const visibleBlocks = useMemo(() => blocks.slice(0, visibleCount), [blocks, visibleCount]);
 
   return (
-    <div className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 space-y-4">
+    <div className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 space-y-4 overflow-x-hidden">
       {visibleBlocks.map((blockContent, idx) => (
         <ReactMarkdown
           key={idx}

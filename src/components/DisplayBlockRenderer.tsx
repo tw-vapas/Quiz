@@ -40,18 +40,18 @@ export const CodeBlock = memo(({ content }: { content: string }) => {
   const highlightedLines = useMemo(() => highlightCode(content), [content]);
 
   return (
-    <div className="my-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/80 font-mono text-xs md:text-sm overflow-hidden transition-colors duration-300 shadow-inner flex flex-col max-h-[320px] md:max-h-[450px]">
+    <div className="my-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/80 font-mono text-xs md:text-sm overflow-hidden transition-colors duration-300 shadow-inner flex flex-col max-h-[320px] md:max-h-[450px] max-w-full">
       <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-700/50 bg-slate-100/50 dark:bg-slate-900/50 text-[10px] md:text-xs font-sans text-slate-400 select-none shrink-0">
         <span>Code Block</span>
         <span className="text-[9px] uppercase tracking-wider bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 rounded font-semibold">Read Only</span>
       </div>
-      <div className="overflow-auto p-4 flex flex-1">
+      <div className="overflow-auto p-3 md:p-4 flex flex-1 max-w-full">
         <div className="text-right text-slate-400 select-none pr-4 border-r border-slate-200 dark:border-slate-700/50 mr-4 font-mono text-xs md:text-sm shrink-0">
           {lines.map((_, i) => (
             <div key={i} className="leading-relaxed h-5">{i + 1}</div>
           ))}
         </div>
-        <pre className="flex-1 text-slate-800 dark:text-slate-200 leading-relaxed font-mono text-xs md:text-sm overflow-visible whitespace-pre" style={{ tabSize: 4 }}>
+        <pre className="flex-1 min-w-0 text-slate-800 dark:text-slate-200 leading-relaxed font-mono text-xs md:text-sm overflow-visible whitespace-pre" style={{ tabSize: 4 }}>
           {highlightedLines.map((line, i) => (
             <div key={i} className="h-5" dangerouslySetInnerHTML={{ __html: line || ' ' }} />
           ))}
@@ -89,7 +89,7 @@ export const DisplayBlockRenderer = memo(function DisplayBlockRenderer({ block }
   }
   // Fallback for other block types
   return (
-    <div className="my-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono text-xs md:text-sm whitespace-pre-wrap leading-relaxed">
+    <div className="my-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-mono text-xs md:text-sm whitespace-pre-wrap break-words leading-relaxed max-w-full overflow-hidden">
       {block.content}
     </div>
   );

@@ -297,7 +297,7 @@ const QuestionCard = memo(function QuestionCard({
         </div>
       )}
 
-      <h2 className="text-xl md:text-2xl leading-relaxed text-slate-900 dark:text-slate-100 font-medium mb-6 md:mb-8 whitespace-pre-wrap">
+      <h2 className="text-lg sm:text-xl md:text-2xl leading-relaxed text-slate-900 dark:text-slate-100 font-medium mb-5 md:mb-8 whitespace-pre-wrap break-words">
         {question.text}
       </h2>
 
@@ -346,7 +346,7 @@ const QuestionCard = memo(function QuestionCard({
               onClick={() => handleSelectOption(option.id)}
               disabled={phase !== 'answering'}
               className={cn(
-                "w-full text-left p-3 md:p-4 rounded-xl md:rounded-2xl border-2 transition-all duration-200 flex items-start gap-3 md:gap-4",
+                "w-full min-h-11 text-left p-3 md:p-4 rounded-xl md:rounded-2xl border-2 transition-all duration-200 flex items-start gap-3 md:gap-4",
                 stateClass,
                 (phase !== 'answering') ? "cursor-default" : "cursor-pointer active:scale-[0.99]"
               )}
@@ -415,11 +415,11 @@ const QuestionCard = memo(function QuestionCard({
         if (!showButton) return null;
 
         return (
-          <div className="mt-6 md:mt-8 pb-8 md:pb-12 flex justify-end">
+          <div className="mt-6 md:mt-8 pb-8 md:pb-12 flex justify-stretch sm:justify-end">
             <button
               onClick={handleEnter}
               disabled={isButtonDisabled}
-              className="bg-slate-900 dark:bg-indigo-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-medium transition-all hover:bg-slate-800 dark:hover:bg-indigo-750 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg flex items-center gap-2 text-sm md:text-base cursor-pointer"
+              className="w-full sm:w-auto min-h-11 bg-slate-900 dark:bg-indigo-600 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-medium transition-all hover:bg-slate-800 dark:hover:bg-indigo-750 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-sm md:text-base cursor-pointer"
             >
               {buttonText}
               <span className="text-slate-400 dark:text-indigo-200 text-xs md:text-sm font-normal ml-1 md:ml-2">↵ Enter</span>
@@ -473,8 +473,8 @@ const MainQuiz = memo(function MainQuiz() {
         />
       </div>
 
-      <header className="px-4 md:px-8 py-3 md:py-4 flex justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm sticky top-1 z-10 transition-colors duration-300">
-        <div className="flex items-center gap-2 md:gap-6">
+      <header className="px-3 sm:px-4 md:px-8 py-2 md:py-4 flex flex-wrap gap-2 justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm sticky top-1 z-10 transition-colors duration-300">
+        <div className="flex items-center gap-2 md:gap-6 min-w-0">
           <div className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-450 uppercase tracking-widest flex items-center">
             <span className="hidden sm:inline mr-1">Câu hỏi</span>
             <span className="sm:hidden mr-1">Câu</span>
@@ -486,24 +486,24 @@ const MainQuiz = memo(function MainQuiz() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-3">
+        <div className="flex items-center gap-1.5 md:gap-3 shrink-0">
           <button
             onClick={() => setShowSubmitConfirm(true)}
-            className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 rounded-lg font-medium transition-colors text-xs md:text-sm"
+            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 rounded-lg font-medium transition-colors text-xs md:text-sm"
           >
             <CheckSquare className="w-4 h-4 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Nộp bài</span>
           </button>
           <button
             onClick={pauseQuiz}
-            className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors text-xs md:text-sm"
+            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors text-xs md:text-sm"
           >
             <Pause className="w-4 h-4 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Tạm dừng</span>
           </button>
           <button
             onClick={() => setShowExitConfirm(true)}
-            className="flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors text-xs md:text-sm"
+            className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors text-xs md:text-sm"
           >
             <LogOut className="w-4 h-4 md:w-4 md:h-4" />
             <span className="hidden sm:inline">Thoát</span>
@@ -513,7 +513,7 @@ const MainQuiz = memo(function MainQuiz() {
 
       {isPaused && (
         <div className="absolute inset-0 z-50 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-800 p-5 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700">
             <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <Pause className="w-8 h-8" />
             </div>
@@ -542,7 +542,7 @@ const MainQuiz = memo(function MainQuiz() {
 
       {showExitConfirm && (
         <div className="absolute inset-0 z-[60] bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-800 p-5 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700">
             <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <LogOut className="w-8 h-8" />
             </div>
@@ -572,7 +572,7 @@ const MainQuiz = memo(function MainQuiz() {
 
       {showSubmitConfirm && (
         <div className="absolute inset-0 z-[60] bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-800 p-5 md:p-8 rounded-3xl shadow-2xl max-w-sm w-full text-center border border-slate-100 dark:border-slate-700">
             <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckSquare className="w-8 h-8" />
             </div>
@@ -600,8 +600,8 @@ const MainQuiz = memo(function MainQuiz() {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto px-4 md:px-8 pt-6 pb-20 md:pt-10 md:pb-32 flex justify-center">
-        <div className="max-w-3xl w-full pb-10 md:pb-16">
+      <div className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-8 pt-5 pb-12 md:pt-10 md:pb-32 flex justify-center overflow-x-hidden">
+        <div className="max-w-3xl w-full pb-6 md:pb-16">
           <AnimatePresence mode="wait">
             <QuestionCard
               key={question.id}

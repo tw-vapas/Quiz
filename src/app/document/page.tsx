@@ -140,7 +140,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
   }, [sources, searchQuery]);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-6 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-4 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
         <div>
           <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
@@ -159,13 +159,13 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
               placeholder="Tìm kiếm tài liệu..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 text-sm border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-205 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full min-h-11 pl-9 pr-10 py-2 text-sm border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-205 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery("")} 
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-450 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
+                className="absolute right-1 top-1/2 -translate-y-1/2 min-w-11 min-h-11 flex items-center justify-center text-slate-450 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -180,7 +180,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
             Không tìm thấy tài liệu phù hợp.
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 pb-2">
             {filteredSources.map((src) => {
               const hasDocument = !!src.document && src.document.trim() !== "";
               const displayName = getSourceDisplayName(src);
@@ -189,7 +189,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
                 <button
                   key={src.id}
                   onClick={() => onSelect(src.id)}
-                  className="w-full text-left p-5 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/10 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-900 transition-all duration-200 hover:shadow-md flex items-start gap-4 group cursor-pointer"
+                  className="w-full min-h-11 text-left p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/10 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-900 transition-all duration-200 hover:shadow-md flex items-start gap-3 md:gap-4 group cursor-pointer"
                 >
                   <div className={cn(
                     "p-3 rounded-xl shrink-0 transition-colors",
@@ -263,7 +263,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 md:p-6"
+      className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-6"
       onClick={onClose}
     >
       <motion.div
@@ -271,7 +271,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
         transition={{ type: "spring", duration: 0.3 }}
-        className="w-full max-w-4xl max-h-[85vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl relative p-6 md:p-10 flex flex-col overflow-hidden"
+        className="w-full max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none md:rounded-3xl shadow-2xl relative p-4 md:p-10 flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
@@ -293,13 +293,13 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
                   placeholder="Tìm kiếm tài liệu..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-sm border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full min-h-11 pl-9 pr-10 py-2 text-sm border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 {searchQuery && (
                   <button 
                     onClick={() => setSearchQuery("")} 
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-450 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 min-w-11 min-h-11 flex items-center justify-center text-slate-450 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -309,7 +309,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
             
             <button
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-755 dark:text-slate-450 dark:hover:text-slate-250 transition-all cursor-pointer border border-slate-200 dark:border-slate-800 shrink-0"
+              className="min-w-11 min-h-11 p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-755 dark:text-slate-450 dark:hover:text-slate-250 transition-all cursor-pointer border border-slate-200 dark:border-slate-800 shrink-0"
               title="Đóng hộp thoại"
             >
               <X className="w-5 h-5" />
@@ -323,7 +323,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
               Không tìm thấy tài liệu phù hợp.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 pb-2">
               {filteredSources.map((src) => {
                 const hasDocument = !!src.document && src.document.trim() !== "";
                 const displayName = getSourceDisplayName(src);
@@ -332,7 +332,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
                   <button
                     key={src.id}
                     onClick={() => onSelect(src.id)}
-                    className="w-full text-left p-5 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/10 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-900 transition-all duration-200 hover:shadow-md flex items-start gap-4 group cursor-pointer"
+                    className="w-full min-h-11 text-left p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/10 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-900 transition-all duration-200 hover:shadow-md flex items-start gap-3 md:gap-4 group cursor-pointer"
                   >
                     <div className={cn(
                       "p-3 rounded-xl shrink-0 transition-colors",
@@ -507,7 +507,7 @@ export default function DocumentViewerPage() {
       );
     }
     return (
-      <div className="bg-amber-50/70 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900/50 rounded-2xl p-5 md:p-6 shadow-sm flex items-start gap-4 transition-colors">
+      <div className="bg-amber-50/70 dark:bg-amber-950/20 border-2 border-amber-200 dark:border-amber-900/50 rounded-2xl p-4 md:p-6 shadow-sm flex items-start gap-3 md:gap-4 transition-colors overflow-hidden">
         <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 shrink-0">
           <Info className="w-5 h-5" />
         </div>
@@ -527,7 +527,7 @@ export default function DocumentViewerPage() {
       return <EmptyDocumentState />;
     }
     return (
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 md:p-10 shadow-sm transition-colors duration-200">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 md:p-10 shadow-sm transition-colors duration-200 overflow-hidden">
         <h2 className="text-sm font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-6 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
           <FileText className="w-4 h-4" />
           Nội dung tài liệu học tập
@@ -613,14 +613,14 @@ export default function DocumentViewerPage() {
         );
       case "EMPTY_CONTENT":
         return (
-          <div className="space-y-8 w-full px-4 md:px-8 py-8 md:py-12">
+          <div className="space-y-5 md:space-y-8 w-full px-0 md:px-8 py-5 md:py-12">
             {renderMobileHeaderInfo()}
             <EmptyDocumentState />
           </div>
         );
       case "HAS_CONTENT":
         return (
-          <div className="space-y-8 w-full px-4 md:px-8 py-8 md:py-12">
+          <div className="space-y-5 md:space-y-8 w-full px-0 md:px-8 py-5 md:py-12">
             {renderMobileHeaderInfo()}
             {memoizedNote}
             {memoizedDocument}
@@ -641,7 +641,7 @@ export default function DocumentViewerPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-250 transition-colors"
+            className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-250 transition-colors flex items-center justify-center"
             title="Quay lại trang chủ"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -671,7 +671,7 @@ export default function DocumentViewerPage() {
           <button
             onClick={() => setUiState("PICKER_MODAL")}
             className={cn(
-              "p-2.5 rounded-xl border transition-all flex items-center gap-2 hover:shadow-sm cursor-pointer",
+              "min-w-11 min-h-11 p-2.5 rounded-xl border transition-all flex items-center justify-center gap-2 hover:shadow-sm cursor-pointer",
               uiState === "PICKER_MODAL"
                 ? "border-indigo-300 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 font-semibold"
                 : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
@@ -689,7 +689,7 @@ export default function DocumentViewerPage() {
         
         {/* Center Content Area */}
         <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-          <div className="max-w-4xl mx-auto px-4 md:px-8 pb-16 md:pb-24 w-full">
+          <div className="max-w-4xl mx-auto px-4 md:px-8 pb-5 md:pb-4 w-full overflow-x-hidden">
             {renderWorkspaceContent()}
           </div>
         </main>
