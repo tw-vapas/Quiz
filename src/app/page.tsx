@@ -6,8 +6,10 @@ import Sidebar from "@/components/Sidebar";
 import StartScreen from "@/components/StartScreen";
 import MainQuiz from "@/components/MainQuiz";
 import ResultScreen from "@/components/ResultScreen";
+import CreateQuizSection from "@/components/CreateQuizSection";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { Sun, Moon } from "lucide-react";
 
 export default function Home() {
   const state = useQuizStore((state) => state.state);
@@ -102,28 +104,40 @@ export default function Home() {
     )}>
       {state === "NOT_STARTED" && (
       <nav className="shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 md:px-8 py-2 shadow-sm">
-        <div className="max-w-5xl mx-auto flex items-center justify-center gap-2">
+        <div className="max-w-5xl mx-auto flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2 flex-1">
+            <button
+              onClick={() => setActiveSection("quiz")}
+              className={cn(
+                "min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
+                activeSection === "quiz"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              )}
+            >
+              Làm Quiz
+            </button>
+            <button
+              onClick={() => setActiveSection("create")}
+              className={cn(
+                "min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
+                activeSection === "create"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+              )}
+            >
+              Tạo Quiz
+            </button>
+          </div>
           <button
-            onClick={() => setActiveSection("quiz")}
-            className={cn(
-              "min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
-              activeSection === "quiz"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            )}
+            onClick={() => {
+              const newTheme = theme === 'dark' ? 'light' : 'dark';
+              useQuizStore.getState().setTheme(newTheme);
+            }}
+            className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer shrink-0"
+            title={theme === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
           >
-            Làm Quiz
-          </button>
-          <button
-            onClick={() => setActiveSection("create")}
-            className={cn(
-              "min-h-11 px-4 rounded-xl text-sm font-bold transition-colors",
-              activeSection === "create"
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            )}
-          >
-            Tạo Quiz
+            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
         </div>
       </nav>
@@ -138,7 +152,7 @@ export default function Home() {
           </>
         )}
         {activeSection === "create" && (
-          <div className="flex-1 bg-slate-50 dark:bg-slate-950" />
+          <CreateQuizSection />
         )}
       </main>
       

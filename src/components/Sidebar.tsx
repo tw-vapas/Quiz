@@ -6,7 +6,7 @@ import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
-import { Plus, Trash2, FileText, FileWarning, Sun, Moon, X, GripVertical, BookOpen } from "lucide-react";
+import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
 import { cn, useRenderProfiler } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
@@ -563,8 +563,6 @@ SidebarList.displayName = "SidebarList";
 export default function Sidebar() {
   useRenderProfiler("SidebarContainer");
 
-  const theme = useQuizStore(state => state.theme);
-  const setTheme = useQuizStore(state => state.setTheme);
   const setSettingsOpen = useQuizStore(state => state.setSettingsOpen);
 
   useLayoutEffect(() => {
@@ -694,12 +692,6 @@ export default function Sidebar() {
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Cài đặt</h2>
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} 
-              className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
-            >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
             <button 
               onClick={() => setSettingsOpen(false)} 
               className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
