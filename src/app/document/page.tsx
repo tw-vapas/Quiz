@@ -18,7 +18,7 @@ import {
   Search
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 
 function DocumentSkeleton() {
   return (
@@ -249,10 +249,18 @@ interface DocumentPickerModalProps {
   onSelect: (id: string) => void;
   formatDate: (timestamp?: any) => string;
   onClose: () => void;
+  isOpen: boolean;
 }
 
-function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: DocumentPickerModalProps) {
+function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }: DocumentPickerModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Reset search when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSearchQuery("");
+    }
+  }, [isOpen]);
 
   const filteredSources = useMemo(() => {
     return getFilteredAndSortedSources(sources, searchQuery);
@@ -260,17 +268,12 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-6"
-      onClick={onClose}
+      initial={false}
+      animate={isOpen ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.15 }}
+      className="absolute inset-0 flex items-end md:items-center justify-center p-0 md:p-6 pointer-events-auto"
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        transition={{ type: "spring", duration: 0.3 }}
+      <div
         className="w-full max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none md:rounded-3xl shadow-2xl relative p-4 md:p-10 flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
@@ -383,7 +386,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose }: Documen
             </div>
           )}
         </div>
-      </motion.div>
+      </div>
     </motion.div>
   );
 }
@@ -695,22 +698,36 @@ export default function DocumentViewerPage() {
         </main>
 
         {/* Modal Overlay */}
-        <AnimatePresence>
-          {uiState === "PICKER_MODAL" && (
-            <DocumentPickerModal
-              sources={sources}
-              onSelect={handleSourceSelect}
-              formatDate={formatDate}
-              onClose={() => {
-                if (selectedDocumentSourceId) {
-                  setUiState("VIEWER");
-                } else {
-                  setUiState("PICKER_ENTRY");
-                }
-              }}
-            />
+        <div
+          className={cn(
+            "fixed inset-0 z-50 transition-opacity duration-200",
+            uiState === "PICKER_MODAL" ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           )}
-        </AnimatePresence>
+        >
+          <div
+            className="absolute inset-0 bg-slate-900/60 dark:bg-slate-950/80"
+            onClick={() => {
+              if (selectedDocumentSourceId) {
+                setUiState("VIEWER");
+              } else {
+                setUiState("PICKER_ENTRY");
+              }
+            }}
+          />
+          <DocumentPickerModal
+            sources={sources}
+            onSelect={handleSourceSelect}
+            formatDate={formatDate}
+            isOpen={uiState === "PICKER_MODAL"}
+            onClose={() => {
+              if (selectedDocumentSourceId) {
+                setUiState("VIEWER");
+              } else {
+                setUiState("PICKER_ENTRY");
+              }
+            }}
+          />
+        </div>
 
       </div>
     </div>
