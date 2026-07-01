@@ -85,6 +85,7 @@ export default function FileManager() {
 
   // Sync effect simulator state
   const [syncingFileId, setSyncingFileId] = useState<string | null>(null);
+  const [syncedFileId, setSyncedFileId] = useState<string | null>(null);
 
   // --- ACTIONS ---
   const toggleQuizExpand = (id: string) => {
@@ -182,7 +183,10 @@ export default function FileManager() {
     setSyncingFileId(fileId);
     setTimeout(() => {
       setSyncingFileId(null);
-      alert("Đồng bộ câu hỏi trắc nghiệm từ Support File thành công!");
+      setSyncedFileId(fileId);
+      setTimeout(() => {
+        setSyncedFileId(prev => prev === fileId ? null : prev);
+      }, 2000);
     }, 1000);
   };
 
@@ -281,11 +285,12 @@ export default function FileManager() {
                                 onClick={() => simulateSync(sf.id)}
                                 className={cn(
                                   "p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-450 cursor-pointer transition-all",
-                                  syncingFileId === sf.id && "animate-spin text-indigo-600 dark:text-indigo-400"
+                                  syncingFileId === sf.id && "animate-spin text-indigo-600 dark:text-indigo-400",
+                                  syncedFileId === sf.id && "text-green-600 dark:text-green-400"
                                 )}
-                                title="Đồng bộ lại câu hỏi"
+                                title={syncedFileId === sf.id ? "Đã đồng bộ" : "Đồng bộ lại câu hỏi"}
                               >
-                                <RefreshCw className="w-3 h-3" />
+                                {syncedFileId === sf.id ? <Check className="w-3 h-3" /> : <RefreshCw className="w-3 h-3" />}
                               </button>
                               {/* Unlink Button */}
                               <button 
