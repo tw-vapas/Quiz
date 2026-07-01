@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useQuizStore } from "@/store/quizStore";
+import { getSourceDisplayName } from "@/lib/sourceHelper";
 import { 
   FolderOpen, 
   FileText, 
@@ -29,6 +31,7 @@ interface QuizFileItem {
 }
 
 export default function FileManager() {
+  const storeSources = useQuizStore(state => state.sources);
   // --- MOCK DATA ---
   const [quizFiles, setQuizFiles] = useState<QuizFileItem[]>([
     {
@@ -72,7 +75,7 @@ export default function FileManager() {
   const [newFileType, setNewFileType] = useState<"QUIZ" | "SUPPORT">("QUIZ");
   const [newFileDataOption, setNewFileDataOption] = useState<"BLANK" | "IMPORT">("BLANK");
   const [newFileImportSource, setNewFileImportSource] = useState<"SOURCE" | "FILE">("SOURCE");
-  const [selectedSource, setSelectedSource] = useState(mockAvailableSources[0]);
+  const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [newFileNameInput, setNewFileNameInput] = useState("");
 
   // Modal "+ Add Supported Files" States
@@ -441,12 +444,12 @@ export default function FileManager() {
                         : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50"
                     )}
                   >
-                    Nhập vào dữ liệu có sẵn
+                    Dữ liệu có sẵn
                   </button>
                 </div>
               </div>
 
-              {/* Sub-options khi chọn "Nhập vào dữ liệu có sẵn" */}
+              {/* Sub-options khi chọn "Dữ liệu có sẵn" */}
               {newFileDataOption === "IMPORT" && (
                 <div className="space-y-1.5 pl-2 border-l-2 border-indigo-200 dark:border-indigo-900">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
@@ -492,21 +495,30 @@ export default function FileManager() {
                     Danh sách nguồn khả dụng
                   </label>
                   <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
-                    {mockAvailableSources.map((src, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedSource(src)}
-                        className={cn(
-                          "w-full p-2 rounded-lg border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between",
-                          selectedSource === src
-                            ? "border-indigo-500/50 bg-indigo-500/5 text-indigo-750 dark:text-indigo-400"
-                            : "border-slate-200 dark:border-slate-850 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-350"
-                        )}
-                      >
-                        <span className="truncate">{src}</span>
-                        {selectedSource === src && <Check className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />}
-                      </button>
-                    ))}
+                    {storeSources.length > 0 ? (
+                      storeSources.map((src) => {
+                        const displayName = getSourceDisplayName(src);
+                        return (
+                          <button
+                            key={src.id}
+                            onClick={() => setSelectedSourceId(src.id)}
+                            className={cn(
+                              "w-full p-2 rounded-lg border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between",
+                              selectedSourceId === src.id
+                                ? "border-indigo-500/50 bg-indigo-500/5 text-indigo-750 dark:text-indigo-400"
+                                : "border-slate-200 dark:border-slate-850 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-350"
+                            )}
+                          >
+                            <span className="truncate">{displayName}</span>
+                            {selectedSourceId === src.id && <Check className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-4 text-xs text-slate-400">
+                        Chưa có nguồn dữ liệu nào. Vui lòng nhập file từ phần cài đặt.
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
