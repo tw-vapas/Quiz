@@ -139,13 +139,13 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
   };
 
   return (
-    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
+    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
       {/* Header index and Delete option */}
-      <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+      <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
         <span className="text-xs font-black text-indigo-650 dark:text-indigo-400">CÂU HỎI {index + 1}</span>
         <button 
           onClick={onDelete}
-          className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 hover:text-red-550 transition-colors"
+          className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors"
           title="Xóa câu hỏi"
         >
           <Trash2 className="w-3.5 h-3.5" />
@@ -155,11 +155,11 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
       {/* Question Text Area */}
       {visibleFields.question && (
         <div className="space-y-1.5">
-          <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Question</h5>
+          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Question</h5>
           <textarea
             value={question.text}
             onChange={(e) => onUpdate({ text: e.target.value })}
-            className="w-full min-h-[90px] p-3 border border-slate-200 dark:border-slate-850 rounded-xl bg-slate-50/30 dark:bg-slate-950/5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
+            className="w-full min-h-[90px] p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/30 dark:bg-[#22325a] text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
             placeholder="Nhập nội dung câu hỏi..."
           />
         </div>
@@ -168,8 +168,8 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
       {/* Answers Options Area */}
       {visibleFields.answer && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1">
-            <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Answers</h5>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
+            <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Answers</h5>
             <button
               onClick={handleAddNewAnswer}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-[10px] text-indigo-750 dark:text-indigo-400 font-extrabold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all"
@@ -185,10 +185,10 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
                 <div 
                   key={ans.id}
                   className={cn(
-                    "flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-slate-900",
+                    "flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-[#22325a]",
                     isCorrect 
-                      ? "border-green-500/35 bg-green-500/5 dark:bg-green-950/10" 
-                      : "border-slate-200 dark:border-slate-800"
+                      ? "border-green-500/35 bg-green-500/5 dark:bg-green-950/30" 
+                      : "border-slate-200 dark:border-slate-600"
                   )}
                 >
                   {/* Correct Toggle Indicator */}
@@ -198,13 +198,13 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
                       "w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer",
                       isCorrect 
                         ? "bg-green-500 border-green-500 text-white" 
-                        : "border-slate-300 dark:border-slate-700 text-transparent hover:border-green-500/55"
+                        : "border-slate-300 dark:border-slate-500 text-transparent hover:border-green-500/55"
                     )}
                   >
                     <Check className="w-3 h-3" />
                   </button>
 
-                  <span className="text-xs font-black text-slate-400 shrink-0">
+                  <span className="text-xs font-black text-slate-400 dark:text-slate-300 shrink-0">
                     {String.fromCharCode(65 + idx)}
                   </span>
 
@@ -213,12 +213,12 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
                     value={ans.text}
                     onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
                     placeholder={`Đáp án ${String.fromCharCode(65 + idx)}...`}
-                    className="flex-1 bg-transparent text-xs font-bold text-slate-850 dark:text-slate-200 focus:outline-none"
+                    className="flex-1 bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none"
                   />
 
                   <button
                     onClick={() => handleRemoveAnswer(ans.id)}
-                    className="p-1 rounded-md text-slate-400 hover:text-red-500 transition-colors"
+                    className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors"
                     title="Xóa đáp án"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -234,26 +234,26 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {visibleFields.type && (
           <div className="space-y-1.5 relative">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Question Type</span>
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Question Type</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 flex items-center justify-between hover:border-slate-350"
+              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350"
             >
               <span>{typeLabel}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300" />
             </button>
 
             {isTypeDropdownOpen && (
-              <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-1.5 space-y-1">
+              <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-[#1e2d5a] border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg p-1.5 space-y-1">
                 <button
                   onClick={() => { handleTypeChange("single_choice"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50")}
+                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
                   Single Choice
                 </button>
                 <button
                   onClick={() => { handleTypeChange("multiple_choice"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50")}
+                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
                   Multiple Choice
                 </button>
@@ -264,12 +264,12 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
 
         {visibleFields.tags && (
           <div className="space-y-1.5">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Tags (comma separated)</span>
+            <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Tags (comma separated)</span>
             <input
               type="text"
               value={tagsInput}
               onChange={(e) => handleTagsChange(e.target.value)}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="tag1, tag2..."
             />
           </div>
@@ -278,12 +278,12 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
 
       {/* Display Blocks list */}
       {visibleFields.displayBlock && (question.display_blocks || []).length > 0 && (
-        <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-slate-800">
+        <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-white/10">
           {(question.display_blocks || []).map((db, blockIdx) => (
-            <div key={blockIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/10 space-y-3 relative group/block">
+            <div key={blockIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-3 relative group/block">
               <button
                 onClick={() => handleRemoveDisplayBlock(blockIdx)}
-                className="absolute top-2 right-2 p-1 rounded-md text-slate-400 hover:text-red-500"
+                className="absolute top-2 right-2 p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500"
                 title="Xóa block"
               >
                 <X className="w-3.5 h-3.5" />
@@ -291,11 +291,11 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
 
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="space-y-1.5 shrink-0 w-32">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Block Type</span>
+                  <span className="text-[9px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Block Type</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
-                    className="w-full px-2 py-1 text-[10px] font-bold border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-slate-800"
+                    className="w-full px-2 py-1 text-[10px] font-bold border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100"
                   >
                     <option value="code">Code</option>
                     <option value="image">Image</option>
@@ -303,12 +303,12 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
                 </div>
 
                 <div className="flex-1 space-y-1.5">
-                  <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block">Content</span>
+                  <span className="text-[9px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Content</span>
                   <textarea
                     placeholder={db.type === "code" ? "Khai báo hàm / Code snippet..." : "Đường dẫn ảnh/URL..."}
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value })}
-                    className="w-full px-2.5 py-1.5 text-[10px] font-mono border border-slate-200 dark:border-slate-750 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-350 focus:outline-none resize-y min-h-[40px]"
+                    className="w-full px-2.5 py-1.5 text-[10px] font-mono border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none resize-y min-h-[40px]"
                   />
                 </div>
               </div>
@@ -319,11 +319,11 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
 
       {/* Explanation Area */}
       {visibleFields.explanation && question.explanation !== undefined && question.explanation !== null && (
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/20 dark:bg-slate-950/10 space-y-1.5 relative">
-          <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">Explanation</label>
+        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
+          <label className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Explanation</label>
           <button
             onClick={handleRemoveExplanation}
-            className="absolute top-2.5 right-2.5 p-1 rounded-md text-slate-400 hover:text-red-500"
+            className="absolute top-2.5 right-2.5 p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500"
             title="Xóa giải thích"
           >
             <X className="w-3.5 h-3.5" />
@@ -331,29 +331,29 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
           <textarea
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value)}
-            className="w-full min-h-[70px] p-2.5 border border-slate-200 dark:border-slate-750 rounded-lg bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-300 focus:outline-none leading-relaxed resize-y"
+            className="w-full min-h-[70px] p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-semibold text-slate-700 dark:text-slate-100 focus:outline-none leading-relaxed resize-y"
             placeholder="Nhập nội dung giải thích..."
           />
         </div>
       )}
 
       {/* Dynamic Blocks actions */}
-      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+      <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100 dark:border-white/10">
         <button
           onClick={handleAddDisplayBlock}
-          className="py-2 border border-dashed border-slate-250 dark:border-slate-800 hover:border-indigo-500/50 rounded-xl font-bold text-[10px] text-slate-650 hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all"
+          className="py-2 border border-dashed border-slate-250 dark:border-slate-600 hover:border-indigo-500/50 rounded-xl font-bold text-[10px] text-slate-650 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all"
         >
           + Add Display Block
         </button>
         {question.explanation === null || question.explanation === undefined ? (
           <button
             onClick={handleAddExplanation}
-            className="py-2 border border-dashed border-slate-250 dark:border-slate-800 hover:border-indigo-500/50 rounded-xl font-bold text-[10px] text-slate-650 hover:bg-slate-50/50 dark:hover:bg-slate-950/20 transition-all"
+            className="py-2 border border-dashed border-slate-250 dark:border-slate-600 hover:border-indigo-500/50 rounded-xl font-bold text-[10px] text-slate-650 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all"
           >
             + Add Explanation
           </button>
         ) : (
-          <div className="flex items-center justify-center border border-slate-200 dark:border-slate-850 bg-slate-50 dark:bg-slate-950 text-slate-400 text-[10px] font-bold rounded-xl select-none">
+          <div className="flex items-center justify-center border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-[#1e2d5a] text-slate-400 dark:text-slate-300 text-[10px] font-bold rounded-xl select-none">
             Giải thích đã tồn tại
           </div>
         )}
