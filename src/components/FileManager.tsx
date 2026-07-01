@@ -70,7 +70,8 @@ export default function FileManager() {
   // Modal "+ Create File" States
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newFileType, setNewFileType] = useState<"QUIZ" | "SUPPORT">("QUIZ");
-  const [newFileDataMode, setNewFileDataMode] = useState<"SOURCE" | "BLANK" | "IMPORT">("SOURCE");
+  const [newFileDataOption, setNewFileDataOption] = useState<"BLANK" | "IMPORT">("BLANK");
+  const [newFileImportSource, setNewFileImportSource] = useState<"SOURCE" | "FILE">("SOURCE");
   const [selectedSource, setSelectedSource] = useState(mockAvailableSources[0]);
   const [newFileNameInput, setNewFileNameInput] = useState("");
 
@@ -414,50 +415,78 @@ export default function FileManager() {
                 </div>
               </div>
 
-              {/* File Data Mode Select */}
+              {/* File Data Option Select */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
                   File Data:
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => setNewFileDataMode("SOURCE")}
+                    onClick={() => setNewFileDataOption("BLANK")}
                     className={cn(
-                      "p-2.5 rounded-xl border font-bold text-[10px] cursor-pointer transition-all",
-                      newFileDataMode === "SOURCE"
+                      "p-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all",
+                      newFileDataOption === "BLANK"
                         ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
                         : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50"
                     )}
                   >
-                    Chọn nguồn
+                    Dữ liệu trống
                   </button>
                   <button
-                    onClick={() => setNewFileDataMode("BLANK")}
+                    onClick={() => setNewFileDataOption("IMPORT")}
                     className={cn(
-                      "p-2.5 rounded-xl border font-bold text-[10px] cursor-pointer transition-all",
-                      newFileDataMode === "BLANK"
+                      "p-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all",
+                      newFileDataOption === "IMPORT"
                         ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
                         : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50"
                     )}
                   >
-                    Tạo trống
-                  </button>
-                  <button
-                    onClick={() => setNewFileDataMode("IMPORT")}
-                    className={cn(
-                      "p-2.5 rounded-xl border font-bold text-[10px] cursor-pointer transition-all",
-                      newFileDataMode === "IMPORT"
-                        ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50"
-                    )}
-                  >
-                    Import file
+                    Nhập vào dữ liệu có sẵn
                   </button>
                 </div>
               </div>
 
-              {/* Data Selection Area depending on selected Data Mode */}
-              {newFileDataMode === "SOURCE" && (
+              {/* Sub-options khi chọn "Nhập vào dữ liệu có sẵn" */}
+              {newFileDataOption === "IMPORT" && (
+                <div className="space-y-1.5 pl-2 border-l-2 border-indigo-200 dark:border-indigo-900">
+                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    Nguồn dữ liệu:
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setNewFileImportSource("SOURCE")}
+                      className={cn(
+                        "p-2 rounded-xl border font-bold text-[10px] cursor-pointer transition-all",
+                        newFileImportSource === "SOURCE"
+                          ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
+                          : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50"
+                      )}
+                    >
+                      Chọn từ nguồn đã nhập
+                    </button>
+                    <button
+                      onClick={() => setNewFileImportSource("FILE")}
+                      className={cn(
+                        "p-2 rounded-xl border font-bold text-[10px] cursor-pointer transition-all",
+                        newFileImportSource === "FILE"
+                          ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
+                          : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50"
+                      )}
+                    >
+                      Nhập file từ máy
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Data Selection Area depending on selected options */}
+              {newFileDataOption === "BLANK" && (
+                <div className="p-4 rounded-xl border border-slate-150 dark:border-slate-800 bg-slate-50/20 text-center text-xs text-slate-500 dark:text-slate-400 leading-relaxed select-none">
+                  Tạo tệp rỗng không chứa câu hỏi. Bạn có thể thêm câu hỏi trực tiếp bằng trình soạn thảo ở cột giữa sau khi tệp được khởi tạo.
+                </div>
+              )}
+
+              {newFileDataOption === "IMPORT" && newFileImportSource === "SOURCE" && (
                 <div className="space-y-1.5 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">
                     Danh sách nguồn khả dụng
@@ -482,13 +511,7 @@ export default function FileManager() {
                 </div>
               )}
 
-              {newFileDataMode === "BLANK" && (
-                <div className="p-4 rounded-xl border border-slate-150 dark:border-slate-800 bg-slate-50/20 text-center text-xs text-slate-500 dark:text-slate-400 leading-relaxed select-none">
-                  Tạo tệp rỗng không chứa câu hỏi. Bạn có thể thêm câu hỏi trực tiếp bằng trình soạn thảo ở cột giữa sau khi tệp được khởi tạo.
-                </div>
-              )}
-
-              {newFileDataMode === "IMPORT" && (
+              {newFileDataOption === "IMPORT" && newFileImportSource === "FILE" && (
                 <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500/55 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-55/20 hover:bg-indigo-500/5 group/drop flex flex-col items-center">
                   <Upload className="w-8 h-8 text-slate-400 group-hover/drop:text-indigo-600 transition-colors mb-2" />
                   <span className="text-xs font-extrabold text-slate-750 dark:text-slate-300">
