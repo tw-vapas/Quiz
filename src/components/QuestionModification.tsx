@@ -560,7 +560,7 @@ export default function QuestionModification({
   const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("List");
 
   // Filter & Sort Settings state
-  const [filterAndSortEnabled, setFilterAndSortEnabled] = useState(true);
+  const [filterAndSortEnabled, setFilterAndSortEnabled] = useState(false);
 
   // Extract tags from active file questions
   const allUniqueTags = useMemo(() => {
