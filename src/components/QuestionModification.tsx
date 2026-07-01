@@ -5,7 +5,7 @@ import { useQuizStore, CreatorFile } from "@/store/quizStore";
 import { Question, Option, DisplayBlock } from "../lib/parser";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { parseQuizJson } from "@/lib/parser";
-import { cn } from "@/lib/utils";
+import { cn, getTagColor } from "@/lib/utils";
 import Prism from "prismjs";
 import "prismjs/components/prism-json";
 import { 
@@ -43,9 +43,10 @@ interface QuestionCardProps {
 
 function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: QuestionCardProps) {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-  const [tagsInput, setTagsInput] = useState(question.tags?.join(", ") || "");
+  const [tagsInput, setTagsInput] = useState(() => question?.tags?.join(", ") || "");
 
   useEffect(() => {
+    if (!question) return;
     const currentParsedTags = tagsInput.split(",").map(t => t.trim()).filter(Boolean);
     const incomingTags = question.tags || [];
     const isSame = currentParsedTags.length === incomingTags.length && 
@@ -53,7 +54,9 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
     if (!isSame) {
       setTagsInput(incomingTags.join(", "));
     }
-  }, [question.tags]);
+  }, [question?.tags]);
+
+  if (!question) return null;
 
   const typeLabel = question.type === "single_choice" ? "Single Choice" : "Multiple Choice";
 
@@ -110,8 +113,17 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
 
   const handleTagsChange = (val: string) => {
     setTagsInput(val);
-    const tags = val.split(",").map(t => t.trim()).filter(t => t.length > 0);
-    onUpdate({ tags });
+  };
+
+  const handleSaveTags = () => {
+    if (!question) return;
+    const tags = tagsInput.split(",").map(t => t.trim()).filter(Boolean);
+    const currentTags = question.tags || [];
+    const isSame = tags.length === currentTags.length && 
+                   tags.every((t, i) => t === currentTags[i]);
+    if (!isSame) {
+      onUpdate({ tags });
+    }
   };
 
   const handleRemoveDisplayBlock = (blockIdx: number) => {
@@ -269,6 +281,13 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
               type="text"
               value={tagsInput}
               onChange={(e) => handleTagsChange(e.target.value)}
+              onBlur={handleSaveTags}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSaveTags();
+                  e.currentTarget.blur();
+                }
+              }}
               className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="tag1, tag2..."
             />
@@ -492,6 +511,7 @@ export default function QuestionModification({
   const storeSources = useQuizStore(state => state.sources);
 
   const activeFile = useMemo(() => creatorFiles.find(f => f.id === activeFileId), [creatorFiles, activeFileId]);
+  const lastFileIdRef = React.useRef<string | null>(null);
 
   // --- TABS CONTROL ---
   const [activeTab, setActiveTab] = useState<"DOCUMENT" | "QUESTION_VIEW" | "CODE_VIEW">("QUESTION_VIEW");
@@ -553,19 +573,41 @@ export default function QuestionModification({
   }, [activeFile]);
 
   useEffect(() => {
-    const initial: Record<string, boolean> = {};
-    allUniqueTags.forEach(t => {
-      initial[t] = true;
-    });
-    setSelectedTagsFilter(initial);
-  }, [allUniqueTags, setSelectedTagsFilter]);
+    if (!activeFile) return;
+    if (lastFileIdRef.current !== activeFile.id) {
+      lastFileIdRef.current = activeFile.id;
+      const initial: Record<string, boolean> = {};
+      allUniqueTags.forEach(t => {
+        initial[t] = true;
+      });
+      setSelectedTagsFilter(initial);
+    } else {
+      setSelectedTagsFilter(prev => {
+        const updated = { ...prev };
+        let changed = false;
+        allUniqueTags.forEach(t => {
+          if (updated[t] === undefined) {
+            updated[t] = true;
+            changed = true;
+          }
+        });
+        return changed ? updated : prev;
+      });
+    }
+  }, [allUniqueTags, activeFile, setSelectedTagsFilter]);
 
   // Sorting priorities state
   const [typeOrder, setTypeOrder] = useState<string[]>(["single_choice", "multiple_choice"]);
   const [tagOrder, setTagOrder] = useState<string[]>([]);
 
   useEffect(() => {
-    setTagOrder(allUniqueTags);
+    setTagOrder(prev => {
+      const newTags = allUniqueTags.filter(t => !prev.includes(t));
+      const removedTagsRemoved = prev.filter(t => allUniqueTags.includes(t));
+      const next = [...removedTagsRemoved, ...newTags];
+      const isSame = prev.length === next.length && prev.every((t, i) => t === next[i]);
+      return isSame ? prev : next;
+    });
   }, [allUniqueTags]);
 
   const moveTypeOrder = (idx: number, dir: "UP" | "DOWN") => {
@@ -623,6 +665,7 @@ export default function QuestionModification({
 
   // Multi-level sort function
   const getSortedQuestions = (qs: Question[]) => {
+    if (!activeFile) return qs;
     return [...qs].sort((a, b) => {
       // 1. Sort by Type priority
       const typeIndexA = typeOrder.indexOf(a.type);
@@ -642,8 +685,10 @@ export default function QuestionModification({
       const tagPriorityB = getHighestTagPriority(b);
       if (tagPriorityA !== tagPriorityB) return tagPriorityA - tagPriorityB;
 
-      // 3. Fallback
-      return a.text.localeCompare(b.text);
+      // 3. Fallback: stable order based on original index in file
+      const indexA = activeFile.questions.findIndex(q => q.id === a.id);
+      const indexB = activeFile.questions.findIndex(q => q.id === b.id);
+      return indexA - indexB;
     });
   };
 
@@ -1262,9 +1307,17 @@ export default function QuestionModification({
                           <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text}</p>
                           {q.tags && q.tags.filter(Boolean).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1.5">
-                              {q.tags.filter(Boolean).slice(0, 2).map(t => (
-                                <span key={t} className="text-[8px] bg-slate-100 dark:bg-slate-850 text-slate-600 dark:text-slate-300 px-1 py-0.5 rounded font-extrabold">{t}</span>
-                              ))}
+                              {q.tags.filter(Boolean).slice(0, 2).map((t, tagIdx) => {
+                                const colors = getTagColor(t);
+                                return (
+                                  <span key={`${t}_${tagIdx}`} className={cn(
+                                    "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold border shadow-sm",
+                                    colors.bg,
+                                    colors.text,
+                                    colors.border
+                                  )}>{t}</span>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
