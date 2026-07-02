@@ -7,6 +7,7 @@ import StartScreen from "@/components/StartScreen";
 import MainQuiz from "@/components/MainQuiz";
 import ResultScreen from "@/components/ResultScreen";
 import CreateQuizSection from "@/components/CreateQuizSection";
+import NotificationToast from "@/components/NotificationToast";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sun, Moon } from "lucide-react";
@@ -233,6 +234,7 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+      <NotificationToast />
     </div>
   );
 }

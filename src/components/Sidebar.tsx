@@ -675,12 +675,26 @@ export default function Sidebar() {
         });
       }
     }
-    setLocalSources(prev => [...prev, ...parsedSources]);
+    const nextSources = [...localSources, ...parsedSources];
+    const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
+    const estimatedNewSourcesBytes = JSON.stringify(nextSources).length * 2;
+    const totalEstimatedBytes = otherBytes + estimatedNewSourcesBytes;
+
+    if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
+      useQuizStore.getState().showNotification("Không thể tải tệp lên: Dung lượng tệp quá lớn và bộ nhớ lưu trữ đã đầy.", "error");
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    setLocalSources(nextSources);
     setIsUploading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  }, []);
+  }, [localSources]);
 
   const toggleLocalSource = useCallback((id: string) => {
     setLocalSources(prev => {

@@ -205,7 +205,7 @@ export default function SettingExport({
     }
 
     if (list.length === 0) {
-      alert("Không có câu hỏi nào để xuất bản!");
+      useQuizStore.getState().showNotification("Không có câu hỏi nào để xuất bản!", "error");
       return;
     }
 
@@ -220,7 +220,7 @@ export default function SettingExport({
     }
 
     if (exportedQuestions.length === 0) {
-      alert("Lựa chọn số lượng câu hỏi rỗng hoặc vượt quá giới hạn!");
+      useQuizStore.getState().showNotification("Lựa chọn số lượng câu hỏi rỗng hoặc vượt quá giới hạn!", "error");
       return;
     }
 

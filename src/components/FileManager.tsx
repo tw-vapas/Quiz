@@ -19,7 +19,7 @@ import {
   Check,
   Link2
 } from "lucide-react";
-import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes } from "@/lib/utils";
+import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes, getQuizStorageUsedBytesExcept } from "@/lib/utils";
 
 interface SupportedFileItem {
   id: string;
@@ -111,6 +111,33 @@ export default function FileManager() {
     try {
       const result = await parseFile(file);
       if (result.isValid) {
+        // Estimate total localStorage bytes after adding this file to prevent quota exceed / crash
+        const testNewFile = {
+          id: "temp_test_id",
+          name: file.name,
+          type: newFileType,
+          document: result.document || "",
+          note: result.note || "",
+          questions: result.questions || [],
+          metadata: {
+            file_name: file.name,
+            question_count: result.questions.length,
+            last_modified: Date.now()
+          },
+          supportedFileIds: []
+        };
+
+        const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_creator_files");
+        const estimatedNewFilesStr = JSON.stringify([...creatorFiles, testNewFile]);
+        const estimatedNewFilesBytes = estimatedNewFilesStr.length * 2;
+        const totalEstimatedBytes = otherBytes + estimatedNewFilesBytes;
+
+        if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
+          useQuizStore.getState().showNotification("Không thể tải tệp lên: Dung lượng tệp quá lớn và bộ nhớ lưu trữ đã đầy.", "error");
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          return;
+        }
+
         setImportedData({
           questions: result.questions,
           document: result.document || "",
@@ -118,10 +145,10 @@ export default function FileManager() {
         });
         setNewFileNameInput(file.name);
       } else {
-        alert("Lỗi đọc file: " + result.error);
+        useQuizStore.getState().showNotification("Lỗi đọc file: " + result.error, "error");
       }
     } catch (err) {
-      alert("Đã xảy ra lỗi khi đọc file.");
+      useQuizStore.getState().showNotification("Đã xảy ra lỗi khi đọc file.", "error");
     }
   };
 
@@ -147,6 +174,32 @@ export default function FileManager() {
       } else if (newFileImportSource === "FILE" && importedData) {
         initialData = importedData;
       }
+    }
+
+    // Estimate total localStorage bytes after adding this file to prevent quota exceed / crash
+    const testNewFile = {
+      id: "temp_test_id",
+      name: finalName,
+      type: newFileType,
+      document: initialData.document || "",
+      note: initialData.note || "",
+      questions: initialData.questions || [],
+      metadata: {
+        file_name: finalName,
+        question_count: initialData.questions?.length || 0,
+        last_modified: Date.now()
+      },
+      supportedFileIds: []
+    };
+
+    const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_creator_files");
+    const estimatedNewFilesStr = JSON.stringify([...creatorFiles, testNewFile]);
+    const estimatedNewFilesBytes = estimatedNewFilesStr.length * 2;
+    const totalEstimatedBytes = otherBytes + estimatedNewFilesBytes;
+
+    if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
+      useQuizStore.getState().showNotification("Không thể thêm file: Dung lượng file quá lớn và bộ nhớ lưu trữ đã đầy.", "error");
+      return;
     }
 
     const newId = createCreatorFile(finalName, newFileType, initialData);

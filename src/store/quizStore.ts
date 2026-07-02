@@ -99,6 +99,9 @@ export interface QuizStore {
   retryQuiz: () => void;
   retryIncorrectQuestions: (incorrectIds: string[], addExtra: boolean, extraCount: number, extraMode: 'TIME' | 'RANDOM') => void;
   resetApp: () => void;
+  notification: { message: string; type: 'success' | 'error' | 'info' } | null;
+  showNotification: (message: string, type?: 'success' | 'error' | 'info') => void;
+  clearNotification: () => void;
 }
 
 function shuffleArray<T>(array: T[]): T[] {
@@ -625,7 +628,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
     finalQuestions = finalQuestions.map(q => ({
       ...q,
-      options: shuffleArray(q.options)
+      options: shuffleArray(q.options),
+      tags: q.tags ? q.tags.slice(0, 5) : []
     }));
 
     set({
@@ -833,5 +837,11 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       questionAccumulatedTime: 0,
       questionTimes: {}
     });
-  }
+  },
+
+  notification: null,
+  showNotification: (message, type = 'info') => {
+    set({ notification: { message, type } });
+  },
+  clearNotification: () => set({ notification: null })
 }));

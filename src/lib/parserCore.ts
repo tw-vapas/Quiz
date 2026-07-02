@@ -380,7 +380,8 @@ export function parseQuizJson(rawText: string): ParseResult {
       if (Array.isArray(q.tags)) {
         tags = q.tags
           .filter((t: any) => typeof t === "string")
-          .map((t: string) => t.trim());
+          .map((t: string) => t.trim())
+          .slice(0, 5);
       }
 
       const display_block = q.display_block || null;

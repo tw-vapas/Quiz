@@ -5,7 +5,7 @@ import { useQuizStore, CreatorFile } from "@/store/quizStore";
 import { Question, Option, DisplayBlock } from "../lib/parser";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { parseQuizJson } from "@/lib/parser";
-import { cn, getTagColor } from "@/lib/utils";
+import { cn, getTagColor, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept } from "@/lib/utils";
 import Prism from "prismjs";
 import "prismjs/components/prism-json";
 import { 
@@ -118,11 +118,27 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
   const handleSaveTags = () => {
     if (!question) return;
     const tags = tagsInput.split(",").map(t => t.trim()).filter(Boolean);
+
+    // Validate 16 characters maximum length per tag
+    const hasLongTag = tags.some(t => t.length > 16);
+    if (hasLongTag) {
+      useQuizStore.getState().showNotification("Mỗi nhãn thẻ (tag) chỉ được tối đa 16 ký tự!", "error");
+      setTagsInput((question.tags || []).join(", "));
+      return;
+    }
+
+    // Truncate to maximum of 5 tags
+    let finalTags = tags;
+    if (finalTags.length > 5) {
+      finalTags = finalTags.slice(0, 5);
+      setTagsInput(finalTags.join(", "));
+    }
+
     const currentTags = question.tags || [];
-    const isSame = tags.length === currentTags.length && 
-                   tags.every((t, i) => t === currentTags[i]);
+    const isSame = finalTags.length === currentTags.length && 
+                   finalTags.every((t, i) => t === currentTags[i]);
     if (!isSame) {
-      onUpdate({ tags });
+      onUpdate({ tags: finalTags });
     }
   };
 
@@ -350,7 +366,7 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
           <textarea
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value)}
-            className="w-full min-h-[70px] p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-semibold text-slate-700 dark:text-slate-100 focus:outline-none leading-relaxed resize-y"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-semibold text-slate-700 dark:text-slate-100 focus:outline-none leading-relaxed resize-none overflow-y-auto"
             placeholder="Nhập nội dung giải thích..."
           />
         </div>
@@ -658,6 +674,36 @@ export default function QuestionModification({
       tags: [],
       display_blocks: []
     };
+
+    // Calculate simulated storage size if this question is appended
+    const simulatedFiles = creatorFiles.map((f) => {
+      if (f.id === activeFile.id) {
+        const nextQuestions = [...f.questions, newQ];
+        return {
+          ...f,
+          questions: nextQuestions,
+          metadata: {
+            ...f.metadata,
+            question_count: nextQuestions.length,
+            last_modified: Date.now()
+          }
+        };
+      }
+      return f;
+    });
+
+    const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_creator_files");
+    const estimatedNewFilesBytes = JSON.stringify(simulatedFiles).length * 2;
+    const totalEstimatedBytes = otherBytes + estimatedNewFilesBytes;
+
+    if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
+      useQuizStore.getState().showNotification(
+        "Không thể tạo thêm câu hỏi mới: Bộ nhớ lưu trữ đã đầy.",
+        "error"
+      );
+      return;
+    }
+
     updateCreatorFile(activeFile.id, { questions: [...activeFile.questions, newQ] });
     setSelectedPanelQuestionId(newQ.id);
   };
@@ -730,28 +776,63 @@ export default function QuestionModification({
     if (!activeFile) return;
     const result = parseQuizJson(codeText);
     if (result.isValid) {
+      const updatedFileName = result.metadata?.file_name || activeFile.name;
+      const formattedTime = new Date().toLocaleString("vi-VN", {
+        hour: "2-digit",
+        minute: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).replace(",", "");
+
+      // Estimate the new size of creatorFiles after saving
+      const simulatedFiles = creatorFiles.map((f) => {
+        if (f.id === activeFile.id) {
+          return {
+            ...f,
+            name: updatedFileName,
+            questions: result.questions,
+            document: result.document || "",
+            note: result.note || "",
+            metadata: {
+              ...f.metadata,
+              file_name: updatedFileName,
+              question_count: result.questions.length,
+              last_modified: formattedTime
+            }
+          };
+        }
+        return f;
+      });
+
+      const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_creator_files");
+      const estimatedNewFilesBytes = JSON.stringify(simulatedFiles).length * 2;
+      const totalEstimatedBytes = otherBytes + estimatedNewFilesBytes;
+
+      if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
+        useQuizStore.getState().showNotification(
+          "Không thể lưu: Dung lượng tệp tin sau chỉnh sửa vượt quá giới hạn và đầy bộ nhớ lưu trữ.",
+          "error"
+        );
+        return;
+      }
+
       updateCreatorFile(activeFile.id, {
         questions: result.questions,
         document: result.document || "",
         note: result.note || "",
         metadata: {
           ...activeFile.metadata,
-          file_name: result.metadata?.file_name || activeFile.name,
+          file_name: updatedFileName,
           question_count: result.questions.length,
-          last_modified: new Date().toLocaleString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric"
-          }).replace(",", "")
+          last_modified: formattedTime
         }
       });
       if (result.metadata?.file_name && result.metadata.file_name !== activeFile.name) {
         updateCreatorFile(activeFile.id, { name: result.metadata.file_name });
       }
       setJsonError(null);
-      alert("Lưu tệp tin thành công!");
+      useQuizStore.getState().showNotification("Lưu tệp tin thành công!", "success");
     } else {
       setJsonError(result.error || "Lỗi schema JSON.");
     }
@@ -1175,7 +1256,7 @@ export default function QuestionModification({
                           <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text}</p>
                           {q.tags && q.tags.filter(Boolean).length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-1.5">
-                              {q.tags.filter(Boolean).slice(0, 2).map((t, tagIdx) => {
+                              {q.tags.filter(Boolean).map((t, tagIdx) => {
                                 const colors = getTagColor(t);
                                 return (
                                   <span key={`${t}_${tagIdx}`} className={cn(
