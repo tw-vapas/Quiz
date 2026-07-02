@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuizStore } from "@/store/quizStore";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
+import { parseFile } from "@/lib/parser";
 import { 
   FolderOpen, 
   FileText, 
@@ -15,9 +16,10 @@ import {
   HelpCircle,
   X,
   Upload,
-  Check
+  Check,
+  Link2
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes } from "@/lib/utils";
 
 interface SupportedFileItem {
   id: string;
@@ -31,38 +33,41 @@ interface QuizFileItem {
 }
 
 export default function FileManager() {
+  const QUIZ_FILE_LIMIT = 5;
+  const SUPPORTED_FILE_LIMIT = 15;
+
   const storeSources = useQuizStore(state => state.sources);
-  // --- MOCK DATA ---
-  const [quizFiles, setQuizFiles] = useState<QuizFileItem[]>([
-    {
-      id: "qf1",
-      name: "Quiz File 1",
-      supportedFiles: [
-        { id: "sf1", name: "Supported File 1" },
-        { id: "sf2", name: "Supported File 2" }
-      ]
-    },
-    {
-      id: "qf2",
-      name: "Quiz File 2",
-      supportedFiles: [
-        { id: "sf3", name: "Supported File 3" }
-      ]
-    }
-  ]);
+  const creatorFiles = useQuizStore(state => state.creatorFiles);
+  const activeFileId = useQuizStore(state => state.activeFileId);
+  const setActiveFileId = useQuizStore(state => state.setActiveFileId);
+  const createCreatorFile = useQuizStore(state => state.createCreatorFile);
+  const deleteCreatorFile = useQuizStore(state => state.deleteCreatorFile);
+  const linkSupportFileToQuiz = useQuizStore(state => state.linkSupportFileToQuiz);
+  const unlinkSupportFileFromQuiz = useQuizStore(state => state.unlinkSupportFileFromQuiz);
+  const syncQuestionsFromSupport = useQuizStore(state => state.syncQuestionsFromSupport);
 
-  const [supportedFiles, setSupportedFiles] = useState<SupportedFileItem[]>([
-    { id: "sf1", name: "Supported File 1" },
-    { id: "sf2", name: "Supported File 2" },
-    { id: "sf3", name: "Supported File 3" }
-  ]);
+  const quizFiles = creatorFiles
+    .filter(f => f.type === "QUIZ")
+    .map(q => ({
+      id: q.id,
+      name: q.name,
+      supportedFiles: q.supportedFileIds
+        .map(sfId => creatorFiles.find(sf => sf.id === sfId))
+        .filter((sf): sf is any => !!sf)
+        .map(sf => ({ id: sf.id, name: sf.name }))
+    }));
 
-  const mockAvailableSources = [
-    "Source 1 (Giải tích 1.txt)",
-    "Source 2 (Vật lý đại cương.json)",
-    "Source 3 (Hóa học hữu cơ.docx)",
-    "Source 4 (Triết học Mác-Lênin.txt)"
-  ];
+  const supportedFiles = creatorFiles
+    .filter(f => f.type === "SUPPORT")
+    .map(sf => ({ id: sf.id, name: sf.name }));
+
+  const [storageUsedBytes, setStorageUsedBytes] = useState(() => getQuizStorageUsedBytes());
+  useEffect(() => {
+    const id = setTimeout(() => setStorageUsedBytes(getQuizStorageUsedBytes()), 0);
+    return () => clearTimeout(id);
+  }, [creatorFiles, storeSources]);
+  const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
+  const isStorageFull = storageUsedBytes >= STORAGE_LIMIT_BYTES;
 
   // --- INTERACTIVE STATES ---
   const [expandedQuizFiles, setExpandedQuizFiles] = useState<Record<string, boolean>>({
@@ -78,6 +83,13 @@ export default function FileManager() {
   const [selectedSourceId, setSelectedSourceId] = useState<string | null>(null);
   const [newFileNameInput, setNewFileNameInput] = useState("");
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [importedData, setImportedData] = useState<{
+    questions: any[];
+    document: string;
+    note: string;
+  } | null>(null);
+
   // Modal "+ Add Supported Files" States
   const [isAddSupportModalOpen, setIsAddSupportModalOpen] = useState(false);
   const [targetQuizFileId, setTargetQuizFileId] = useState<string | null>(null);
@@ -92,6 +104,27 @@ export default function FileManager() {
     setExpandedQuizFiles(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
+  const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      const result = await parseFile(file);
+      if (result.isValid) {
+        setImportedData({
+          questions: result.questions,
+          document: result.document || "",
+          note: result.note || ""
+        });
+        setNewFileNameInput(file.name);
+      } else {
+        alert("Lỗi đọc file: " + result.error);
+      }
+    } catch (err) {
+      alert("Đã xảy ra lỗi khi đọc file.");
+    }
+  };
+
   const handleCreateFile = () => {
     const finalName = newFileNameInput.trim() || (
       newFileType === "QUIZ" 
@@ -99,29 +132,35 @@ export default function FileManager() {
         : `Supported File ${supportedFiles.length + 1}`
     );
 
-    if (newFileType === "QUIZ") {
-      const newQuiz: QuizFileItem = {
-        id: `qf_${Date.now()}`,
-        name: finalName,
-        supportedFiles: []
-      };
-      setQuizFiles(prev => [...prev, newQuiz]);
-    } else {
-      const newSupport: SupportedFileItem = {
-        id: `sf_${Date.now()}`,
-        name: finalName
-      };
-      setSupportedFiles(prev => [...prev, newSupport]);
+    let initialData: any = { questions: [], document: "", note: "" };
+
+    if (newFileDataOption === "IMPORT") {
+      if (newFileImportSource === "SOURCE" && selectedSourceId) {
+        const src = storeSources.find(s => s.id === selectedSourceId);
+        if (src) {
+          initialData = {
+            questions: src.questions,
+            document: src.document || "",
+            note: src.note || ""
+          };
+        }
+      } else if (newFileImportSource === "FILE" && importedData) {
+        initialData = importedData;
+      }
     }
+
+    const newId = createCreatorFile(finalName, newFileType, initialData);
+    setActiveFileId(newId);
 
     // Reset Form & Close
     setNewFileNameInput("");
+    setImportedData(null);
+    setSelectedSourceId(null);
     setIsCreateModalOpen(false);
   };
 
   const openAddSupportModal = (quizFileId: string) => {
     setTargetQuizFileId(quizFileId);
-    // Tiền tích chọn những file đã liên kết
     const targetQuiz = quizFiles.find(q => q.id === quizFileId);
     const initialSelections: Record<string, boolean> = {};
     if (targetQuiz) {
@@ -136,58 +175,50 @@ export default function FileManager() {
   const handleAddSupportFiles = () => {
     if (!targetQuizFileId) return;
 
-    // Lấy các Supported File được tích chọn
-    const selectedFiles = supportedFiles.filter(sf => selectedSupportFileIds[sf.id]);
+    const selectedIds = Object.keys(selectedSupportFileIds).filter(id => selectedSupportFileIds[id]);
+    const targetQuiz = creatorFiles.find(q => q.id === targetQuizFileId);
 
-    setQuizFiles(prev => prev.map(q => {
-      if (q.id === targetQuizFileId) {
-        return {
-          ...q,
-          supportedFiles: selectedFiles
-        };
-      }
-      return q;
-    }));
+    if (targetQuiz) {
+      // Unlink removed ones
+      targetQuiz.supportedFileIds.forEach(id => {
+        if (!selectedSupportFileIds[id]) {
+          unlinkSupportFileFromQuiz(targetQuizFileId, id);
+        }
+      });
+      // Link added ones
+      selectedIds.forEach(id => {
+        if (!targetQuiz.supportedFileIds.includes(id)) {
+          linkSupportFileToQuiz(targetQuizFileId, id);
+        }
+      });
+    }
 
     setIsAddSupportModalOpen(false);
     setTargetQuizFileId(null);
   };
 
   const deleteQuizFile = (id: string) => {
-    setQuizFiles(prev => prev.filter(q => q.id !== id));
+    deleteCreatorFile(id);
   };
 
   const unlinkSupportFile = (quizId: string, supportId: string) => {
-    setQuizFiles(prev => prev.map(q => {
-      if (q.id === quizId) {
-        return {
-          ...q,
-          supportedFiles: q.supportedFiles.filter(sf => sf.id !== supportId)
-        };
-      }
-      return q;
-    }));
+    unlinkSupportFileFromQuiz(quizId, supportId);
   };
 
   const deleteSupportFileGlobal = (id: string) => {
-    // 1. Xóa khỏi danh sách Support Files chung
-    setSupportedFiles(prev => prev.filter(sf => sf.id !== id));
-    // 2. Xóa liên kết trong tất cả các Quiz Files
-    setQuizFiles(prev => prev.map(q => ({
-      ...q,
-      supportedFiles: q.supportedFiles.filter(sf => sf.id !== id)
-    })));
+    deleteCreatorFile(id);
   };
 
-  const simulateSync = (fileId: string) => {
-    setSyncingFileId(fileId);
+  const handleSync = (quizId: string, supportId: string) => {
+    setSyncingFileId(supportId);
+    syncQuestionsFromSupport(quizId, supportId);
     setTimeout(() => {
       setSyncingFileId(null);
-      setSyncedFileId(fileId);
+      setSyncedFileId(supportId);
       setTimeout(() => {
-        setSyncedFileId(prev => prev === fileId ? null : prev);
+        setSyncedFileId(prev => prev === supportId ? null : prev);
       }, 2000);
-    }, 1000);
+    }, 800);
   };
 
   return (
@@ -202,11 +233,47 @@ export default function FileManager() {
         </div>
         <button 
           onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 font-extrabold text-xs hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+          disabled={(quizFiles.length >= QUIZ_FILE_LIMIT && supportedFiles.length >= SUPPORTED_FILE_LIMIT) || isStorageFull}
+          className={cn(
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-extrabold text-xs transition-all",
+            (quizFiles.length >= QUIZ_FILE_LIMIT && supportedFiles.length >= SUPPORTED_FILE_LIMIT) || isStorageFull
+              ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
+              : "border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:shadow-sm active:scale-95 cursor-pointer"
+          )}
         >
           <Plus className="w-4 h-4" />
           Create File
         </button>
+      </div>
+
+      {/* Storage Bar */}
+      <div className="px-5 pb-3 shrink-0">
+        <div className="flex items-center justify-between text-[9px] font-bold mb-1">
+          <span className={cn(
+            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
+          )}>
+            {(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+          </span>
+          <span className={cn(
+            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
+          )}>
+            {storagePercent >= 90 ? "Sắp đầy!" : `${storagePercent.toFixed(0)}%`}
+          </span>
+        </div>
+        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-300",
+              storagePercent >= 90 ? "bg-red-500" : storagePercent >= 70 ? "bg-amber-500" : "bg-indigo-500"
+            )}
+            style={{ width: `${storagePercent}%` }}
+          />
+        </div>
+        {isStorageFull && (
+          <div className="text-[10px] text-red-500 font-bold mt-1">
+            Đã đạt giới hạn dung lượng. Vui lòng xóa bớt file để tạo mới.
+          </div>
+        )}
       </div>
 
       {/* 2. SCROLLABLE FOLDERS LIST */}
@@ -214,8 +281,11 @@ export default function FileManager() {
         
         {/* QUIZ FILE ACCORDIONS */}
         <div className="space-y-3">
-          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">
+          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
             Quiz File
+            <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded", quizFiles.length >= QUIZ_FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
+              {quizFiles.length}/{QUIZ_FILE_LIMIT}
+            </span>
           </h4>
 
           <div className="space-y-3">
@@ -224,23 +294,33 @@ export default function FileManager() {
               return (
                 <div key={qf.id} className="space-y-1.5">
                   {/* Quiz File Node Row */}
-                  <div className="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all group">
-                    <div className="flex items-center gap-2.5 min-w-0">
+                  <div className={cn(
+                    "flex items-center justify-between gap-2 p-3 rounded-xl border shadow-sm transition-all group",
+                    activeFileId === qf.id
+                      ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20 shadow-indigo-100 dark:shadow-none"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"
+                  )}>
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       {/* Arrow to Toggle Collapse */}
                       <button 
                         onClick={() => toggleQuizExpand(qf.id)}
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 cursor-pointer"
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-350 cursor-pointer shrink-0"
                       >
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </button>
                       
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 flex items-center justify-center shrink-0">
-                        <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      <div 
+                        onClick={() => setActiveFileId(qf.id)}
+                        className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
+                      >
+                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 flex items-center justify-center shrink-0">
+                          <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        
+                        <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
+                          {qf.name}
+                        </span>
                       </div>
-                      
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
-                        {qf.name}
-                      </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -270,11 +350,13 @@ export default function FileManager() {
                         qf.supportedFiles.map((sf) => (
                           <div 
                             key={sf.id}
-                            className="flex items-center justify-between gap-2 p-2.5 rounded-lg border border-slate-150 dark:border-slate-850 bg-slate-50/40 dark:bg-slate-950/10 hover:border-slate-200 dark:hover:border-slate-800 transition-all group relative before:content-[''] before:absolute before:-left-3 before:top-1/2 before:w-3 before:h-px before:bg-slate-200 dark:before:bg-slate-800"
+                            className="flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/40 transition-all group relative before:content-[''] before:absolute before:-left-3 before:top-1/2 before:w-3 before:h-px before:bg-slate-200 dark:before:bg-slate-800"
                           >
-                            <div className="flex items-center gap-2 min-w-0">
-                              <FileText className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                              <span className="text-xs font-bold text-slate-650 dark:text-slate-350 truncate">
+                            <div 
+                              className="flex items-center gap-2.5 min-w-0 flex-1 select-none"
+                            >
+                              <Link2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
+                              <span className="text-xs font-bold text-slate-500 dark:text-slate-450 truncate">
                                 {sf.name}
                               </span>
                             </div>
@@ -282,9 +364,9 @@ export default function FileManager() {
                             <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
                               {/* Sync Button */}
                               <button 
-                                onClick={() => simulateSync(sf.id)}
+                                onClick={() => handleSync(qf.id, sf.id)}
                                 className={cn(
-                                  "p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-450 cursor-pointer transition-all",
+                                  "p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-pointer transition-all",
                                   syncingFileId === sf.id && "animate-spin text-indigo-600 dark:text-indigo-400",
                                   syncedFileId === sf.id && "text-green-600 dark:text-green-400"
                                 )}
@@ -319,8 +401,11 @@ export default function FileManager() {
 
         {/* SUPPORTED FILE SECTION */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">
+          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
             Supported File
+            <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded", supportedFiles.length >= SUPPORTED_FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
+              {supportedFiles.length}/{SUPPORTED_FILE_LIMIT}
+            </span>
           </h4>
 
           <div className="space-y-2.5">
@@ -328,9 +413,17 @@ export default function FileManager() {
               supportedFiles.map((sf) => (
                 <div 
                   key={sf.id}
-                  className="flex items-center justify-between gap-2 p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:border-slate-300 dark:hover:border-slate-700 transition-all group"
+                  className={cn(
+                    "flex items-center justify-between gap-2 p-3 rounded-xl border shadow-sm transition-all group",
+                    activeFileId === sf.id
+                      ? "border-indigo-500 bg-indigo-50/10 dark:bg-indigo-950/20 shadow-indigo-100 dark:shadow-none"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700"
+                  )}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div 
+                    onClick={() => setActiveFileId(sf.id)}
+                    className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
+                  >
                     <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center shrink-0">
                       <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
@@ -399,28 +492,46 @@ export default function FileManager() {
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
-                    onClick={() => setNewFileType("QUIZ")}
+                    onClick={() => !(quizFiles.length >= QUIZ_FILE_LIMIT) && setNewFileType("QUIZ")}
                     className={cn(
-                      "p-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all",
-                      newFileType === "QUIZ"
+                      "p-2.5 rounded-xl border font-bold text-xs transition-all",
+                      quizFiles.length >= QUIZ_FILE_LIMIT
+                        ? "border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
+                        : "cursor-pointer",
+                      !(quizFiles.length >= QUIZ_FILE_LIMIT) && newFileType === "QUIZ"
                         ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850/50"
+                        : "",
+                      !(quizFiles.length >= QUIZ_FILE_LIMIT) && newFileType !== "QUIZ"
+                        ? "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850/50"
+                        : ""
                     )}
                   >
-                    Quiz File
+                    Quiz File ({quizFiles.length}/{QUIZ_FILE_LIMIT})
                   </button>
                   <button
-                    onClick={() => setNewFileType("SUPPORT")}
+                    onClick={() => !(supportedFiles.length >= SUPPORTED_FILE_LIMIT) && setNewFileType("SUPPORT")}
                     className={cn(
-                      "p-2.5 rounded-xl border font-bold text-xs cursor-pointer transition-all",
-                      newFileType === "SUPPORT"
+                      "p-2.5 rounded-xl border font-bold text-xs transition-all",
+                      supportedFiles.length >= SUPPORTED_FILE_LIMIT
+                        ? "border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
+                        : "cursor-pointer",
+                      !(supportedFiles.length >= SUPPORTED_FILE_LIMIT) && newFileType === "SUPPORT"
                         ? "border-indigo-500 bg-indigo-50/20 text-indigo-750 dark:text-indigo-400"
-                        : "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850/50"
+                        : "",
+                      !(supportedFiles.length >= SUPPORTED_FILE_LIMIT) && newFileType !== "SUPPORT"
+                        ? "border-slate-200 dark:border-slate-800 text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850/50"
+                        : ""
                     )}
                   >
-                    Supported File
+                    Supported File ({supportedFiles.length}/{SUPPORTED_FILE_LIMIT})
                   </button>
                 </div>
+                {isStorageFull && (
+                  <div className="text-[10px] text-red-500 font-bold">Đã đạt giới hạn dung lượng. Vui lòng xóa bớt file để tạo mới.</div>
+                )}
+                {!isStorageFull && ((newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)) && (
+                  <div className="text-[10px] text-red-500 font-bold">Đã đạt giới hạn số lượng. Vui lòng xóa bớt file để tạo mới.</div>
+                )}
               </div>
 
               {/* File Data Option Select */}
@@ -529,13 +640,23 @@ export default function FileManager() {
               )}
 
               {newFileDataOption === "IMPORT" && newFileImportSource === "FILE" && (
-                <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500/55 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-55/20 hover:bg-indigo-500/5 group/drop flex flex-col items-center">
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500/55 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-50/20 hover:bg-indigo-50/5 group/drop flex flex-col items-center w-full"
+                >
+                  <input 
+                    type="file" 
+                    accept=".txt,.json,.docx" 
+                    ref={fileInputRef} 
+                    onChange={handleFileInputChange} 
+                    className="hidden" 
+                  />
                   <Upload className="w-8 h-8 text-slate-400 group-hover/drop:text-indigo-600 transition-colors mb-2" />
                   <span className="text-xs font-extrabold text-slate-750 dark:text-slate-300">
-                    Tải tệp từ thiết bị của bạn
+                    {importedData ? `Đã nạp: ${newFileNameInput}` : "Tải tệp từ thiết bị của bạn"}
                   </span>
                   <span className="text-[10px] text-slate-400 mt-1">
-                    Hỗ trợ .txt, .docx, .json
+                    {importedData ? `${importedData.questions.length} câu hỏi được tìm thấy` : "Hỗ trợ .txt, .docx, .json"}
                   </span>
                 </div>
               )}
@@ -552,7 +673,13 @@ export default function FileManager() {
               </button>
               <button 
                 onClick={handleCreateFile}
-                className="flex-1 py-2.5 bg-indigo-650 hover:bg-indigo-750 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer"
+                disabled={isStorageFull || (newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)}
+                className={cn(
+                  "flex-1 py-2.5 font-extrabold text-xs rounded-xl shadow-md transition-all",
+                  isStorageFull || (newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)
+                    ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 cursor-not-allowed"
+                    : "bg-indigo-650 hover:bg-indigo-750 text-white cursor-pointer"
+                )}
               >
                 Create File
               </button>

@@ -26,6 +26,8 @@ export default function Home() {
   const sourceAllocations = useQuizStore((state) => state.sourceAllocations);
   const timeLimitMode = useQuizStore((state) => state.timeLimitMode);
   const timeLimitMinutes = useQuizStore((state) => state.timeLimitMinutes);
+  const creatorFiles = useQuizStore((state) => state.creatorFiles);
+  const activeFileId = useQuizStore((state) => state.activeFileId);
 
   const [hasHydrated, setHasHydrated] = useState(false);
 
@@ -42,6 +44,8 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const savedSources = localStorage.getItem("vapas_quiz_sources");
       const savedSettings = localStorage.getItem("vapas_quiz_settings");
+      const savedCreatorFiles = localStorage.getItem("vapas_quiz_creator_files");
+      const savedActiveFileId = localStorage.getItem("vapas_quiz_creator_active_id");
       if (savedSources) {
         try {
           const parsed = JSON.parse(savedSources);
@@ -58,6 +62,17 @@ export default function Home() {
           console.error("Error loading settings:", e);
         }
       }
+      if (savedCreatorFiles) {
+        try {
+          const parsed = JSON.parse(savedCreatorFiles);
+          useQuizStore.setState({ creatorFiles: parsed });
+        } catch (e) {
+          console.error("Error loading creator files:", e);
+        }
+      }
+      if (savedActiveFileId) {
+        useQuizStore.setState({ activeFileId: savedActiveFileId });
+      }
       setHasHydrated(true);
     }
   }, []);
@@ -65,24 +80,62 @@ export default function Home() {
   // Save sources to localStorage when they change, only after hydration is complete
   useEffect(() => {
     if (hasHydrated) {
-      localStorage.setItem("vapas_quiz_sources", JSON.stringify(sources));
+      try {
+        localStorage.setItem("vapas_quiz_sources", JSON.stringify(sources));
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "QuotaExceededError") {
+          console.warn("localStorage quota exceeded when saving sources");
+        }
+      }
     }
   }, [sources, hasHydrated]);
+
+  // Save creator files to localStorage when they change, only after hydration is complete
+  useEffect(() => {
+    if (hasHydrated) {
+      try {
+        localStorage.setItem("vapas_quiz_creator_files", JSON.stringify(creatorFiles));
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "QuotaExceededError") {
+          console.warn("localStorage quota exceeded when saving creator files");
+        }
+      }
+    }
+  }, [creatorFiles, hasHydrated]);
+
+  // Save active file ID to localStorage when it changes, only after hydration is complete
+  useEffect(() => {
+    if (hasHydrated) {
+      try {
+        localStorage.setItem("vapas_quiz_creator_active_id", activeFileId || "");
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "QuotaExceededError") {
+          console.warn("localStorage quota exceeded when saving active file ID");
+        }
+      }
+    }
+  }, [activeFileId, hasHydrated]);
 
   // Save settings to localStorage when they change, only after hydration is complete
   useEffect(() => {
     if (hasHydrated) {
-      const settingsObj = {
-        showResultAfterQuestion,
-        autoNext,
-        questionCountMode,
-        customQuestionCount,
-        sourceAllocations,
-        theme,
-        timeLimitMode,
-        timeLimitMinutes,
-      };
-      localStorage.setItem("vapas_quiz_settings", JSON.stringify(settingsObj));
+      try {
+        const settingsObj = {
+          showResultAfterQuestion,
+          autoNext,
+          questionCountMode,
+          customQuestionCount,
+          sourceAllocations,
+          theme,
+          timeLimitMode,
+          timeLimitMinutes,
+        };
+        localStorage.setItem("vapas_quiz_settings", JSON.stringify(settingsObj));
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "QuotaExceededError") {
+          console.warn("localStorage quota exceeded when saving settings");
+        }
+      }
     }
   }, [
     showResultAfterQuestion,

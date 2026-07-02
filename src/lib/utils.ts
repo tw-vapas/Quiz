@@ -28,6 +28,30 @@ export function getTagColor(tag: string): { bg: string; text: string; border: st
 
 import { useRef, useLayoutEffect } from "react";
 
+export const STORAGE_LIMIT_BYTES = 4.5 * 1024 * 1024;
+
+export function getQuizStorageUsedBytes(): number {
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith("vapas_quiz_")) {
+      total += localStorage.getItem(key)!.length * 2;
+    }
+  }
+  return total;
+}
+
+export function getQuizStorageUsedBytesExcept(excludeKey: string): number {
+  let total = 0;
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith("vapas_quiz_") && key !== excludeKey) {
+      total += localStorage.getItem(key)!.length * 2;
+    }
+  }
+  return total;
+}
+
 export function useRenderProfiler(componentName: string) {
   const renderCount = useRef(0);
   renderCount.current += 1;

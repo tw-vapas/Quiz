@@ -11,7 +11,6 @@ export interface DisplayBlock {
 
 export interface Question {
   id: string;
-  originalQuestion: string;
   text: string;
   options: Option[];
   correctOptionIds: string[];
@@ -289,7 +288,6 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
     if (options.length > 0) {
       questions.push({
         id: Math.random().toString(36).substring(2, 9),
-        originalQuestion: fullQuestionBlock,
         text: questionText,
         options,
         correctOptionIds,
@@ -323,8 +321,9 @@ export function parseQuizJson(rawText: string): ParseResult {
     const questions: Question[] = [];
     for (let index = 0; index < data.questions.length; index++) {
       const q = data.questions[index];
-      if (!q.question) {
-        return { questions: [], isValid: false, error: `Câu hỏi thứ ${index + 1} thiếu trường 'question'.` };
+      const questionText = q.question !== undefined ? String(q.question) : (q.text !== undefined ? String(q.text) : "");
+      if (!questionText) {
+        return { questions: [], isValid: false, error: `Câu hỏi thứ ${index + 1} thiếu trường 'question' hoặc 'text'.` };
       }
 
       let options: Option[] = [];
@@ -341,7 +340,7 @@ export function parseQuizJson(rawText: string): ParseResult {
         });
 
         q.answers.forEach((ans: any, optIdx: number) => {
-          if (ans.is_correct) {
+          if (ans.is_correct || ans.isCorrect) {
             const opt = options[optIdx];
             if (opt) {
               correctOptionIds.push(opt.id);
@@ -358,7 +357,9 @@ export function parseQuizJson(rawText: string): ParseResult {
           };
         });
 
-        if (Array.isArray(q.correct_answer)) {
+        if (Array.isArray(q.correctOptionIds)) {
+          correctOptionIds = q.correctOptionIds.map((ans: string | number) => String(ans));
+        } else if (Array.isArray(q.correct_answer)) {
           correctOptionIds = q.correct_answer.map((ans: string | number) => String(ans));
         }
       } else {
@@ -392,8 +393,7 @@ export function parseQuizJson(rawText: string): ParseResult {
 
       questions.push({
         id: q.id ? String(q.id) : Math.random().toString(36).substring(2, 9),
-        originalQuestion: JSON.stringify(q, null, 2),
-        text: q.question,
+        text: questionText,
         options,
         correctOptionIds,
         type: q.type === "multiple_choice" ? "multiple_choice" : (q.type === "single_choice" ? "single_choice" : (correctOptionIds.length > 1 ? "multiple_choice" : "single_choice")),
@@ -419,7 +419,7 @@ export function parseQuizJson(rawText: string): ParseResult {
     };
   } catch (err) {
     const errorMsg = err instanceof Error ? err.message : String(err);
-    console.error("Error parsing JSON quiz:", err);
+    console.warn("JSON Parse Error:", errorMsg);
     return { questions: [], isValid: false, error: "Tệp JSON không hợp lệ: " + errorMsg };
   }
 }

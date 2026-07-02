@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useRef, useState, useLayoutEffect, useCallback, Fragment } from "react";
+import React, { useRef, useState, useLayoutEffect, useCallback, Fragment, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
 import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
-import { cn, useRenderProfiler } from "@/lib/utils";
+import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
 interface VirtualSourceCardProps {
@@ -509,6 +509,20 @@ const SidebarList = React.memo(({
   parentScrollRef
 }: SidebarListProps) => {
   useRenderProfiler("SidebarList");
+
+  const [storageUsedBytes, setStorageUsedBytes] = useState(() => {
+    const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
+    const sourcesBytes = JSON.stringify(localSources).length * 2;
+    return otherBytes + sourcesBytes;
+  });
+  useEffect(() => {
+    const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
+    const sourcesBytes = JSON.stringify(localSources).length * 2;
+    setStorageUsedBytes(otherBytes + sourcesBytes);
+  }, [localSources]);
+  const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
+  const isStorageFull = storageUsedBytes >= STORAGE_LIMIT_BYTES;
+
   return (
     <div className="flex-1 flex flex-col relative bg-slate-50/50 dark:bg-slate-900/50 min-h-0">
       {/* Sticky Header */}
@@ -516,9 +530,9 @@ const SidebarList = React.memo(({
         <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
         <button
           onClick={() => fileInputRef.current?.click()}
-          disabled={isUploading}
+          disabled={isUploading || isStorageFull}
           className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
-          title="Tải lên tệp .docx, .txt, .json"
+          title={isStorageFull ? "Đã đạt giới hạn dung lượng" : "Tải lên tệp .docx, .txt, .json"}
         >
           <Plus className="w-5 h-5" />
         </button>
@@ -530,6 +544,36 @@ const SidebarList = React.memo(({
           multiple
           className="hidden"
         />
+      </div>
+
+      {/* Storage Bar */}
+      <div className="px-5 md:px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="flex items-center justify-between text-[10px] font-bold mb-1">
+          <span className={cn(
+            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
+          )}>
+            {(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+          </span>
+          <span className={cn(
+            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
+          )}>
+            {storagePercent >= 90 ? "Sắp đầy!" : `${storagePercent.toFixed(0)}%`}
+          </span>
+        </div>
+        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-300",
+              storagePercent >= 90 ? "bg-red-500" : storagePercent >= 70 ? "bg-amber-500" : "bg-indigo-500"
+            )}
+            style={{ width: `${storagePercent}%` }}
+          />
+        </div>
+        {isStorageFull && (
+          <div className="text-[10px] text-red-500 font-bold mt-1">
+            Đã đạt giới hạn dung lượng. Vui lòng xóa bớt nguồn dữ liệu.
+          </div>
+        )}
       </div>
 
       <div className="p-5 md:p-6 flex-1 min-h-0 relative">

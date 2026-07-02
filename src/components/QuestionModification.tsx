@@ -557,7 +557,7 @@ export default function QuestionModification({
     displayBlock: true,
     tags: true
   });
-  const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("List");
+  const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("Panel");
 
   // Filter & Sort Settings state
   const [filterAndSortEnabled, setFilterAndSortEnabled] = useState(false);
@@ -647,7 +647,6 @@ export default function QuestionModification({
     if (!activeFile) return;
     const newQ: Question = {
       id: `q_${Date.now()}`,
-      originalQuestion: "",
       text: "Câu hỏi mới",
       options: [
         { id: "a", text: "Lựa chọn A", originalText: "A. Lựa chọn A" },
@@ -660,7 +659,7 @@ export default function QuestionModification({
       display_blocks: []
     };
     updateCreatorFile(activeFile.id, { questions: [...activeFile.questions, newQ] });
-    setCardIndex(activeFile.questions.length);
+    setSelectedPanelQuestionId(newQ.id);
   };
 
   // Multi-level sort function
@@ -716,47 +715,7 @@ export default function QuestionModification({
     return list;
   }, [activeFile?.questions, filterType, selectedTagsFilter, filterOthers, filterAndSortEnabled, typeOrder, tagOrder]);
 
-  // Card view index controller
-  const [cardIndex, setCardIndex] = useState(0);
 
-  useEffect(() => {
-    setCardIndex(0);
-  }, [activeFileId, displayMode]);
-
-  const handleWheel = (e: React.WheelEvent) => {
-    if (Math.abs(e.deltaY) < 15) return;
-    if (e.deltaY > 0) {
-      if (cardIndex < filteredQuestions.length - 1) {
-        setCardIndex(prev => prev + 1);
-      }
-    } else {
-      if (cardIndex > 0) {
-        setCardIndex(prev => prev - 1);
-      }
-    }
-  };
-
-  // Keyboard navigation for card swap
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (activeTab !== "QUESTION_VIEW" || displayMode !== "Cards") return;
-      // Do not trigger if user is typing in input or textarea
-      if (document.activeElement?.tagName === "INPUT" || document.activeElement?.tagName === "TEXTAREA") return;
-
-      if (e.key === "ArrowRight") {
-        if (cardIndex < filteredQuestions.length - 1) {
-          setCardIndex(prev => prev + 1);
-        }
-      } else if (e.key === "ArrowLeft") {
-        if (cardIndex > 0) {
-          setCardIndex(prev => prev - 1);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [cardIndex, filteredQuestions.length, activeTab, displayMode]);
 
   // Panel view selected item state
   const [selectedPanelQuestionId, setSelectedPanelQuestionId] = useState<string | null>(null);
@@ -871,7 +830,7 @@ export default function QuestionModification({
             </div>
 
             {/* Document Editor / Viewer */}
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1">
               {docSubTab === "PREVIEW" ? (
                 <div className="prose dark:prose-invert max-w-none text-xs">
                   {activeFile.document ? (
@@ -885,7 +844,7 @@ export default function QuestionModification({
                   value={activeFile.document}
                   onChange={(e) => updateCreatorFile(activeFile.id, { document: e.target.value })}
                   placeholder="Nhập nội dung tài liệu học tập bằng định dạng Markdown (.md)..."
-                  className="w-full h-[350px] p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-xs font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none"
+                  className="w-full h-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-xs font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none"
                 />
               )}
             </div>
@@ -1016,30 +975,7 @@ export default function QuestionModification({
                       })}
                     </div>
 
-                    <div className="space-y-1.5 relative">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Display Mode</label>
-                      <button
-                        onClick={() => setIsQtyDropdownOpen(!isQtyDropdownOpen)}
-                        className="w-full px-2.5 py-1.5 text-xs font-bold border border-slate-200 dark:border-slate-750 rounded-lg bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
-                      >
-                        <span>{displayMode}</span>
-                        <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                      </button>
 
-                      {isQtyDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-1 z-25 bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md p-1 space-y-0.5">
-                          {(["List", "Cards", "Panel"] as const).map((mode) => (
-                            <button
-                              key={mode}
-                              onClick={() => { setDisplayMode(mode); setIsQtyDropdownOpen(false); }}
-                              className={cn("w-full p-1.5 text-left text-xs font-bold rounded cursor-pointer", displayMode === mode ? "bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50")}
-                            >
-                              {mode}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
 
                     <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                       <button onClick={() => setIsViewSettingsOpen(false)} className="flex-1 py-1.5 border border-slate-250 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-650 hover:bg-slate-55 cursor-pointer">Cancel</button>
@@ -1190,81 +1126,13 @@ export default function QuestionModification({
 
             {/* --- VISUAL DISPLAY MODES WORKSPACES --- */}
             
-            {/* Chế độ List view */}
-            {displayMode === "List" && (
-              <div className="space-y-6">
-                {filteredQuestions.length > 0 ? (
-                  filteredQuestions.map((q, idx) => (
-                    <QuestionCard 
-                      key={q.id}
-                      index={idx}
-                      question={q}
-                      visibleFields={visibleFields}
-                      onUpdate={(updates) => updateQuestion(q.id, updates)}
-                      onDelete={() => deleteQuestion(q.id)}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-12 border border-dashed rounded-2xl text-slate-400 select-none">
-                    Không tìm thấy câu hỏi phù hợp với bộ lọc.
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* Chế độ Cards view (Tráo thẻ) */}
-            {displayMode === "Cards" && (
-              <div 
-                className="space-y-4 select-none"
-              >
-                {filteredQuestions.length > 0 ? (
-                  <div className="relative">
-                    <div className="transition-all duration-300 ease-out transform">
-                      <QuestionCard 
-                        index={cardIndex}
-                        question={filteredQuestions[cardIndex]}
-                        visibleFields={visibleFields}
-                        onUpdate={(updates) => updateQuestion(filteredQuestions[cardIndex].id, updates)}
-                        onDelete={() => {
-                          deleteQuestion(filteredQuestions[cardIndex].id);
-                          if (cardIndex > 0) setCardIndex(prev => prev - 1);
-                        }}
-                      />
-                    </div>
-                    {/* Navigation controllers */}
-                    <div className="flex items-center justify-between mt-4 px-2 text-xs font-black text-slate-500 select-none">
-                      <button 
-                        disabled={cardIndex === 0}
-                        onClick={() => setCardIndex(prev => prev - 1)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
-                      >
-                        <ChevronLeft className="w-4 h-4" /> Trước
-                      </button>
-                      <span className="text-[10px] tracking-wide uppercase">
-                        Câu {cardIndex + 1} / {filteredQuestions.length}
-                      </span>
-                      <button 
-                        disabled={cardIndex === filteredQuestions.length - 1}
-                        onClick={() => setCardIndex(prev => prev + 1)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 disabled:opacity-40 cursor-pointer"
-                      >
-                        Sau <ChevronRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12 border border-dashed rounded-2xl text-slate-400">
-                    Không tìm thấy câu hỏi phù hợp với bộ lọc.
-                  </div>
-                )}
-              </div>
-            )}
 
             {/* Chế độ Panel split view */}
             {displayMode === "Panel" && (
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 min-h-[480px]">
+              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 min-h-[480px]">
                 {/* Editor on the left */}
-                <div className="lg:col-span-3 space-y-4">
+                <div className="lg:col-span-7 space-y-4">
                   {panelQuestion ? (
                     <QuestionCard 
                       index={filteredQuestions.indexOf(panelQuestion)}
@@ -1284,7 +1152,7 @@ export default function QuestionModification({
                 </div>
 
                 {/* List selector on the right */}
-                <div className="lg:col-span-2 border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 overflow-y-auto max-h-[500px] space-y-2">
+                <div className="lg:col-span-3 border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 overflow-y-auto max-h-[500px] space-y-2">
                   <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1.5 mb-2">Danh sách câu hỏi</h5>
                   {filteredQuestions.length > 0 ? (
                     filteredQuestions.map((q, idx) => {

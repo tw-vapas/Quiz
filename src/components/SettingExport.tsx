@@ -1,23 +1,30 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+import { useQuizStore, CreatorFile } from "@/store/quizStore";
+import { Question, parseQuizJson } from "../lib/parser";
+import { cn } from "@/lib/utils";
 import { 
   Settings2, 
   Download, 
   ChevronDown, 
-  Info, 
   Clock, 
   Tag, 
-  FileText, 
-  Check, 
-  X,
-  Layers,
-  Settings
+  X
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface SettingExportProps {
   className?: string;
+  filterType: {
+    singleChoice: boolean;
+    multipleChoice: boolean;
+  };
+  filterOthers: {
+    haveCorrectAnswer: boolean;
+    haveExplanation: boolean;
+    haveDisplayBlock: boolean;
+  };
+  selectedTagsFilter: Record<string, boolean>;
 }
 
 type FileStatusType = 
@@ -27,31 +34,36 @@ type FileStatusType =
   | "Syntax Error" 
   | "Empty File";
 
-export default function SettingExport({ className }: SettingExportProps) {
-  // --- GENERAL INFORMATION STATES ---
-  const [fileName, setFileName] = useState("Đề thi giữa kỳ môn Toán.txt");
-  const [fileType, setFileType] = useState<"QUIZ" | "SUPPORT">("QUIZ");
-  const [fileStatus, setFileStatus] = useState<FileStatusType>("Valid File");
-  const [lastChanged, setLastChanged] = useState("14:30 30/06/2026");
+export default function SettingExport({ 
+  className,
+  filterType,
+  filterOthers,
+  selectedTagsFilter
+}: SettingExportProps) {
+  const activeFileId = useQuizStore(state => state.activeFileId);
+  const creatorFiles = useQuizStore(state => state.creatorFiles);
+  const updateCreatorFile = useQuizStore(state => state.updateCreatorFile);
 
-  // --- STATS STATES ---
+  const activeFile = useMemo(() => creatorFiles.find(f => f.id === activeFileId), [creatorFiles, activeFileId]);
+
+  const getFileJson = (file: CreatorFile) => {
+    const pkg = {
+      metadata: file.metadata,
+      document: file.document,
+      note: file.note,
+      questions: file.questions
+    };
+    return JSON.stringify(pkg, null, 2);
+  };
+
+  // --- GENERAL INFORMATION STATES ---
+  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+
+  // --- STATISTICS CHECKBOX STATES ---
   const [hasAnswers, setHasAnswers] = useState(true);
   const [hasExplanations, setHasExplanations] = useState(true);
   const [hasTags, setHasTags] = useState(true);
-  const totalQuestions = 10;
-
-  // Mock tag list for pie weight
-  const tagsData = [
-    { name: "Đại số", count: 4, color: "#6366F1", dashArray: "25 100", dashOffset: "0" },     // Indigo - 40%
-    { name: "Hình học", count: 3, color: "#10B981", dashArray: "30 100", dashOffset: "-25" },  // Emerald - 30%
-    { name: "Tích phân", count: 2, color: "#F59E0B", dashArray: "20 100", dashOffset: "-55" }, // Amber - 20%
-    { name: "Tổ hợp", count: 1, color: "#EF4444", dashArray: "25 100", dashOffset: "-75" }     // Red - 10%
-  ];
-
-  // --- NOTES STATE ---
-  const [notes, setNotes] = useState(
-    "Bộ đề kiểm tra kiến thức Toán giải tích lớp 12 học kỳ 1. Tập trung vào các chuyên đề khảo sát hàm số, đạo hàm và tích phân ứng dụng thực tế."
-  );
 
   // --- EXPORT MODAL STATES ---
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -62,14 +74,210 @@ export default function SettingExport({ className }: SettingExportProps) {
   const [rangeEnd, setRangeEnd] = useState(10);
   const [fileFormat, setFileFormat] = useState<"JSON" | "DOCX">("JSON");
   const [applyFilterSetting, setApplyFilterSetting] = useState(false);
-
-  // Dropdown open states for forms
-  const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
   const [isQtyDropdownOpen, setIsQtyDropdownOpen] = useState(false);
   const [isFormatDropdownOpen, setIsFormatDropdownOpen] = useState(false);
 
-  // --- STYLE UTILITIES ---
+  // Render empty state if no active file
+  if (!activeFile) {
+    return (
+      <div className={cn("flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all duration-300 shadow-sm items-center justify-center p-8", className)}>
+        <Settings2 className="w-16 h-16 text-indigo-500/30 animate-pulse mb-4" />
+        <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">No File Selected</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">Chọn một tệp từ File Manager ở cột bên trái để hiển thị thiết lập.</p>
+      </div>
+    );
+  }
+
+  // --- AUTO EVALUATE STATUS ---
+  const fileStatus = (() => {
+    if (activeFile.questions.length === 0 && !activeFile.document && !activeFile.note) {
+      return "Empty File";
+    }
+    const jsonStr = getFileJson(activeFile);
+    const parsed = parseQuizJson(jsonStr);
+    if (!parsed.isValid) {
+      if (parsed.error?.includes("thiếu trường 'question'") || parsed.error?.includes("thiếu trường 'text'")) {
+        return "Syntax Error";
+      }
+      if (parsed.error?.includes("thiếu hoặc rỗng danh sách 'options'")) {
+        return "Missing Answer Option";
+      }
+      if (parsed.error?.includes("thiếu đáp án đúng")) {
+        return "Missing Correct Answer";
+      }
+      return "Syntax Error";
+    }
+    return "Valid File";
+  })();
+
+  // --- NOTES WITH STRICT 200 WORDS LIMIT ---
+  const handleNoteChange = (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      updateCreatorFile(activeFile.id, { note: "" });
+      return;
+    }
+    const words = trimmed.split(/\s+/);
+    if (words.length > 200) {
+      // Truncate to first 200 words
+      const truncated = text.split(/\s+/).slice(0, 200).join(" ");
+      updateCreatorFile(activeFile.id, { note: truncated });
+    } else {
+      updateCreatorFile(activeFile.id, { note: text });
+    }
+  };
+
+  const noteWordCount = activeFile.note 
+    ? activeFile.note.trim().split(/\s+/).filter(w => w.length > 0).length 
+    : 0;
+
+  // --- STATISTICS FILTERS ---
+  const filteredStatsQuestions = activeFile.questions.filter(q => {
+    const matchAnswers = !hasAnswers || (q.options && q.options.length > 0 && q.correctOptionIds.length > 0);
+    const matchExpl = !hasExplanations || !!q.explanation;
+    const matchTags = !hasTags || (q.tags && q.tags.length > 0);
+    return matchAnswers && matchExpl && matchTags;
+  });
+
+  const totalQuestions = filteredStatsQuestions.length;
+
+  // --- SOLID PIE CHART CALCULATION ---
+  const tagsData = (() => {
+    const counts: Record<string, number> = {};
+    filteredStatsQuestions.forEach(q => {
+      q.tags?.forEach(tag => {
+        counts[tag] = (counts[tag] || 0) + 1;
+      });
+    });
+
+    const totalTagOccurrences = Object.values(counts).reduce((a, b) => a + b, 0);
+    if (totalTagOccurrences === 0) return [];
+
+    const colors = ["#6366F1", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#3B82F6"];
+    let cumulativePercentage = 0;
+
+    return Object.entries(counts).map(([name, count], idx) => {
+      const percentage = (count / totalTagOccurrences) * 100;
+      const startAngle = (cumulativePercentage / 100) * 360;
+      const endAngle = ((cumulativePercentage + percentage) / 100) * 360;
+      cumulativePercentage += percentage;
+
+      return {
+        name,
+        count,
+        percentage,
+        color: colors[idx % colors.length],
+        startAngle,
+        endAngle
+      };
+    });
+  })();
+
+  const describeSlice = (startAngle: number, endAngle: number, radius = 40) => {
+    // Offset angles by -90 deg so that 0 starts at 12 o'clock (top)
+    const startRad = ((startAngle - 90) * Math.PI) / 180;
+    const endRad = ((endAngle - 90) * Math.PI) / 180;
+
+    const x1 = 50 + radius * Math.cos(startRad);
+    const y1 = 50 + radius * Math.sin(startRad);
+    const x2 = 50 + radius * Math.cos(endRad);
+    const y2 = 50 + radius * Math.sin(endRad);
+
+    const largeArcFlag = endAngle - startAngle > 180 ? 1 : 0;
+
+    return `M 50 50 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+  };
+
+  // --- EXPORT DOWNLOAD TRIGGER ---
+  const handleExportFile = () => {
+    // 1. Filter questions based on configuration
+    let list = [...activeFile.questions];
+    if (applyFilterSetting) {
+      list = list.filter(q => {
+        const matchType = (q.type === "single_choice" && filterType.singleChoice) || 
+                          (q.type === "multiple_choice" && filterType.multipleChoice);
+        const matchTags = !q.tags || q.tags.length === 0 || q.tags.some(t => selectedTagsFilter[t]);
+        const matchCorrect = !filterOthers.haveCorrectAnswer || q.correctOptionIds.length > 0;
+        const matchExp = !filterOthers.haveExplanation || !!q.explanation;
+        const matchBlock = !filterOthers.haveDisplayBlock || (q.display_blocks && q.display_blocks.length > 0);
+        return matchType && matchTags && matchCorrect && matchExp && matchBlock;
+      });
+    }
+
+    if (list.length === 0) {
+      alert("Không có câu hỏi nào để xuất bản!");
+      return;
+    }
+
+    // 2. Quantity slice
+    let exportedQuestions = [...list];
+    if (quantityMode === "FIRST") {
+      exportedQuestions = list.slice(0, firstCount);
+    } else if (quantityMode === "LAST") {
+      exportedQuestions = list.slice(Math.max(0, list.length - lastCount));
+    } else if (quantityMode === "RANGE") {
+      exportedQuestions = list.slice(rangeStart - 1, rangeEnd);
+    }
+
+    if (exportedQuestions.length === 0) {
+      alert("Lựa chọn số lượng câu hỏi rỗng hoặc vượt quá giới hạn!");
+      return;
+    }
+
+    // 3. Trigger download
+    if (fileFormat === "JSON") {
+      const pkg = {
+        metadata: {
+          file_name: activeFile.metadata.file_name,
+          question_count: exportedQuestions.length,
+          last_modified: activeFile.metadata.last_modified
+        },
+        document: activeFile.document,
+        note: activeFile.note,
+        questions: exportedQuestions
+      };
+
+      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = activeFile.metadata.file_name.endsWith(".json") 
+        ? activeFile.metadata.file_name 
+        : `${activeFile.metadata.file_name.replace(/\.[^/.]+$/, "")}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      // DOCX formatting - text representation
+      let textContent = "";
+      exportedQuestions.forEach((q, idx) => {
+        textContent += `Câu ${idx + 1}: ${q.text}\n`;
+        q.options.forEach((opt, oIdx) => {
+          const letter = String.fromCharCode(65 + oIdx);
+          textContent += `${letter}. ${opt.text}${q.correctOptionIds.includes(opt.id) ? "/" : ""}\n`;
+        });
+        if (q.explanation) {
+          textContent += `[>] ${q.explanation}\n`;
+        }
+        if (q.display_blocks && q.display_blocks.length > 0) {
+          q.display_blocks.forEach(b => {
+            textContent += `[+] [${b.type}]\n${b.content}\n[/-]\n`;
+          });
+        }
+        textContent += `\n`;
+      });
+
+      const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${activeFile.name.replace(/\.[^/.]+$/, "")}.docx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    setIsExportModalOpen(false);
+  };
+
   const getStatusColor = (status: FileStatusType) => {
     switch (status) {
       case "Valid File":
@@ -122,8 +330,8 @@ export default function SettingExport({ className }: SettingExportProps) {
             </label>
             <input 
               type="text" 
-              value={fileName}
-              onChange={(e) => setFileName(e.target.value)}
+              value={activeFile.name}
+              onChange={(e) => updateCreatorFile(activeFile.id, { name: e.target.value, metadata: { ...activeFile.metadata, file_name: e.target.value } })}
               className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Nhập tên tệp..."
             />
@@ -136,23 +344,23 @@ export default function SettingExport({ className }: SettingExportProps) {
             </label>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 dark:hover:border-slate-700 cursor-pointer"
+              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-255 flex items-center justify-between hover:border-slate-350 dark:hover:border-slate-700 cursor-pointer"
             >
-              <span>{fileType === "QUIZ" ? "Quiz File" : "Supported File"}</span>
+              <span>{activeFile.type === "QUIZ" ? "Quiz File" : "Supported File"}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
             </button>
 
             {isTypeDropdownOpen && (
               <div className="absolute left-0 right-0 mt-1.5 z-15 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-1.5 space-y-1">
                 <button
-                  onClick={() => { setFileType("QUIZ"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", fileType === "QUIZ" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
+                  onClick={() => { updateCreatorFile(activeFile.id, { type: "QUIZ" }); setIsTypeDropdownOpen(false); }}
+                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", activeFile.type === "QUIZ" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
                 >
                   Quiz File
                 </button>
                 <button
-                  onClick={() => { setFileType("SUPPORT"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", fileType === "SUPPORT" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
+                  onClick={() => { updateCreatorFile(activeFile.id, { type: "SUPPORT" }); setIsTypeDropdownOpen(false); }}
+                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", activeFile.type === "SUPPORT" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
                 >
                   Supported File
                 </button>
@@ -160,41 +368,25 @@ export default function SettingExport({ className }: SettingExportProps) {
             )}
           </div>
 
-          {/* Status Select Dropdown */}
+          {/* Status Display */}
           <div className="space-y-1.5 relative">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
               Status
             </label>
-            <button
-              onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+            <div
               className={cn(
-                "w-full px-3 py-2 text-xs font-bold border rounded-xl flex items-center justify-between cursor-pointer",
+                "w-full px-3 py-2 text-xs font-bold border rounded-xl flex items-center justify-between select-none",
                 getStatusColor(fileStatus)
               )}
             >
               <span>{fileStatus}</span>
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-
-            {isStatusDropdownOpen && (
-              <div className="absolute left-0 right-0 mt-1.5 z-15 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-1.5 space-y-1 max-h-[180px] overflow-y-auto">
-                {(["Valid File", "Missing Answer Option", "Missing Correct Answer", "Syntax Error", "Empty File"] as FileStatusType[]).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => { setFileStatus(st); setIsStatusDropdownOpen(false); }}
-                    className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", fileStatus === st ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
-                  >
-                    {st}
-                  </button>
-                ))}
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Last Changed Tag */}
           <div className="px-3.5 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold select-none">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Last Changed: {lastChanged}</span>
+            <span>Last Changed: {activeFile.metadata.last_modified}</span>
           </div>
         </div>
 
@@ -206,7 +398,6 @@ export default function SettingExport({ className }: SettingExportProps) {
 
           {/* Question Stats Info Box */}
           <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center gap-4">
-            {/* Total Large Indicator */}
             <div className="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex flex-col items-center justify-center shrink-0">
               <span className="text-2xl font-black text-indigo-650 dark:text-indigo-400">{totalQuestions}</span>
             </div>
@@ -248,108 +439,74 @@ export default function SettingExport({ className }: SettingExportProps) {
             </div>
           </div>
 
-          {/* Donut Chart: Tỉ Trọng Tag */}
+          {/* Solid Pie Chart: Tỉ Trọng Tag */}
           <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4 flex flex-col items-center justify-center">
             <h5 className="text-xs font-black text-slate-750 dark:text-slate-300 uppercase tracking-wider text-center">
               Tỉ Trọng Tag
             </h5>
 
-            {/* SVG Donut */}
+            {/* SVG solid circle sectors representation */}
             <div className="relative w-32 h-32">
-              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                {/* Background Circle */}
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="35" 
-                  fill="transparent" 
-                  stroke="#E2E8F0" 
-                  className="dark:stroke-slate-800"
-                  strokeWidth="10"
-                />
-                
-                {/* Segments drawing (Mock calculations based on static Tag ratios) */}
-                {/* 40% Algebra (dasharray: 220, offset: 0) */}
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="35" 
-                  fill="transparent" 
-                  stroke="#6366F1" 
-                  strokeWidth="10"
-                  strokeDasharray="88 220"
-                  strokeDashoffset="0"
-                />
+              {tagsData.length > 0 ? (
+                <svg className="w-full h-full" viewBox="0 0 100 100">
+                  {tagsData.map((tag, idx) => (
+                    <path 
+                      key={idx}
+                      d={describeSlice(tag.startAngle, tag.endAngle)}
+                      fill={tag.color}
+                    >
+                      <title>{`${tag.name}: ${tag.count}`}</title>
+                    </path>
+                  ))}
+                </svg>
+              ) : (
+                <svg className="w-full h-full" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" fill="#E2E8F0" className="dark:fill-slate-800" />
+                </svg>
+              )}
 
-                {/* 30% Geometry (dasharray: 220, offset: -88) */}
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="35" 
-                  fill="transparent" 
-                  stroke="#10B981" 
-                  strokeWidth="10"
-                  strokeDasharray="66 220"
-                  strokeDashoffset="-88"
-                />
-
-                {/* 20% Integral (dasharray: 220, offset: -154) */}
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="35" 
-                  fill="transparent" 
-                  stroke="#F59E0B" 
-                  strokeWidth="10"
-                  strokeDasharray="44 220"
-                  strokeDashoffset="-154"
-                />
-
-                {/* 10% Combination (dasharray: 220, offset: -198) */}
-                <circle 
-                  cx="50" 
-                  cy="50" 
-                  r="35" 
-                  fill="transparent" 
-                  stroke="#EF4444" 
-                  strokeWidth="10"
-                  strokeDasharray="22 220"
-                  strokeDashoffset="-198"
-                />
-              </svg>
-
-              {/* Total Number in Center */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-black text-slate-805 dark:text-slate-100 leading-none">
-                  {totalQuestions}
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-base font-black text-slate-800 dark:text-slate-100 leading-none">
+                  {tagsData.length}
                 </span>
                 <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  Tag
+                  Tags
                 </span>
               </div>
             </div>
 
             {/* Custom Legend */}
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full text-[10px] font-bold text-slate-500 dark:text-slate-450">
-              {tagsData.map((tag, idx) => (
-                <div key={idx} className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
-                  <span className="truncate">{tag.name} ({tag.count})</span>
-                </div>
-              ))}
-            </div>
-
+            {tagsData.length > 0 ? (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full text-[10px] font-bold text-slate-500 dark:text-slate-450">
+                {tagsData.map((tag, idx) => (
+                  <div key={idx} className="flex items-center gap-1.5">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
+                    <span className="truncate">{tag.name} ({tag.count})</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-[10px] text-slate-400 italic">Không có tag nào.</div>
+            )}
           </div>
         </div>
 
         {/* SECTION C: NOTES */}
         <div className="space-y-3 pt-2">
-          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">
-            Notes
-          </h4>
+          <div className="flex justify-between items-center">
+            <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+              Notes
+            </h4>
+            <span className={cn(
+              "text-[9px] font-extrabold px-1.5 py-0.5 rounded",
+              noteWordCount > 180 ? "bg-red-500/10 text-red-500" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+            )}>
+              {noteWordCount}/200 từ
+            </span>
+          </div>
           <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            value={activeFile.note}
+            onChange={(e) => handleNoteChange(e.target.value)}
             className="w-full min-h-[90px] p-3 border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
             placeholder="Nhập ghi chú cho tệp tin này..."
           />
@@ -357,7 +514,7 @@ export default function SettingExport({ className }: SettingExportProps) {
 
       </div>
 
-      {/* 3. FIXED EXPORT ACTION FOOTER BUTTON */}
+      {/* 3. EXPORT FOOTER BUTTON */}
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/10 shrink-0">
         <button
           onClick={() => setIsExportModalOpen(true)}
@@ -392,14 +549,14 @@ export default function SettingExport({ className }: SettingExportProps) {
             {/* Scrollable Form Body */}
             <div className="flex-1 overflow-y-auto space-y-4 pr-1">
               
-              {/* Dropdown 1: Number of Question */}
+              {/* Question quantity select */}
               <div className="space-y-1.5 relative">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
                   Number of Question
                 </label>
                 <button
                   onClick={() => setIsQtyDropdownOpen(!isQtyDropdownOpen)}
-                  className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+                  className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-855 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
                 >
                   <span>{getQtyModeLabel(quantityMode)}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -416,7 +573,7 @@ export default function SettingExport({ className }: SettingExportProps) {
                       <button
                         key={opt.id}
                         onClick={() => { setQuantityMode(opt.id); setIsQtyDropdownOpen(false); }}
-                        className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", quantityMode === opt.id ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
+                        className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", quantityMode === opt.id ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
                       >
                         {opt.label}
                       </button>
@@ -425,13 +582,13 @@ export default function SettingExport({ className }: SettingExportProps) {
                 )}
               </div>
 
-              {/* Dynamic Number Input fields depending on QuantityMode */}
+              {/* Range settings */}
               {quantityMode === "FIRST" && (
                 <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
                   <input 
                     type="number" 
                     min={1}
-                    max={totalQuestions}
+                    max={activeFile.questions.length}
                     value={firstCount}
                     onChange={(e) => setFirstCount(parseInt(e.target.value) || 1)}
                     className="w-20 px-2.5 py-1.5 text-xs font-bold border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
@@ -447,7 +604,7 @@ export default function SettingExport({ className }: SettingExportProps) {
                   <input 
                     type="number" 
                     min={1}
-                    max={totalQuestions}
+                    max={activeFile.questions.length}
                     value={lastCount}
                     onChange={(e) => setLastCount(parseInt(e.target.value) || 1)}
                     className="w-20 px-2.5 py-1.5 text-xs font-bold border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
@@ -473,7 +630,7 @@ export default function SettingExport({ className }: SettingExportProps) {
                   <input 
                     type="number" 
                     min={rangeStart}
-                    max={totalQuestions}
+                    max={activeFile.questions.length}
                     value={rangeEnd}
                     onChange={(e) => setRangeEnd(parseInt(e.target.value) || 1)}
                     className="w-16 px-2 py-1 border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
@@ -481,14 +638,14 @@ export default function SettingExport({ className }: SettingExportProps) {
                 </div>
               )}
 
-              {/* Dropdown 2: File Format */}
+              {/* Format selection dropdown */}
               <div className="space-y-1.5 relative">
                 <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
                   File Format
                 </label>
                 <button
                   onClick={() => setIsFormatDropdownOpen(!isFormatDropdownOpen)}
-                  className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+                  className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-855 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
                 >
                   <span>{fileFormat}</span>
                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
@@ -500,7 +657,7 @@ export default function SettingExport({ className }: SettingExportProps) {
                       <button
                         key={fmt}
                         onClick={() => { setFileFormat(fmt); setIsFormatDropdownOpen(false); }}
-                        className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", fileFormat === fmt ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
+                        className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", fileFormat === fmt ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
                       >
                         {fmt}
                       </button>
@@ -509,7 +666,7 @@ export default function SettingExport({ className }: SettingExportProps) {
                 )}
               </div>
 
-              {/* Checkbox: Apply Filter Setting */}
+              {/* Filter checkboxes */}
               <div className="pt-2">
                 <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-150 dark:border-slate-800 hover:bg-slate-50/50 cursor-pointer transition-colors select-none">
                   <input 
@@ -519,7 +676,7 @@ export default function SettingExport({ className }: SettingExportProps) {
                     className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded cursor-pointer"
                   />
                   <div>
-                    <span className="block text-xs font-extrabold text-slate-800 dark:text-slate-300">
+                    <span className="block text-xs font-extrabold text-slate-855 dark:text-slate-300">
                       Apply Filter Setting
                     </span>
                   </div>
@@ -528,23 +685,19 @@ export default function SettingExport({ className }: SettingExportProps) {
 
             </div>
 
-            {/* Actions */}
+            {/* Action buttons */}
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0 flex gap-3">
               <button 
                 onClick={() => setIsExportModalOpen(false)}
-                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-xs text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
               >
                 Hủy
               </button>
               <button 
-                onClick={() => {
-                  setIsExportModalOpen(false);
-                  alert(`Xuất bản đề thi thành công dưới dạng ${fileFormat}!`);
-                }}
+                onClick={handleExportFile}
                 className="flex-1 py-2.5 bg-indigo-650 hover:bg-indigo-755 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5"
               >
-                <Download className="w-4 h-4" />
-                Export
+                <Download className="w-4 h-4" /> Export
               </button>
             </div>
 
