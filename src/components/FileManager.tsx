@@ -19,19 +19,7 @@ import {
   Check,
   Link2
 } from "lucide-react";
-import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes, getQuizStorageUsedBytesExcept, estimateCreatorFileBytes, estimateSourceFileBytes, formatBytes } from "@/lib/utils";
-
-function getSourcesStorageBytes(): number {
-  if (typeof window === "undefined") return 0;
-  const item = localStorage.getItem("vapas_quiz_sources");
-  return item ? item.length * 2 : 0;
-}
-
-function getCreatorFilesStorageBytes(): number {
-  if (typeof window === "undefined") return 0;
-  const item = localStorage.getItem("vapas_quiz_creator_files");
-  return item ? item.length * 2 : 0;
-}
+import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes, getQuizStorageUsedBytesExcept, getItemBytes, formatBytes } from "@/lib/utils";
 
 interface SupportedFileItem {
   id: string;
@@ -110,8 +98,8 @@ export default function FileManager() {
     return () => clearTimeout(id);
   }, [creatorFiles, storeSources]);
   
-  const sourcesBytes = getSourcesStorageBytes();
-  const creatorFilesBytes = getCreatorFilesStorageBytes();
+  const sourcesBytes = storeSources.reduce((sum, s) => sum + getItemBytes(s), 0);
+  const creatorFilesBytes = creatorFiles.reduce((sum, f) => sum + getItemBytes(f), 0);
   const sourcesPercent = Math.min(100, (sourcesBytes / STORAGE_LIMIT_BYTES) * 100);
   const creatorFilesPercent = Math.min(100, (creatorFilesBytes / STORAGE_LIMIT_BYTES) * 100);
   const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
@@ -441,7 +429,7 @@ export default function FileManager() {
                               {qf.name}
                             </span>
                             <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                              {formatBytes(estimateCreatorFileBytes(qf as any))}
+                              {formatBytes(getItemBytes(creatorFiles.find(f => f.id === qf.id) || qf))}
                             </span>
                           </div>
                         </div>
@@ -485,7 +473,7 @@ export default function FileManager() {
                                   {sf.name}
                                 </span>
                                 <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">
-                                  {formatBytes(estimateCreatorFileBytes(sf as any))}
+                                  {formatBytes(getItemBytes(creatorFiles.find(f => f.id === sf.id) || sf))}
                                 </span>
                               </div>
                             </div>
@@ -561,7 +549,7 @@ export default function FileManager() {
                         {sf.name}
                       </span>
                       <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
-                        {formatBytes(estimateCreatorFileBytes(sf as any))}
+                        {formatBytes(getItemBytes(creatorFiles.find(f => f.id === sf.id) || sf))}
                       </span>
                     </div>
                   </div>
@@ -763,7 +751,7 @@ export default function FileManager() {
                               <div className="min-w-0 flex-1">
                                 <div className="truncate">{displayName}</div>
                                 <div className="text-[9px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
-                                  {formatBytes(estimateSourceFileBytes(src))}
+                                  {formatBytes(getItemBytes(src))}
                                 </div>
                               </div>
                               {selectedSourceId === src.id && <Check className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400 ml-2" />}

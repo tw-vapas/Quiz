@@ -7,7 +7,7 @@ import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
 import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
-import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept, getSourcesStorageBytes, getCreatorFilesStorageBytes, estimateSourceFileBytes, formatBytes } from "@/lib/utils";
+import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept, getQuizStorageUsedBytesByKey, getItemBytes, formatBytes } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
 interface VirtualSourceCardProps {
@@ -48,7 +48,7 @@ const VirtualSourceCard = React.memo(({
   const [isDraggable, setIsDraggable] = useState(false);
   const hasDocument = !!(source.document || source.note);
   
-  const sourceBytes = estimateSourceFileBytes(source);
+  const sourceBytes = getItemBytes(source);
   const sourceSizeText = formatBytes(sourceBytes);
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -517,17 +517,17 @@ const SidebarList = React.memo(({
 
   const [storageUsedBytes, setStorageUsedBytes] = useState(() => {
     const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
-    const sourcesBytes = JSON.stringify(localSources).length * 2;
+    const sourcesBytes = localSources.reduce((sum, s) => sum + getItemBytes(s), 0);
     return otherBytes + sourcesBytes;
   });
   useEffect(() => {
     const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
-    const sourcesBytes = JSON.stringify(localSources).length * 2;
+    const sourcesBytes = localSources.reduce((sum, s) => sum + getItemBytes(s), 0);
     setStorageUsedBytes(otherBytes + sourcesBytes);
   }, [localSources]);
   
-  const sourcesBytes = getSourcesStorageBytes();
-  const creatorFilesBytes = getCreatorFilesStorageBytes();
+  const sourcesBytes = localSources.reduce((sum, s) => sum + getItemBytes(s), 0);
+  const creatorFilesBytes = getQuizStorageUsedBytesByKey("vapas_quiz_creator_files");
   const sourcesPercent = Math.min(100, (sourcesBytes / STORAGE_LIMIT_BYTES) * 100);
   const creatorFilesPercent = Math.min(100, (creatorFilesBytes / STORAGE_LIMIT_BYTES) * 100);
   const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
