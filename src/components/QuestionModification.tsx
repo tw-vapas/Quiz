@@ -46,6 +46,36 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
     }
   }, [question?.tags]);
 
+  // Keyboard shortcut: press A/B/C/D to toggle correct answer
+  useEffect(() => {
+    if (!question) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toUpperCase();
+      if (key.length !== 1 || key < "A" || key > "Z") return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      const options = question.options;
+      const correctIds = question.correctOptionIds;
+      const qType = question.type;
+      const optionIndex = key.charCodeAt(0) - 65;
+      if (optionIndex >= 0 && optionIndex < options.length) {
+        e.preventDefault();
+        const ansId = options[optionIndex].id;
+        let newCorrectIds: string[];
+        if (qType === "single_choice") {
+          newCorrectIds = [ansId];
+        } else {
+          newCorrectIds = correctIds.includes(ansId)
+            ? correctIds.filter(id => id !== ansId)
+            : [...correctIds, ansId];
+        }
+        onUpdate({ correctOptionIds: newCorrectIds });
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [question?.options, question?.correctOptionIds, question?.type]);
+
   if (!question) return null;
 
   const typeLabel = question.type === "single_choice" ? "Single Choice" : "Multiple Choice";
@@ -742,6 +772,25 @@ export default function QuestionModification({
     if (filteredQuestions.length === 0) return null;
     return filteredQuestions.find(q => q.id === selectedPanelQuestionId) || filteredQuestions[0];
   }, [filteredQuestions, selectedPanelQuestionId]);
+
+  // Arrow key navigation for Question View panel
+  useEffect(() => {
+    if (activeTab !== "QUESTION_VIEW" || displayMode !== "Panel") return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      const target = e.target as HTMLElement;
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
+      e.preventDefault();
+      const currentIdx = filteredQuestions.findIndex(q => q.id === panelQuestion?.id);
+      if (e.key === "ArrowRight" && currentIdx < filteredQuestions.length - 1) {
+        setSelectedPanelQuestionId(filteredQuestions[currentIdx + 1].id);
+      } else if (e.key === "ArrowLeft" && currentIdx > 0) {
+        setSelectedPanelQuestionId(filteredQuestions[currentIdx - 1].id);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeTab, displayMode, filteredQuestions, panelQuestion]);
 
   // Manual save for Code view
   const handleSaveJson = () => {

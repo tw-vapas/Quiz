@@ -3,6 +3,7 @@ interface TextItem {
   x: number;
   y: number;
   height: number;
+  isBold: boolean;
 }
 
 /**
@@ -49,6 +50,7 @@ export async function parsePdfFile(
     const textContent = await page.getTextContent();
     
     const items: TextItem[] = [];
+    const styles = (textContent as Record<string, unknown>).styles as Record<string, Record<string, unknown>> | undefined;
     
     for (const item of textContent.items) {
       if ("str" in item && "transform" in item) {
@@ -58,7 +60,26 @@ export async function parsePdfFile(
         const y = transform[5];
         const height = item.height || 0;
         
-        items.push({ str, x, y, height });
+        // Nhận diện font chữ đậm (Bold)
+        const fontName = (item as Record<string, unknown>).fontName as string | undefined;
+        const fontStyle = fontName && styles ? styles[fontName] : null;
+        const fontFamily = fontStyle && typeof fontStyle.fontFamily === "string" ? fontStyle.fontFamily : "";
+        const isBold = fontFamily.toLowerCase().includes("bold");
+        
+        // Tách ký tự đầu dòng của phương án đáp án (ví dụ "a.", "b.", "c.", "d.") ra để tránh làm in đậm cả chữ đánh dấu phương án
+        const markerMatch = str.match(/^([a-d][\.\:\)\/\-\]]\s*)(.*)$/i);
+        if (markerMatch && isBold) {
+          const markerStr = markerMatch[1];
+          const contentStr = markerMatch[2];
+          
+          items.push({ str: markerStr, x, y, height, isBold: false });
+          if (contentStr) {
+            const markerWidth = markerStr.length * (height * 0.5);
+            items.push({ str: contentStr, x: x + markerWidth, y, height, isBold: true });
+          }
+        } else {
+          items.push({ str, x, y, height, isBold });
+        }
       }
     }
     
@@ -88,6 +109,7 @@ export async function parsePdfFile(
       
       let lineText = "";
       let prevXEnd = -1;
+      let inBold = false;
       
       for (const item of line.items) {
         // If there's a significant gap between elements, add a space to keep column separators
@@ -98,11 +120,33 @@ export async function parsePdfFile(
           }
         }
         
+        // Quản lý gắn thẻ markdown in đậm cho các đoạn văn bản có font Bold
+        if (item.isBold && !inBold) {
+          lineText += "**";
+          inBold = true;
+        } else if (!item.isBold && inBold) {
+          // Rút gọn các dấu cách ở cuối để markdown in đậm kết thúc đúng chuẩn "**"
+          if (lineText.endsWith(" ")) {
+            lineText = lineText.slice(0, -1) + "** ";
+          } else {
+            lineText += "**";
+          }
+          inBold = false;
+        }
+        
         lineText += item.str;
         
         // Approximate the end coordinate of the current item: x + length of string * width approximation
         const estWidth = item.str.length * (item.height * 0.5);
         prevXEnd = item.x + estWidth;
+      }
+      
+      if (inBold) {
+        if (lineText.endsWith(" ")) {
+          lineText = lineText.slice(0, -1) + "** ";
+        } else {
+          lineText += "**";
+        }
       }
       
       // Filter out pure whitespace lines

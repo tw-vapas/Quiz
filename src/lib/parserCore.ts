@@ -278,7 +278,7 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
     const candidateIndex = sheetMatch.index;
     const remainingText = normalizedText.substring(candidateIndex + sheetMatch[0].length);
     // Kiểm tra xem phía sau vị trí này còn chứa câu hỏi nào khác không (Câu X:, Question X., [?])
-    const hasSubsequentQuestions = /(?:Câu|Question|Q)?\s*\d+\s*[\.:\)\/\-]|\[\?\]/i.test(remainingText);
+    const hasSubsequentQuestions = /(?:(?:Câu|Question|Q)\s*\d+(?:\s*[\.:\)\/\-])?|\d+\s*[\.:\)\/\-]|\[\?\])/i.test(remainingText);
     
     if (!hasSubsequentQuestions) {
       cutoffIndex = candidateIndex;
@@ -286,24 +286,53 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
     }
   }
   
-  // 2. Quét bảng đáp án ở cuối đề thi nếu có
+  // 2. Tìm vị trí của các phần không phải trắc nghiệm (Tự luận, bài tập ngắn, câu hỏi ngắn...)
+  // Hệ thống sẽ cắt bỏ phần tự luận này để tránh quét nhầm các câu hỏi tự luận làm câu hỏi trắc nghiệm
+  const endingHeaderRegex = /(?:\r?\n|^)\s*(?:câu\s+hỏi\s+ngắn|tự\s+luận|bài\s+tập(?!\s+trắc\s+nghiệm)|phần\s+(?:ii|2)(?!\s+trắc\s+nghiệm)|short\s+questions|essay|exercises(?!\s+multiple\s+choice))(?:\s*:|\s*\r?\n|$)/gi;
+  let endingMatch;
+  let essayCutoffIndex = -1;
+  
+  while ((endingMatch = endingHeaderRegex.exec(normalizedText)) !== null) {
+    const candidateIndex = endingMatch.index;
+    const remainingText = normalizedText.substring(candidateIndex + endingMatch[0].length);
+    // Kiểm tra xem phía sau còn chứa câu hỏi trắc nghiệm nào không (bằng cách tìm chuỗi a..b..c..d của đáp án MCQ)
+    const hasSubsequentMcq = /a[\.\:\)\/\-\]][\s\S]{1,400}b[\.\:\)\/\-\]][\s\S]{1,400}c[\.\:\)\/\-\]][\s\S]{1,400}d[\.\:\)\/\-\]]/i.test(remainingText);
+    
+    if (!hasSubsequentMcq) {
+      essayCutoffIndex = candidateIndex;
+      break;
+    }
+  }
+  
+  // Điểm cắt cuối cùng sẽ là điểm xuất hiện sớm nhất giữa bảng đáp án và phần tự luận
+  let finalCutoffIndex = -1;
+  if (cutoffIndex !== -1 && essayCutoffIndex !== -1) {
+    finalCutoffIndex = Math.min(cutoffIndex, essayCutoffIndex);
+  } else if (cutoffIndex !== -1) {
+    finalCutoffIndex = cutoffIndex;
+  } else if (essayCutoffIndex !== -1) {
+    finalCutoffIndex = essayCutoffIndex;
+  }
+  
+  // 3. Quét bảng đáp án ở cuối đề thi nếu có (sử dụng cutoffIndex ban đầu của bảng đáp án)
   const answerKeyMap = extractAnswerKeyMap(normalizedText, cutoffIndex);
   
-  // 3. Tách riêng phần chứa câu hỏi (bỏ đi phần bảng đáp án ở cuối để tránh quét nhầm)
-  const questionsTextSection = cutoffIndex !== -1 ? normalizedText.substring(0, cutoffIndex) : normalizedText;
+  // 4. Tách riêng phần chứa câu hỏi (bỏ đi phần bảng đáp án và phần tự luận nếu tìm thấy)
+  const questionsTextSection = finalCutoffIndex !== -1 ? normalizedText.substring(0, finalCutoffIndex) : normalizedText;
   
-  // 4. Lọc nhiễu hành chính
+  // 5. Lọc nhiễu hành chính
   const cleanedText = cleanAdministrativeNoise(questionsTextSection);
   
   // 4. Tìm kiếm các điểm bắt đầu của câu hỏi
   // Quét theo biểu thức chính quy hỗ trợ các kiểu Câu X:, Question X., X. X: X) ... và cả tag cũ [?][type]
-  const qRegex = /(?:\r?\n|^)(?:(?:Câu|Question|Q)?\s*(\d+)\s*[\.:\)\/\-]|\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\])\s*/gi;
+  // Nếu có tiền tố như Câu/Question/Q, dấu phân cách phía sau là không bắt buộc (ví dụ "Câu 211 Không có...")
+  const qRegex = /(?:\r?\n|^)(?:(?:Câu|Question|Q)\s*(\d+)(?:\s*[\.:\)\/\-])?|(\d+)\s*[\.:\)\/\-]|\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\])\s*/gi;
   const questionsList = [];
   let qMatch;
   while ((qMatch = qRegex.exec(cleanedText)) !== null) {
     questionsList.push({
-      numberStr: qMatch[1],
-      typeTag: qMatch[2],
+      numberStr: qMatch[1] || qMatch[2],
+      typeTag: qMatch[3],
       index: qMatch.index,
       matchLength: qMatch[0].length
     });
