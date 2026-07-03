@@ -64,12 +64,12 @@ CodeBlock.displayName = "CodeBlock";
 
 export const ImageBlock = memo(({ src }: { src: string }) => {
   return (
-    <div className="my-4 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-100 dark:bg-slate-900 transition-colors duration-300 flex justify-center items-center p-4 max-w-full">
+    <div className="my-4 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden bg-slate-100 dark:bg-slate-900 transition-colors duration-300 max-w-full flex items-center justify-center p-4">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt="Display Block Content"
-        className="max-h-[300px] md:max-h-[400px] object-contain rounded-lg w-auto"
+        className="w-full h-auto rounded-lg"
       />
     </div>
   );
