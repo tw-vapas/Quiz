@@ -141,173 +141,463 @@ export function parseTaggedAnswerBlocks(text: string): { text: string; isCorrect
   return answers;
 }
 
+function cleanAdministrativeNoise(text: string): string {
+  const lines = text.split("\n");
+  const cleanedLines = lines.filter(line => {
+    const trimmed = line.trim().toLowerCase();
+    if (!trimmed) return true; // giữ dòng trống phục vụ phân đoạn
+    
+    // Lọc số trang (ví dụ: Trang 1/4, Page 2 of 3)
+    if (/^trang\s*\d+(\s*\/\s*\d+)?$/i.test(trimmed)) return false;
+    if (/^page\s*\d+(\s*of\s*\d+)?$/i.test(trimmed)) return false;
+    if (/^trang\s*-\s*\d+\s*-$/i.test(trimmed)) return false;
+    
+    // Lọc tiêu đề hành chính đề kiểm tra thông thường
+    if (/^sở\s+gd\s*&\s*đt/i.test(trimmed)) return false;
+    if (/^bộ\s+giáo\s+dục/i.test(trimmed)) return false;
+    if (/^trường\s+thpt/i.test(trimmed)) return false;
+    if (/^đề\s+thi\s+(học\s+kỳ|thử|tốt\s+nghiệp|khảo\s+sát|ôn\s+tập)/i.test(trimmed)) return false;
+    if (/^môn\s*(học)?\s*:/i.test(trimmed)) return false;
+    if (/^mã\s+đề\s+(thi\s*)?:?\s*\d+/i.test(trimmed)) return false;
+    if (/^thời\s+gian\s+làm\s+bài/i.test(trimmed)) return false;
+    if (/^\(?thí\s+sinh\s+không\s+được\s+sử\s+dụng\s+tài\s+liệu\)?/i.test(trimmed)) return false;
+    if (/^---\s*(hết|kết\s+thúc)\s*---/i.test(trimmed)) return false;
+    
+    return true;
+  });
+  return cleanedLines.join("\n");
+}
+
+function extractAnswerKeyMap(text: string, cutoffIndex: number): Map<number, string> {
+  const keyMap = new Map<number, string>();
+  
+  // Chỉ quét bảng đáp án từ vị trí cutoffIndex trở đi nếu tìm thấy điểm cắt hợp lệ
+  const footerText = cutoffIndex !== -1 ? text.substring(cutoffIndex) : text;
+  
+  // Quét các cặp câu và đáp án: 1-A, 2. B, 3: C, 4/D, hoặc định dạng bảng 1A, 2B, 3C...
+  const pairRegex = /(\d+)\s*[\.\:\-\/\s]*\s*([A-D])(?!\w)/gi;
+  let pairMatch;
+  while ((pairMatch = pairRegex.exec(footerText)) !== null) {
+    const qNum = parseInt(pairMatch[1], 10);
+    const ansLetter = pairMatch[2].toUpperCase();
+    if (!keyMap.has(qNum)) {
+      keyMap.set(qNum, ansLetter);
+    }
+  }
+  return keyMap;
+}
+
+function parseOptionsFromBlock(blockText: string): { questionText: string, options: { letter: string, text: string, isCorrect: boolean }[] } {
+  // Regex tìm kiếm các marker đáp án A, B, C, D (hỗ trợ A. A) A: (A) [A] và chữ thường)
+  const optionRegex = /(?:^|[\s\t\(\[-]+)([a-d])[\.\:\)\/\-\]]\s*/gi;
+  const matches = [];
+  let match;
+  
+  while ((match = optionRegex.exec(blockText)) !== null) {
+    matches.push({
+      letter: match[1].toUpperCase(),
+      index: match.index,
+      matchLength: match[0].length
+    });
+  }
+  
+  // Đảm bảo tính tuần tự của đáp án (A -> B -> C -> D)
+  const validSequence = [];
+  let expectedLetterCode = 65; // ký tự 'A'
+  
+  for (const m of matches) {
+    if (m.letter.charCodeAt(0) === expectedLetterCode) {
+      validSequence.push(m);
+      expectedLetterCode++;
+    }
+  }
+  
+  if (validSequence.length === 0) {
+    return { questionText: blockText, options: [] };
+  }
+  
+  const firstOptionIdx = validSequence[0].index;
+  const questionText = blockText.substring(0, firstOptionIdx).trim();
+  
+  const options = [];
+  for (let idx = 0; idx < validSequence.length; idx++) {
+    const current = validSequence[idx];
+    const startIdx = current.index + current.matchLength;
+    const endIdx = (idx + 1 < validSequence.length) ? validSequence[idx + 1].index : blockText.length;
+    
+    let optionText = blockText.substring(startIdx, endIdx).trim();
+    let isCorrect = false;
+    
+    // Kiểm tra ký tự đánh dấu đúng (dấu / hoặc dấu * ở đầu/cuối)
+    if (optionText.endsWith("/")) {
+      isCorrect = true;
+      optionText = optionText.substring(0, optionText.length - 1).trim();
+    } else if (optionText.endsWith(" /")) {
+      isCorrect = true;
+      optionText = optionText.substring(0, optionText.length - 2).trim();
+    }
+    
+    // Kiểm tra xem tiền tố hay nội dung có dấu sao * không
+    const precedingText = blockText.substring(Math.max(0, current.index - 3), current.index);
+    if (precedingText.includes("*")) {
+      isCorrect = true;
+    }
+    if (optionText.startsWith("*")) {
+      isCorrect = true;
+      optionText = optionText.substring(1).trim();
+    }
+    
+    // Kiểm tra định dạng in đậm / gạch chân từ Mammoth chuyển đổi
+    if (optionText.startsWith("**") && optionText.endsWith("**")) {
+      isCorrect = true;
+      optionText = optionText.substring(2, optionText.length - 2).trim();
+    } else if (optionText.startsWith("__") && optionText.endsWith("__")) {
+      isCorrect = true;
+      optionText = optionText.substring(2, optionText.length - 2).trim();
+    }
+    
+    options.push({
+      letter: current.letter,
+      text: optionText,
+      isCorrect
+    });
+  }
+  
+  return { questionText, options };
+}
+
 export function parseQuizText(rawText: string, isDocx: boolean = false): ParseResult {
   const normalizedText = rawText.replace(/\[\\(\+|\?|\>|\=)\]/gi, (match, tag) => `[/${tag}]`);
   
-  const questions: Question[] = [];
-  const parts = normalizedText.split(/(Câu\s+\d+\s*:|\[\?\]\s*\[\s*(?:single_choice|multiple_choice)\s*\])/gi);
+  // 1. Tìm vị trí bảng đáp án thực sự ở cuối tài liệu (không bị trùng với từ "đáp án" trong câu hỏi)
+  const sheetRegex = /(?:\r?\n|^)\s*(?:bảng\s+đáp\s+án|đáp\s+án|answer\s*key|hướng\s+dẫn\s+giải)(?:\s*:|\s*\r?\n|$)/gi;
+  let sheetMatch;
+  let cutoffIndex = -1;
   
-  if (parts.length < 3) {
-    return { questions: [], isValid: false, error: "Không tìm thấy câu hỏi nào. Đảm bảo đúng định dạng 'Câu X:' hoặc '[?][type]'" };
+  while ((sheetMatch = sheetRegex.exec(normalizedText)) !== null) {
+    const candidateIndex = sheetMatch.index;
+    const remainingText = normalizedText.substring(candidateIndex + sheetMatch[0].length);
+    // Kiểm tra xem phía sau vị trí này còn chứa câu hỏi nào khác không (Câu X:, Question X., [?])
+    const hasSubsequentQuestions = /(?:Câu|Question|Q)?\s*\d+\s*[\.:\)\/\-]|\[\?\]/i.test(remainingText);
+    
+    if (!hasSubsequentQuestions) {
+      cutoffIndex = candidateIndex;
+      break;
+    }
   }
-
-  let i = 1;
-  while (i < parts.length) {
-    const câuLabel = parts[i];
-    const body = parts[i + 1] || "";
-    i += 2;
-
-    const fullQuestionBlock = (câuLabel + body).trim();
-    if (!fullQuestionBlock) continue;
-
-    const taggedDisplay = parseTaggedDisplayBlocks(fullQuestionBlock, isDocx);
-    let display_block: DisplayBlock | null = taggedDisplay.length > 0 ? taggedDisplay[0] : null;
-    let explanation = parseTaggedExplanation(fullQuestionBlock);
-    const taggedAnswers = parseTaggedAnswerBlocks(fullQuestionBlock);
-    const taggedQuestion = parseTaggedQuestionBlock(fullQuestionBlock);
-
-    let cleanedBlock = fullQuestionBlock;
-    cleanedBlock = cleanedBlock.replace(/\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\]([\s\S]*?)(?:\[\/\?\]|(?=\[\+\]|\[=\]|\[\>\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-    cleanedBlock = cleanedBlock.replace(/\[\+\]\s*\[\s*([a-zA-Z0-9_]+)\s*\]([\s\S]*?)(?:\[\/\+\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-    cleanedBlock = cleanedBlock.replace(/\[\>\]([\s\S]*?)(?:\[\/\>\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-    cleanedBlock = cleanedBlock.replace(/\[=\]\s*\[\s*([TF])\s*\]([\s\S]*?)(?:\[\/=\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-
-    if (!display_block) {
-      const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
-      cleanedBlock = cleanedBlock.replace(displayBlockRegex, (match, type, content) => {
-        const mappedType = mapBlockType(type);
-        const unescaped = unescapeString(content);
-        display_block = {
-          type: mappedType,
-          content: mappedType === "code" ? normalizeCodeIndentation(unescaped, isDocx) : unescaped
-        };
-        return "";
-      });
-    } else {
-      const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
-      cleanedBlock = cleanedBlock.replace(displayBlockRegex, "");
+  
+  // 2. Quét bảng đáp án ở cuối đề thi nếu có
+  const answerKeyMap = extractAnswerKeyMap(normalizedText, cutoffIndex);
+  
+  // 3. Tách riêng phần chứa câu hỏi (bỏ đi phần bảng đáp án ở cuối để tránh quét nhầm)
+  const questionsTextSection = cutoffIndex !== -1 ? normalizedText.substring(0, cutoffIndex) : normalizedText;
+  
+  // 4. Lọc nhiễu hành chính
+  const cleanedText = cleanAdministrativeNoise(questionsTextSection);
+  
+  // 4. Tìm kiếm các điểm bắt đầu của câu hỏi
+  // Quét theo biểu thức chính quy hỗ trợ các kiểu Câu X:, Question X., X. X: X) ... và cả tag cũ [?][type]
+  const qRegex = /(?:\r?\n|^)(?:(?:Câu|Question|Q)?\s*(\d+)\s*[\.:\)\/\-]|\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\])\s*/gi;
+  const questionsList = [];
+  let qMatch;
+  while ((qMatch = qRegex.exec(cleanedText)) !== null) {
+    questionsList.push({
+      numberStr: qMatch[1],
+      typeTag: qMatch[2],
+      index: qMatch.index,
+      matchLength: qMatch[0].length
+    });
+  }
+  
+  const questions: Question[] = [];
+  
+  if (questionsList.length === 0) {
+    // Luồng dự phòng (Fallback): Nếu không quét được theo mẫu câu hỏi thông minh, split theo kiểu cũ
+    const parts = cleanedText.split(/(Câu\s+\d+\s*:|\[\?\]\s*\[\s*(?:single_choice|multiple_choice)\s*\])/gi);
+    if (parts.length < 3) {
+      return { questions: [], isValid: false, error: "Không tìm thấy câu hỏi nào. Đảm bảo đúng định dạng câu hỏi." };
     }
-
-    if (!explanation) {
-      const explanationRegex = /\[\>\]\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
-      cleanedBlock = cleanedBlock.replace(explanationRegex, (match, content) => {
-        explanation = unescapeString(content);
-        return "";
-      });
-    } else {
-      const explanationRegex = /\[\>\]\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
-      cleanedBlock = cleanedBlock.replace(explanationRegex, "");
-    }
-
-    let options: Option[] = [];
-    const correctOptionIds: string[] = [];
-    let questionText = "";
-    let questionType: "single_choice" | "multiple_choice" = "single_choice";
-
-    if (taggedAnswers.length > 0) {
-      options = taggedAnswers.map((ans, idx) => {
-        const optionLetter = String.fromCharCode(65 + idx);
-        const optId = Math.random().toString(36).substring(2, 9);
-        if (ans.isCorrect) {
-          correctOptionIds.push(optId);
-        }
-        return {
-          id: optId,
-          text: ans.text,
-          originalText: `${optionLetter}. ${ans.text}`
-        };
-      });
-
-      if (taggedQuestion) {
-        questionText = taggedQuestion.text;
-        questionType = taggedQuestion.type;
-      } else {
-        let cleanText = cleanedBlock.trim();
-        const câuPrefixMatch = cleanText.match(/^Câu\s+\d+\s*:\s*([\s\S]*)/i);
-        if (câuPrefixMatch) {
-          cleanText = câuPrefixMatch[1].trim();
-        }
-        questionText = cleanText;
-        questionType = correctOptionIds.length > 1 ? "multiple_choice" : "single_choice";
-      }
-    } else {
-      const optionMatches = Array.from(cleanedBlock.matchAll(/^([A-D])[\.\)]\s*(.*?)$/gim));
+    
+    let i = 1;
+    while (i < parts.length) {
+      const câuLabel = parts[i];
+      const body = parts[i + 1] || "";
+      i += 2;
       
-      if (optionMatches.length === 0) {
+      const fullQuestionBlock = (câuLabel + body).trim();
+      if (!fullQuestionBlock) continue;
+      
+      const taggedDisplay = parseTaggedDisplayBlocks(fullQuestionBlock, isDocx);
+      let display_block: DisplayBlock | null = taggedDisplay.length > 0 ? taggedDisplay[0] : null;
+      let explanation = parseTaggedExplanation(fullQuestionBlock);
+      const taggedAnswers = parseTaggedAnswerBlocks(fullQuestionBlock);
+      const taggedQuestion = parseTaggedQuestionBlock(fullQuestionBlock);
+      
+      let cleanedBlock = fullQuestionBlock;
+      cleanedBlock = cleanedBlock.replace(/\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\]([\s\S]*?)(?:\[\/\?\]|(?=\[\+\]|\[=\]|\[\>\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      cleanedBlock = cleanedBlock.replace(/\[\+\]\s*\[\s*([a-zA-Z0-9_]+)\s*\]([\s\S]*?)(?:\[\/\+\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      cleanedBlock = cleanedBlock.replace(/\[\>\]([\s\S]*?)(?:\[\/\>\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      cleanedBlock = cleanedBlock.replace(/\[=\]\s*\[\s*([TF])\s*\]([\s\S]*?)(?:\[\/=\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      
+      if (!display_block) {
+        const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
+        cleanedBlock = cleanedBlock.replace(displayBlockRegex, (match, type, content) => {
+          const mappedType = mapBlockType(type);
+          const unescaped = unescapeString(content);
+          display_block = {
+            type: mappedType,
+            content: mappedType === "code" ? normalizeCodeIndentation(unescaped, isDocx) : unescaped
+          };
+          return "";
+        });
+      } else {
+        const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
+        cleanedBlock = cleanedBlock.replace(displayBlockRegex, "");
+      }
+      
+      if (!explanation) {
+        const explanationRegex = /\[\>\]\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+        cleanedBlock = cleanedBlock.replace(explanationRegex, (match, content) => {
+          explanation = unescapeString(content);
+          return "";
+        });
+      } else {
+        const explanationRegex = /\[\>\]\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+        cleanedBlock = cleanedBlock.replace(explanationRegex, "");
+      }
+      
+      let options: Option[] = [];
+      const correctOptionIds: string[] = [];
+      let questionText = "";
+      let questionType: "single_choice" | "multiple_choice" = "single_choice";
+      
+      if (taggedAnswers.length > 0) {
+        options = taggedAnswers.map((ans, idx) => {
+          const optionLetter = String.fromCharCode(65 + idx);
+          const optId = Math.random().toString(36).substring(2, 9);
+          if (ans.isCorrect) {
+            correctOptionIds.push(optId);
+          }
+          return {
+            id: optId,
+            text: ans.text,
+            originalText: `${optionLetter}. ${ans.text}`
+          };
+        });
+        
+        if (taggedQuestion) {
+          questionText = taggedQuestion.text;
+          questionType = taggedQuestion.type;
+        } else {
+          let cleanText = cleanedBlock.trim();
+          const câuPrefixMatch = cleanText.match(/^Câu\s+\d+\s*:\s*([\s\S]*)/i);
+          if (câuPrefixMatch) {
+            cleanText = câuPrefixMatch[1].trim();
+          }
+          questionText = cleanText;
+          questionType = correctOptionIds.length > 1 ? "multiple_choice" : "single_choice";
+        }
+      } else {
+        const optionMatches = Array.from(cleanedBlock.matchAll(/^([A-D])[\.\)]\s*(.*?)$/gim));
+        if (optionMatches.length === 0) continue;
+        
+        const firstOptionIndex = cleanedBlock.indexOf(optionMatches[0][0]);
+        let rawQuestionText = cleanedBlock.substring(0, firstOptionIndex).trim();
+        const câuPrefixMatch = rawQuestionText.match(/^Câu\s+\d+\s*:\s*([\s\S]*)/i);
+        if (câuPrefixMatch) {
+          rawQuestionText = câuPrefixMatch[1].trim();
+        }
+        
+        questionText = taggedQuestion ? taggedQuestion.text : rawQuestionText;
+        
+        for (const match of optionMatches) {
+          const optionLetter = match[1].toUpperCase();
+          let optionText = match[2].trim();
+          let isCorrect = false;
+          
+          if (optionText.endsWith("/")) {
+            isCorrect = true;
+            optionText = optionText.substring(0, optionText.length - 1).trim();
+          } else if (optionText.endsWith(" /")) {
+            isCorrect = true;
+            optionText = optionText.substring(0, optionText.length - 2).trim();
+          }
+          
+          const optId = Math.random().toString(36).substring(2, 9);
+          options.push({
+            id: optId,
+            text: optionText,
+            originalText: `${optionLetter}. ${optionText}`
+          });
+          
+          if (isCorrect) {
+            correctOptionIds.push(optId);
+          }
+        }
+        
+        questionType = taggedQuestion ? taggedQuestion.type : (correctOptionIds.length > 1 ? "multiple_choice" : "single_choice");
+      }
+      
+      const display_blocks: DisplayBlock[] = display_block ? [display_block] : [];
+      if (options.length > 0) {
+        questions.push({
+          id: Math.random().toString(36).substring(2, 9),
+          text: questionText,
+          options,
+          correctOptionIds,
+          type: questionType,
+          display_block,
+          display_blocks,
+          explanation
+        });
+      }
+    }
+  } else {
+    // Vòng lặp phân tích cú pháp thông minh sử dụng danh sách chỉ mục câu hỏi đã quét
+    for (let idx = 0; idx < questionsList.length; idx++) {
+      const current = questionsList[idx];
+      const startIdx = current.index + current.matchLength;
+      const endIdx = (idx + 1 < questionsList.length) ? questionsList[idx + 1].index : cleanedText.length;
+      const blockText = cleanedText.substring(startIdx, endIdx).trim();
+      
+      // Lấy tagged components nếu có
+      const taggedDisplay = parseTaggedDisplayBlocks(blockText, isDocx);
+      let display_block: DisplayBlock | null = taggedDisplay.length > 0 ? taggedDisplay[0] : null;
+      let explanation = parseTaggedExplanation(blockText);
+      const taggedAnswers = parseTaggedAnswerBlocks(blockText);
+      const taggedQuestion = parseTaggedQuestionBlock(blockText);
+      
+      let cleanedBlock = blockText;
+      cleanedBlock = cleanedBlock.replace(/\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\]([\s\S]*?)(?:\[\/\?\]|(?=\[\+\]|\[=\]|\[\>\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      cleanedBlock = cleanedBlock.replace(/\[\+\]\s*\[\s*([a-zA-Z0-9_]+)\s*\]([\s\S]*?)(?:\[\/\+\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      cleanedBlock = cleanedBlock.replace(/\[\>\]([\s\S]*?)(?:\[\/\>\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      cleanedBlock = cleanedBlock.replace(/\[=\]\s*\[\s*([TF])\s*\]([\s\S]*?)(?:\[\/=\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
+      
+      if (!display_block) {
+        const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
+        cleanedBlock = cleanedBlock.replace(displayBlockRegex, (match, type, content) => {
+          const mappedType = mapBlockType(type);
+          const unescaped = unescapeString(content);
+          display_block = {
+            type: mappedType,
+            content: mappedType === "code" ? normalizeCodeIndentation(unescaped, isDocx) : unescaped
+          };
+          return "";
+        });
+      } else {
+        const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
+        cleanedBlock = cleanedBlock.replace(displayBlockRegex, "");
+      }
+      
+      if (!explanation) {
+        const explanationRegex = /\[\>\]\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+        cleanedBlock = cleanedBlock.replace(explanationRegex, (match, content) => {
+          explanation = unescapeString(content);
+          return "";
+        });
+      } else {
+        const explanationRegex = /\[\>\]\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g;
+        cleanedBlock = cleanedBlock.replace(explanationRegex, "");
+      }
+      
+      // Phân tách câu hỏi và các đáp án tự động
+      const { questionText: parsedQText, options: parsedOpts } = parseOptionsFromBlock(cleanedBlock);
+      
+      // Nếu không tìm thấy phương án đáp án nào và đây không phải là câu đầu tiên:
+      // Heuristic: Khả năng cao đây là đoạn tiếp theo của câu hỏi trước đó bị số đánh dấu chia nhầm
+      if (parsedOpts.length === 0 && questions.length > 0) {
+        const lastQ = questions[questions.length - 1];
+        lastQ.text += "\n" + cleanedBlock;
         continue;
       }
-
-      const firstOptionIndex = cleanedBlock.indexOf(optionMatches[0][0]);
-      let rawQuestionText = cleanedBlock.substring(0, firstOptionIndex).trim();
-      const câuPrefixMatch = rawQuestionText.match(/^Câu\s+\d+\s*:\s*([\s\S]*)/i);
-      if (câuPrefixMatch) {
-        rawQuestionText = câuPrefixMatch[1].trim();
-      }
-
-      if (taggedQuestion) {
-        questionText = taggedQuestion.text;
-        questionType = taggedQuestion.type;
-      } else {
-        questionText = rawQuestionText;
-      }
-
-      for (const match of optionMatches) {
-        const optionLetter = match[1].toUpperCase();
-        let optionText = match[2].trim();
-        let isCorrect = false;
-
-        if (optionText.endsWith("/")) {
-          isCorrect = true;
-          optionText = optionText.substring(0, optionText.length - 1).trim();
-        } else if (optionText.endsWith(" /")) {
-          isCorrect = true;
-          optionText = optionText.substring(0, optionText.length - 2).trim();
-        }
-
-        const optId = Math.random().toString(36).substring(2, 9);
-        options.push({
-          id: optId,
-          text: optionText,
-          originalText: `${optionLetter}. ${optionText}`
+      
+      let options: Option[] = [];
+      const correctOptionIds: string[] = [];
+      const questionText = taggedQuestion ? taggedQuestion.text : parsedQText;
+      let questionType: "single_choice" | "multiple_choice" = "single_choice";
+      
+      if (taggedAnswers.length > 0) {
+        options = taggedAnswers.map((ans, oIdx) => {
+          const optLetter = String.fromCharCode(65 + oIdx);
+          const optId = Math.random().toString(36).substring(2, 9);
+          if (ans.isCorrect) correctOptionIds.push(optId);
+          return {
+            id: optId,
+            text: ans.text,
+            originalText: `${optLetter}. ${ans.text}`
+          };
         });
-
-        if (isCorrect) {
-          correctOptionIds.push(optId);
+      } else {
+        options = parsedOpts.map((opt) => {
+          const optId = Math.random().toString(36).substring(2, 9);
+          
+          // Kiểm tra xem phương án này có đúng theo style / biểu tượng không
+          let isCorrect = opt.isCorrect;
+          
+          // Kiểm tra xem có bảng đáp án bên ngoài khớp với câu này không
+          if (current.numberStr) {
+            const qNum = parseInt(current.numberStr, 10);
+            const sheetCorrectLetter = answerKeyMap.get(qNum);
+            if (sheetCorrectLetter === opt.letter) {
+              isCorrect = true;
+            }
+          }
+          
+          if (isCorrect) {
+            correctOptionIds.push(optId);
+          }
+          
+          // Dọn dẹp lại định dạng markdown bold ** và __ để text hiển thị đẹp mắt
+          let cleanedOptText = opt.text;
+          cleanedOptText = cleanedOptText.replace(/^\*+/g, "").replace(/\*+$/g, ""); // xóa dấu *
+          cleanedOptText = cleanedOptText.replace(/^\*\*+/, "").replace(/\*\*+$/, ""); // xóa bold **
+          cleanedOptText = cleanedOptText.replace(/^__+/, "").replace(/__+$/, ""); // xóa u __
+          
+          return {
+            id: optId,
+            text: cleanedOptText,
+            originalText: `${opt.letter}. ${cleanedOptText}`
+          };
+        });
+      }
+      
+      // Xử lý style in đậm của đáp án ở cấp độ nhóm (nếu chỉ đúng 1 câu có in đậm mà không đánh dấu đúng trước đó)
+      if (correctOptionIds.length === 0 && options.length > 0) {
+        // Kiểm tra xem trong các phương án ban đầu, có đúng một phương án chứa dấu in đậm ** hoặc __ không
+        const boldOpts = parsedOpts.filter(o => o.text.includes("**") || o.text.includes("__"));
+        if (boldOpts.length === 1) {
+          const correctLetter = boldOpts[0].letter;
+          const targetOpt = options.find((o, idx) => parsedOpts[idx].letter === correctLetter);
+          if (targetOpt) {
+            correctOptionIds.push(targetOpt.id);
+          }
         }
       }
-
-      if (taggedQuestion) {
-        questionType = taggedQuestion.type;
-      } else {
-        questionType = correctOptionIds.length > 1 ? "multiple_choice" : "single_choice";
+      
+      questionType = taggedQuestion ? taggedQuestion.type : (correctOptionIds.length > 1 ? "multiple_choice" : "single_choice");
+      
+      const display_blocks: DisplayBlock[] = display_block ? [display_block] : [];
+      
+      if (options.length > 0) {
+        questions.push({
+          id: Math.random().toString(36).substring(2, 9),
+          text: questionText,
+          options,
+          correctOptionIds,
+          type: questionType,
+          display_block,
+          display_blocks,
+          explanation
+        });
       }
-    }
-
-    const display_blocks: DisplayBlock[] = display_block ? [display_block] : [];
-
-    if (options.length > 0) {
-      questions.push({
-        id: Math.random().toString(36).substring(2, 9),
-        text: questionText,
-        options,
-        correctOptionIds,
-        type: questionType,
-        display_block,
-        display_blocks,
-        explanation
-      });
     }
   }
-
+  
   if (questions.length === 0) {
     return { questions: [], isValid: false, error: "Không tìm thấy câu hỏi hoặc lựa chọn nào hợp lệ." };
   }
-
-  const invalidQuestions = questions.filter(q => q.correctOptionIds.length === 0);
-  if (invalidQuestions.length > 0) {
-    return { questions, isValid: false, error: `Có ${invalidQuestions.length} câu thiếu đáp án đúng (dấu / hoặc [T])` };
-  }
-
+  
+  // Trả về isValid: true để chấp nhận cả đề không có sẵn đáp án đúng, cho phép chỉnh sửa sau
   return { questions, isValid: true };
 }
 
@@ -330,7 +620,7 @@ export function parseQuizJson(rawText: string): ParseResult {
       let correctOptionIds: string[] = [];
 
       if (Array.isArray(q.answers)) {
-        options = q.answers.map((ans: any, optIdx: number) => {
+        options = q.answers.map((ans: { id?: string | number; content?: string | number }, optIdx: number) => {
           const id = ans.id ? String(ans.id) : Math.random().toString(36).substring(2, 9);
           return {
             id: id,
@@ -339,7 +629,7 @@ export function parseQuizJson(rawText: string): ParseResult {
           };
         });
 
-        q.answers.forEach((ans: any, optIdx: number) => {
+        q.answers.forEach((ans: { is_correct?: boolean; isCorrect?: boolean }, optIdx: number) => {
           if (ans.is_correct || ans.isCorrect) {
             const opt = options[optIdx];
             if (opt) {
@@ -378,15 +668,16 @@ export function parseQuizJson(rawText: string): ParseResult {
 
       let tags: string[] = [];
       if (Array.isArray(q.tags)) {
-        tags = q.tags
-          .filter((t: any) => typeof t === "string")
-          .map((t: string) => t.trim())
+        const tagsArray = q.tags as unknown[];
+        tags = tagsArray
+          .filter((t: unknown): t is string => typeof t === "string")
+          .map(t => t.trim())
           .slice(0, 5);
       }
 
       const display_block = q.display_block || null;
       const display_blocks: DisplayBlock[] = Array.isArray(q.display_blocks)
-        ? q.display_blocks.map((db: any) => ({
+        ? q.display_blocks.map((db: { type?: string | number; content?: string | number }) => ({
             type: db.type ? String(db.type) : "code",
             content: db.content ? String(db.content) : ""
           }))

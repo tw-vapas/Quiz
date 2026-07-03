@@ -126,6 +126,9 @@ export default function FileManager() {
     note: string;
   } | null>(null);
 
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseStatus, setParseStatus] = useState("");
+
   // Modal "+ Add Supported Files" States
   const [isAddSupportModalOpen, setIsAddSupportModalOpen] = useState(false);
   const [targetQuizFileId, setTargetQuizFileId] = useState<string | null>(null);
@@ -147,8 +150,14 @@ export default function FileManager() {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    setIsParsing(true);
+    setParseStatus("Đang đọc tệp tin...");
+    
     try {
-      const result = await parseFile(file);
+      const result = await parseFile(file, (status) => {
+        setParseStatus(status);
+      });
+      
       if (result.isValid) {
         // Estimate total localStorage bytes after adding this file to prevent quota exceed / crash
         const testNewFile = {
@@ -174,6 +183,8 @@ export default function FileManager() {
         if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
           useQuizStore.getState().showNotification("Không thể tải tệp lên: Dung lượng tệp quá lớn và bộ nhớ lưu trữ đã đầy.", "error");
           if (fileInputRef.current) fileInputRef.current.value = "";
+          setIsParsing(false);
+          setParseStatus("");
           return;
         }
 
@@ -183,11 +194,21 @@ export default function FileManager() {
           note: result.note || ""
         });
         setNewFileNameInput(file.name);
+        
+        const missingCount = result.questions.filter(q => q.correctOptionIds.length === 0).length;
+        if (missingCount > 0) {
+          useQuizStore.getState().showNotification(`Đã trích xuất ${result.questions.length} câu hỏi. Có ${missingCount} câu chưa có đáp án đúng.`, "info");
+        } else {
+          useQuizStore.getState().showNotification(`Đã trích xuất thành công ${result.questions.length} câu hỏi.`, "success");
+        }
       } else {
         useQuizStore.getState().showNotification("Lỗi đọc file: " + result.error, "error");
       }
     } catch (err) {
       useQuizStore.getState().showNotification("Đã xảy ra lỗi khi đọc file.", "error");
+    } finally {
+      setIsParsing(false);
+      setParseStatus("");
     }
   };
 
@@ -773,23 +794,40 @@ export default function FileManager() {
 
               {newFileDataOption === "IMPORT" && newFileImportSource === "FILE" && (
                 <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-slate-200 dark:border-slate-800 hover:border-indigo-500/55 rounded-2xl p-6 text-center cursor-pointer transition-all bg-slate-50/20 hover:bg-indigo-50/5 group/drop flex flex-col items-center w-full"
+                  onClick={() => !isParsing && fileInputRef.current?.click()}
+                  className={cn(
+                    "border-2 border-dashed rounded-2xl p-6 text-center transition-all flex flex-col items-center w-full",
+                    isParsing 
+                      ? "border-indigo-300 bg-indigo-50/10 dark:bg-indigo-950/10 cursor-wait"
+                      : "border-slate-200 dark:border-slate-800 hover:border-indigo-500/55 cursor-pointer bg-slate-50/20 hover:bg-indigo-50/5 group/drop"
+                  )}
                 >
                   <input 
                     type="file" 
-                    accept=".txt,.json,.docx" 
+                    accept=".txt,.json,.docx,.pdf,image/*" 
                     ref={fileInputRef} 
                     onChange={handleFileInputChange} 
                     className="hidden" 
+                    disabled={isParsing}
                   />
-                  <Upload className="w-8 h-8 text-slate-400 group-hover/drop:text-indigo-600 transition-colors mb-2" />
-                  <span className="text-xs font-extrabold text-slate-750 dark:text-slate-300">
-                    {importedData ? `Đã nạp: ${newFileNameInput}` : "Tải tệp từ thiết bị của bạn"}
-                  </span>
-                  <span className="text-[10px] text-slate-400 mt-1">
-                    {importedData ? `${importedData.questions.length} câu hỏi được tìm thấy` : "Hỗ trợ .txt, .docx, .json"}
-                  </span>
+                  {isParsing ? (
+                    <div className="flex flex-col items-center py-2">
+                      <div className="w-8 h-8 border-4 border-indigo-650 border-t-transparent rounded-full animate-spin mb-3"></div>
+                      <span className="text-xs font-extrabold text-indigo-650 dark:text-indigo-400 animate-pulse">
+                        {parseStatus || "Đang xử lý tệp..."}
+                      </span>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-8 h-8 text-slate-400 group-hover/drop:text-indigo-650 transition-colors mb-2" />
+                      <span className="text-xs font-extrabold text-slate-750 dark:text-slate-300">
+                        {importedData ? `Đã nạp: ${newFileNameInput}` : "Tải tệp từ thiết bị của bạn"}
+                      </span>
+                      <span className="text-[10px] text-slate-400 mt-1">
+                        {importedData ? `${importedData.questions.length} câu hỏi được tìm thấy` : "Hỗ trợ .txt, .docx, .pdf, .json, hình ảnh"}
+                      </span>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -798,17 +836,23 @@ export default function FileManager() {
             {/* Modal Action Buttons */}
             <div className="pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0 flex gap-2.5">
               <button 
-                onClick={() => setIsCreateModalOpen(false)}
-                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                onClick={() => !isParsing && setIsCreateModalOpen(false)}
+                disabled={isParsing}
+                className={cn(
+                  "flex-1 py-2.5 border rounded-xl font-bold text-xs transition-all",
+                  isParsing
+                    ? "border-slate-200 dark:border-slate-800 text-slate-400 cursor-not-allowed bg-slate-50/50"
+                    : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                )}
               >
                 Hủy
               </button>
               <button 
                 onClick={handleCreateFile}
-                disabled={isStorageFull || (newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)}
+                disabled={isStorageFull || isParsing || (newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)}
                 className={cn(
                   "flex-1 py-2.5 font-extrabold text-xs rounded-xl shadow-md transition-all",
-                  isStorageFull || (newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)
+                  isStorageFull || isParsing || (newFileType === "QUIZ" && quizFiles.length >= QUIZ_FILE_LIMIT) || (newFileType === "SUPPORT" && supportedFiles.length >= SUPPORTED_FILE_LIMIT)
                     ? "bg-slate-300 dark:bg-slate-700 text-slate-500 dark:text-slate-500 cursor-not-allowed"
                     : "bg-indigo-650 hover:bg-indigo-750 text-white cursor-pointer"
                 )}

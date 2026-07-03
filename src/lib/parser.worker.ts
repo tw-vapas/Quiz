@@ -13,8 +13,11 @@ self.onmessage = async (e: MessageEvent) => {
       const result = parseQuizText(text, false);
       self.postMessage({ type: "success", result });
     } else if (fileName.endsWith(".docx")) {
-      const resultDoc = await mammoth.extractRawText({ arrayBuffer: fileContents });
-      const text = resultDoc.value;
+      const resultDoc = await mammoth.convertToHtml({ arrayBuffer: fileContents });
+      let html = resultDoc.value;
+      html = html.replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, "**$2**");
+      html = html.replace(/<u\b[^>]*>([\s\S]*?)<\/u>/gi, "__$2__");
+      const text = html.replace(/<[^>]+>/g, " ");
       const result = parseQuizText(text, true);
       self.postMessage({ type: "success", result });
     } else {
