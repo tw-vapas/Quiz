@@ -18,6 +18,7 @@ interface VirtualSourceCardProps {
   updateLocalCustomName: (id: string, name: string) => void;
   toggleLocalSource: (id: string) => void;
   removeLocalSource: (id: string) => void;
+  onDeleteRequest: (id: string) => void;
   draggedIndex: number | null;
   setDraggedIndex: (idx: number | null) => void;
   dropTargetIndex: number | null;
@@ -36,6 +37,7 @@ const VirtualSourceCard = React.memo(({
   updateLocalCustomName,
   toggleLocalSource,
   removeLocalSource,
+  onDeleteRequest,
   draggedIndex,
   setDraggedIndex,
   dropTargetIndex,
@@ -192,7 +194,7 @@ const VirtualSourceCard = React.memo(({
               Đặt tên
             </button>
             <button
-              onClick={() => removeLocalSource(source.id)}
+              onClick={() => onDeleteRequest(source.id)}
               className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
@@ -228,6 +230,7 @@ interface VirtualSourcesListProps {
   updateLocalCustomName: (id: string, name: string) => void;
   toggleLocalSource: (id: string) => void;
   removeLocalSource: (id: string) => void;
+  onDeleteRequest: (id: string) => void;
   onReorder: (newSources: SourceFile[]) => void;
   parentScrollRef: React.RefObject<HTMLDivElement | null>;
 }
@@ -239,6 +242,7 @@ const VirtualSourcesList = ({
   updateLocalCustomName,
   toggleLocalSource,
   removeLocalSource,
+  onDeleteRequest,
   onReorder,
   parentScrollRef: _parentScrollRef
 }: VirtualSourcesListProps) => {
@@ -265,6 +269,7 @@ const VirtualSourcesList = ({
             updateLocalCustomName={updateLocalCustomName}
             toggleLocalSource={toggleLocalSource}
             removeLocalSource={removeLocalSource}
+            onDeleteRequest={onDeleteRequest}
             draggedIndex={draggedIndex}
             setDraggedIndex={setDraggedIndex}
             dropTargetIndex={dropTargetIndex}
@@ -532,6 +537,12 @@ const SidebarList = React.memo(({
   const creatorFilesPercent = Math.min(100, (creatorFilesBytes / STORAGE_LIMIT_BYTES) * 100);
   const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
   const isStorageFull = storageUsedBytes >= STORAGE_LIMIT_BYTES;
+  
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const handleDeleteRequest = useCallback((id: string) => {
+    setConfirmDeleteId(id);
+  }, []);
+  const confirmSource = confirmDeleteId ? localSources.find(s => s.id === confirmDeleteId) : null;
 
   return (
     <div className="flex-1 flex flex-col relative bg-slate-50/50 dark:bg-slate-900/50 min-h-0">
@@ -620,11 +631,54 @@ const SidebarList = React.memo(({
             updateLocalCustomName={updateLocalCustomName}
             toggleLocalSource={toggleLocalSource}
             removeLocalSource={removeLocalSource}
+            onDeleteRequest={handleDeleteRequest}
             onReorder={onReorder}
             parentScrollRef={parentScrollRef}
           />
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteId && confirmSource && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Xác nhận xóa
+              </h3>
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              Bạn có chắc chắn muốn xóa nguồn dữ liệu <span className="font-bold text-slate-800 dark:text-slate-200">{getSourceDisplayName(confirmSource)}</span>?
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-500">
+              Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  removeLocalSource(confirmDeleteId);
+                  setConfirmDeleteId(null);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

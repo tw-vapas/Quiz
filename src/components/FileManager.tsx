@@ -135,6 +135,9 @@ export default function FileManager() {
   const [syncingFileId, setSyncingFileId] = useState<string | null>(null);
   const [syncedFileId, setSyncedFileId] = useState<string | null>(null);
 
+  // Delete confirmation state
+  const [confirmDelete, setConfirmDelete] = useState<{ type: 'quiz' | 'support'; id: string } | null>(null);
+
   // --- ACTIONS ---
   const toggleQuizExpand = (id: string) => {
     setExpandedQuizFiles(prev => ({ ...prev, [id]: !prev[id] }));
@@ -446,7 +449,7 @@ export default function FileManager() {
                       </button>
                       {/* Delete Quiz File */}
                       <button 
-                        onClick={() => deleteQuizFile(qf.id)}
+                        onClick={() => setConfirmDelete({ type: 'quiz', id: qf.id })}
                         className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-505 cursor-pointer transition-colors"
                         title="Xóa Quiz File"
                       >
@@ -555,7 +558,7 @@ export default function FileManager() {
                   </div>
 
                   <button 
-                    onClick={() => deleteSupportFileGlobal(sf.id)}
+                    onClick={() => setConfirmDelete({ type: 'support', id: sf.id })}
                     className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-505 opacity-60 group-hover:opacity-100 transition-all cursor-pointer"
                     title="Xóa Supported File khỏi hệ thống"
                   >
@@ -903,6 +906,56 @@ export default function FileManager() {
               </button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                Xác nhận xóa
+              </h3>
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              Bạn có chắc chắn muốn xóa <span className="font-bold text-slate-800 dark:text-slate-200">
+                {confirmDelete.type === 'quiz'
+                  ? creatorFiles.find(f => f.id === confirmDelete.id)?.name
+                  : creatorFiles.find(f => f.id === confirmDelete.id)?.name}
+              </span>?
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-500">
+              Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setConfirmDelete(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  if (confirmDelete.type === 'quiz') {
+                    deleteQuizFile(confirmDelete.id);
+                  } else {
+                    deleteSupportFileGlobal(confirmDelete.id);
+                  }
+                  setConfirmDelete(null);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                Xóa
+              </button>
+            </div>
           </div>
         </div>
       )}
