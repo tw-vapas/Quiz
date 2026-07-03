@@ -52,6 +52,76 @@ export function getQuizStorageUsedBytesExcept(excludeKey: string): number {
   return total;
 }
 
+export function getQuizStorageUsedBytesByKey(key: string): number {
+  const item = localStorage.getItem(key);
+  return item ? item.length * 2 : 0;
+}
+
+export function getSourcesStorageBytes(): number {
+  return getQuizStorageUsedBytesByKey("vapas_quiz_sources");
+}
+
+export function getCreatorFilesStorageBytes(): number {
+  return getQuizStorageUsedBytesByKey("vapas_quiz_creator_files");
+}
+
+export function estimateSourceFileBytes(source: { 
+  id: string; 
+  name: string; 
+  questionsCount: number; 
+  active: boolean; 
+  isValid: boolean; 
+  error?: string; 
+  customName?: string;
+  document?: string;
+  note?: string;
+  questions?: any[];
+  metadata?: any;
+}): number {
+  try {
+    const json = JSON.stringify({
+      id: source.id,
+      name: source.name,
+      questionsCount: source.questionsCount,
+      active: source.active,
+      isValid: source.isValid,
+      error: source.error,
+      customName: source.customName,
+      document: source.document || "",
+      note: source.note || "",
+      questions: source.questions || [],
+      metadata: source.metadata
+    });
+    return json.length * 2;
+  } catch {
+    return 0;
+  }
+}
+
+export function estimateCreatorFileBytes(file: {
+  id: string;
+  name: string;
+  type: "QUIZ" | "SUPPORT";
+  document: string;
+  note: string;
+  questions: any[];
+  metadata: any;
+  supportedFileIds: string[];
+}): number {
+  try {
+    const json = JSON.stringify(file);
+    return json.length * 2;
+  } catch {
+    return 0;
+  }
+}
+
+export function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
 export function useRenderProfiler(componentName: string) {
   const renderCount = useRef(0);
   renderCount.current += 1;

@@ -19,16 +19,38 @@ import {
   Check,
   Link2
 } from "lucide-react";
-import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes, getQuizStorageUsedBytesExcept } from "@/lib/utils";
+import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes, getQuizStorageUsedBytesExcept, estimateCreatorFileBytes, estimateSourceFileBytes, formatBytes } from "@/lib/utils";
+
+function getSourcesStorageBytes(): number {
+  if (typeof window === "undefined") return 0;
+  const item = localStorage.getItem("vapas_quiz_sources");
+  return item ? item.length * 2 : 0;
+}
+
+function getCreatorFilesStorageBytes(): number {
+  if (typeof window === "undefined") return 0;
+  const item = localStorage.getItem("vapas_quiz_creator_files");
+  return item ? item.length * 2 : 0;
+}
 
 interface SupportedFileItem {
   id: string;
   name: string;
+  document: string;
+  note: string;
+  questions: any[];
+  metadata: any;
+  supportedFileIds: string[];
 }
 
 interface QuizFileItem {
   id: string;
   name: string;
+  document: string;
+  note: string;
+  questions: any[];
+  metadata: any;
+  supportedFileIds: string[];
   supportedFiles: SupportedFileItem[];
 }
 
@@ -51,21 +73,47 @@ export default function FileManager() {
     .map(q => ({
       id: q.id,
       name: q.name,
+      document: q.document,
+      note: q.note,
+      questions: q.questions,
+      metadata: q.metadata,
+      supportedFileIds: q.supportedFileIds,
       supportedFiles: q.supportedFileIds
         .map(sfId => creatorFiles.find(sf => sf.id === sfId))
         .filter((sf): sf is any => !!sf)
-        .map(sf => ({ id: sf.id, name: sf.name }))
+        .map(sf => ({
+          id: sf.id,
+          name: sf.name,
+          document: sf.document,
+          note: sf.note,
+          questions: sf.questions,
+          metadata: sf.metadata,
+          supportedFileIds: sf.supportedFileIds
+        }))
     }));
 
   const supportedFiles = creatorFiles
     .filter(f => f.type === "SUPPORT")
-    .map(sf => ({ id: sf.id, name: sf.name }));
+    .map(sf => ({
+      id: sf.id,
+      name: sf.name,
+      document: sf.document,
+      note: sf.note,
+      questions: sf.questions,
+      metadata: sf.metadata,
+      supportedFileIds: sf.supportedFileIds
+    }));
 
   const [storageUsedBytes, setStorageUsedBytes] = useState(() => getQuizStorageUsedBytes());
   useEffect(() => {
     const id = setTimeout(() => setStorageUsedBytes(getQuizStorageUsedBytes()), 0);
     return () => clearTimeout(id);
   }, [creatorFiles, storeSources]);
+  
+  const sourcesBytes = getSourcesStorageBytes();
+  const creatorFilesBytes = getCreatorFilesStorageBytes();
+  const sourcesPercent = Math.min(100, (sourcesBytes / STORAGE_LIMIT_BYTES) * 100);
+  const creatorFilesPercent = Math.min(100, (creatorFilesBytes / STORAGE_LIMIT_BYTES) * 100);
   const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
   const isStorageFull = storageUsedBytes >= STORAGE_LIMIT_BYTES;
 
@@ -314,13 +362,32 @@ export default function FileManager() {
           </span>
         </div>
         <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-300",
-              storagePercent >= 90 ? "bg-red-500" : storagePercent >= 70 ? "bg-amber-500" : "bg-indigo-500"
+          <div className="flex h-full">
+            {sourcesPercent > 0 && (
+              <div
+                className="h-full bg-indigo-500 transition-all duration-300"
+                style={{ width: `${sourcesPercent}%` }}
+                title={`Nguồn dữ liệu: ${(sourcesBytes / (1024 * 1024)).toFixed(2)} MB`}
+              />
             )}
-            style={{ width: `${storagePercent}%` }}
-          />
+            {creatorFilesPercent > 0 && (
+              <div
+                className="h-full bg-amber-500 transition-all duration-300"
+                style={{ width: `${creatorFilesPercent}%` }}
+                title={`Tệp tạo quiz: ${(creatorFilesBytes / (1024 * 1024)).toFixed(2)} MB`}
+              />
+            )}
+          </div>
+        </div>
+        <div className="flex gap-4 text-[10px] mt-1">
+          <span className="flex items-center gap-1 text-indigo-500">
+            <span className="w-2 h-2 rounded bg-indigo-500"></span>
+            Nguồn dữ liệu: {(sourcesBytes / (1024 * 1024)).toFixed(2)} MB
+          </span>
+          <span className="flex items-center gap-1 text-amber-500">
+            <span className="w-2 h-2 rounded bg-amber-500"></span>
+            Tệp tạo quiz: {(creatorFilesBytes / (1024 * 1024)).toFixed(2)} MB
+          </span>
         </div>
         {isStorageFull && (
           <div className="text-[10px] text-red-500 font-bold mt-1">
@@ -362,18 +429,22 @@ export default function FileManager() {
                         {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                       </button>
                       
-                      <div 
-                        onClick={() => setActiveFileId(qf.id)}
-                        className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
-                      >
-                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 flex items-center justify-center shrink-0">
-                          <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <div 
+                          onClick={() => setActiveFileId(qf.id)}
+                          className="flex items-center gap-2.5 min-w-0 cursor-pointer flex-1"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/20 flex items-center justify-center shrink-0">
+                            <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate block">
+                              {qf.name}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                              {formatBytes(estimateCreatorFileBytes(qf as any))}
+                            </span>
+                          </div>
                         </div>
-                        
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
-                          {qf.name}
-                        </span>
-                      </div>
                     </div>
 
                     <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -409,9 +480,14 @@ export default function FileManager() {
                               className="flex items-center gap-2.5 min-w-0 flex-1 select-none"
                             >
                               <Link2 className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                              <span className="text-xs font-bold text-slate-500 dark:text-slate-450 truncate">
-                                {sf.name}
-                              </span>
+                              <div className="min-w-0">
+                                <span className="text-xs font-bold text-slate-500 dark:text-slate-450 truncate block">
+                                  {sf.name}
+                                </span>
+                                <span className="text-[9px] font-mono text-slate-400 dark:text-slate-500">
+                                  {formatBytes(estimateCreatorFileBytes(sf as any))}
+                                </span>
+                              </div>
                             </div>
 
                             <div className="flex items-center gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -480,9 +556,14 @@ export default function FileManager() {
                     <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 flex items-center justify-center shrink-0">
                       <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                     </div>
-                    <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
-                      {sf.name}
-                    </span>
+                    <div className="min-w-0">
+                      <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate block">
+                        {sf.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                        {formatBytes(estimateCreatorFileBytes(sf as any))}
+                      </span>
+                    </div>
                   </div>
 
                   <button 
@@ -672,14 +753,21 @@ export default function FileManager() {
                             key={src.id}
                             onClick={() => setSelectedSourceId(src.id)}
                             className={cn(
-                              "w-full p-2 rounded-lg border text-left text-xs font-bold transition-all cursor-pointer flex items-center justify-between",
+                              "w-full p-2 rounded-lg border text-left text-xs font-bold transition-all cursor-pointer",
                               selectedSourceId === src.id
                                 ? "border-indigo-500/50 bg-indigo-500/5 text-indigo-750 dark:text-indigo-400"
                                 : "border-slate-200 dark:border-slate-850 hover:bg-white dark:hover:bg-slate-900 text-slate-700 dark:text-slate-350"
                             )}
                           >
-                            <span className="truncate">{displayName}</span>
-                            {selectedSourceId === src.id && <Check className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400" />}
+                            <div className="flex items-center justify-between min-w-0">
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate">{displayName}</div>
+                                <div className="text-[9px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                                  {formatBytes(estimateSourceFileBytes(src))}
+                                </div>
+                              </div>
+                              {selectedSourceId === src.id && <Check className="w-3.5 h-3.5 shrink-0 text-indigo-600 dark:text-indigo-400 ml-2" />}
+                            </div>
                           </button>
                         );
                       })

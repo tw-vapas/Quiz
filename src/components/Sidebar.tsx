@@ -7,7 +7,7 @@ import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
 import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
-import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept } from "@/lib/utils";
+import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept, getSourcesStorageBytes, getCreatorFilesStorageBytes, estimateSourceFileBytes, formatBytes } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
 interface VirtualSourceCardProps {
@@ -47,6 +47,9 @@ const VirtualSourceCard = React.memo(({
   const router = useRouter();
   const [isDraggable, setIsDraggable] = useState(false);
   const hasDocument = !!(source.document || source.note);
+  
+  const sourceBytes = estimateSourceFileBytes(source);
+  const sourceSizeText = formatBytes(sourceBytes);
 
   const handleDragStart = (e: React.DragEvent) => {
     setDraggedIndex(index);
@@ -198,8 +201,10 @@ const VirtualSourceCard = React.memo(({
         </div>
         
         {source.isValid ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            {source.questionsCount} câu hỏi
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+            <span>{source.questionsCount} câu hỏi</span>
+            <span className="text-slate-400 dark:text-slate-500">•</span>
+            <span className="font-mono">{sourceSizeText}</span>
           </p>
         ) : (
           <div className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-start gap-1">
@@ -520,6 +525,11 @@ const SidebarList = React.memo(({
     const sourcesBytes = JSON.stringify(localSources).length * 2;
     setStorageUsedBytes(otherBytes + sourcesBytes);
   }, [localSources]);
+  
+  const sourcesBytes = getSourcesStorageBytes();
+  const creatorFilesBytes = getCreatorFilesStorageBytes();
+  const sourcesPercent = Math.min(100, (sourcesBytes / STORAGE_LIMIT_BYTES) * 100);
+  const creatorFilesPercent = Math.min(100, (creatorFilesBytes / STORAGE_LIMIT_BYTES) * 100);
   const storagePercent = Math.min(100, (storageUsedBytes / STORAGE_LIMIT_BYTES) * 100);
   const isStorageFull = storageUsedBytes >= STORAGE_LIMIT_BYTES;
 
@@ -561,13 +571,32 @@ const SidebarList = React.memo(({
           </span>
         </div>
         <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div
-            className={cn(
-              "h-full rounded-full transition-all duration-300",
-              storagePercent >= 90 ? "bg-red-500" : storagePercent >= 70 ? "bg-amber-500" : "bg-indigo-500"
+          <div className="flex h-full">
+            {sourcesPercent > 0 && (
+              <div
+                className="h-full bg-indigo-500 transition-all duration-300"
+                style={{ width: `${sourcesPercent}%` }}
+                title={`Nguồn dữ liệu: ${(sourcesBytes / (1024 * 1024)).toFixed(2)} MB`}
+              />
             )}
-            style={{ width: `${storagePercent}%` }}
-          />
+            {creatorFilesPercent > 0 && (
+              <div
+                className="h-full bg-amber-500 transition-all duration-300"
+                style={{ width: `${creatorFilesPercent}%` }}
+                title={`Tệp tạo quiz: ${(creatorFilesBytes / (1024 * 1024)).toFixed(2)} MB`}
+              />
+            )}
+          </div>
+        </div>
+        <div className="flex gap-4 text-[10px] mt-1">
+          <span className="flex items-center gap-1 text-indigo-500">
+            <span className="w-2 h-2 rounded bg-indigo-500"></span>
+            Nguồn dữ liệu: {(sourcesBytes / (1024 * 1024)).toFixed(2)} MB
+          </span>
+          <span className="flex items-center gap-1 text-amber-500">
+            <span className="w-2 h-2 rounded bg-amber-500"></span>
+            Tệp tạo quiz: {(creatorFilesBytes / (1024 * 1024)).toFixed(2)} MB
+          </span>
         </div>
         {isStorageFull && (
           <div className="text-[10px] text-red-500 font-bold mt-1">
