@@ -14,7 +14,6 @@ import {
   Check, 
   HelpCircle, 
   Save, 
-  Eye, 
   Settings, 
   ChevronDown, 
   FileCode, 
@@ -22,26 +21,17 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUp,
-  ArrowDown,
-  EyeOff
+  ArrowDown
 } from "lucide-react";
 
 interface QuestionCardProps {
   index: number;
   question: Question;
-  visibleFields: {
-    question: boolean;
-    answer: boolean;
-    explanation: boolean;
-    type: boolean;
-    displayBlock: boolean;
-    tags: boolean;
-  };
   onUpdate: (updates: Partial<Question>) => void;
   onDelete: () => void;
 }
 
-function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: QuestionCardProps) {
+function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps) {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [tagsInput, setTagsInput] = useState(() => question?.tags?.join(", ") || "");
 
@@ -181,23 +171,20 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
       </div>
 
       {/* Question Text Area */}
-      {visibleFields.question && (
-        <div className="space-y-1.5">
-          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Question</h5>
-          <textarea
-            value={question.text}
-            onChange={(e) => onUpdate({ text: e.target.value })}
-            className="w-full min-h-[90px] p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/30 dark:bg-[#22325a] text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
-            placeholder="Nhập nội dung câu hỏi..."
-          />
-        </div>
-      )}
+      <div className="space-y-1.5">
+        <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Question</h5>
+        <textarea
+          value={question.text}
+          onChange={(e) => onUpdate({ text: e.target.value })}
+          className="w-full min-h-[90px] p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/30 dark:bg-[#22325a] text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
+          placeholder="Nhập nội dung câu hỏi..."
+        />
+      </div>
 
       {/* Answers Options Area */}
-      {visibleFields.answer && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
-            <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Answers</h5>
+      <div className="space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
+          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Answers</h5>
             <button
               onClick={handleAddNewAnswer}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-[10px] text-indigo-750 dark:text-indigo-400 font-extrabold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all"
@@ -256,13 +243,11 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
             })}
           </div>
         </div>
-      )}
 
       {/* Type and Tags inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {visibleFields.type && (
-          <div className="space-y-1.5 relative">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Question Type</span>
+        <div className="space-y-1.5 relative">
+          <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Question Type</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
               className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350"
@@ -288,31 +273,28 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
               </div>
             )}
           </div>
-        )}
 
-        {visibleFields.tags && (
-          <div className="space-y-1.5">
-            <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Tags (comma separated)</span>
-            <input
-              type="text"
-              value={tagsInput}
-              onChange={(e) => handleTagsChange(e.target.value)}
-              onBlur={handleSaveTags}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSaveTags();
-                  e.currentTarget.blur();
-                }
-              }}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="tag1, tag2..."
-            />
-          </div>
-        )}
+        <div className="space-y-1.5">
+          <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Tags (comma separated)</span>
+          <input
+            type="text"
+            value={tagsInput}
+            onChange={(e) => handleTagsChange(e.target.value)}
+            onBlur={handleSaveTags}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSaveTags();
+                e.currentTarget.blur();
+              }
+            }}
+            className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            placeholder="tag1, tag2..."
+          />
+        </div>
       </div>
 
       {/* Display Blocks list */}
-      {visibleFields.displayBlock && (question.display_blocks || []).length > 0 && (
+      {(question.display_blocks || []).length > 0 && (
         <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-white/10">
           {(question.display_blocks || []).map((db, blockIdx) => (
             <div key={blockIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-3 relative group/block">
@@ -353,7 +335,7 @@ function QuestionCard({ index, question, visibleFields, onUpdate, onDelete }: Qu
       )}
 
       {/* Explanation Area */}
-      {visibleFields.explanation && question.explanation !== undefined && question.explanation !== null && (
+      {question.explanation !== undefined && question.explanation !== null && (
         <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
           <label className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Explanation</label>
           <button
@@ -560,19 +542,9 @@ export default function QuestionModification({
   }, [activeFile, activeTab]);
 
   // --- POPOVER VISIBILITY CONTROLS ---
-  const [isViewSettingsOpen, setIsViewSettingsOpen] = useState(false);
   const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
   const [isQtyDropdownOpen, setIsQtyDropdownOpen] = useState(false);
 
-  // View Settings state
-  const [visibleFields, setVisibleFields] = useState({
-    question: true,
-    answer: true,
-    explanation: true,
-    type: true,
-    displayBlock: true,
-    tags: true
-  });
   const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("Panel");
 
   // Filter & Sort Settings state
@@ -1007,23 +979,9 @@ export default function QuestionModification({
                   <Plus className="w-3.5 h-3.5 text-slate-400" /> New Question
                 </button>
 
-                {/* View settings button (Eye) */}
-                <button
-                  onClick={() => { setIsViewSettingsOpen(!isViewSettingsOpen); setIsFilterSettingsOpen(false); }}
-                  className={cn(
-                    "p-1.5 rounded-lg border cursor-pointer hover:shadow-sm transition-all",
-                    isViewSettingsOpen 
-                      ? "border-indigo-400 bg-indigo-50/20 text-indigo-650 dark:text-indigo-400"
-                      : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
-                  )}
-                  title="View Settings"
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-
                 {/* Filter and settings button (Gear) */}
                 <button
-                  onClick={() => { setIsFilterSettingsOpen(!isFilterSettingsOpen); setIsViewSettingsOpen(false); }}
+                  onClick={() => { setIsFilterSettingsOpen(!isFilterSettingsOpen); }}
                   className={cn(
                     "p-1.5 rounded-lg border cursor-pointer hover:shadow-sm transition-all",
                     isFilterSettingsOpen 
@@ -1034,36 +992,6 @@ export default function QuestionModification({
                 >
                   <Settings className="w-4 h-4" />
                 </button>
-
-                {/* --- POPOVER 1: VIEW SETTINGS --- */}
-                {isViewSettingsOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 z-30 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4 space-y-4">
-                    <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-1.5">Visibility</h5>
-                    <div className="space-y-2">
-                      {Object.keys(visibleFields).map((field) => {
-                        const isChecked = visibleFields[field as keyof typeof visibleFields];
-                        return (
-                          <label key={field} className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-350 cursor-pointer select-none">
-                            <input 
-                              type="checkbox"
-                              checked={isChecked}
-                              onChange={() => setVisibleFields(prev => ({ ...prev, [field]: !prev[field as keyof typeof prev] }))}
-                              className="w-3.5 h-3.5 text-indigo-600 rounded"
-                            />
-                            <span className="capitalize">{field.replace("Block", " Block")}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-
-
-
-                    <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <button onClick={() => setIsViewSettingsOpen(false)} className="flex-1 py-1.5 border border-slate-250 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-650 hover:bg-slate-55 cursor-pointer">Cancel</button>
-                      <button onClick={() => setIsViewSettingsOpen(false)} className="flex-1 py-1.5 bg-indigo-650 text-white rounded-lg text-[10px] font-extrabold shadow-sm cursor-pointer">Apply</button>
-                    </div>
-                  </div>
-                )}
 
                 {/* --- POPOVER 2: FILTER & SORT --- */}
                 {isFilterSettingsOpen && (
@@ -1218,7 +1146,6 @@ export default function QuestionModification({
                     <QuestionCard 
                       index={filteredQuestions.indexOf(panelQuestion)}
                       question={panelQuestion}
-                      visibleFields={visibleFields}
                       onUpdate={(updates) => updateQuestion(panelQuestion.id, updates)}
                       onDelete={() => {
                         deleteQuestion(panelQuestion.id);
