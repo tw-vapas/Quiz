@@ -21,7 +21,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  SlidersHorizontal,
+  RotateCcw,
+  Filter,
+  Sparkles
 } from "lucide-react";
 
 export function isQuestionValid(q: Question): boolean {
@@ -1089,121 +1093,266 @@ export default function QuestionModification({
             
             {/* Options Sub-Header Bar */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
-              <span className="text-xs font-black text-slate-700 dark:text-slate-300">
-                Total: {filteredQuestions.length} Questions
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                  Total: {filteredQuestions.length} / {activeFile.questions.length} Questions
+                </span>
+                {(filterAndSortEnabled || filteredQuestions.length !== activeFile.questions.length) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFilterAndSortEnabled(false);
+                      setFilterType({ singleChoice: true, multipleChoice: true });
+                      setFilterOthers({ haveCorrectAnswer: false, haveExplanation: false, haveDisplayBlock: false });
+                      const resetTags: Record<string, boolean> = {};
+                      allUniqueTags.forEach(t => { resetTags[t] = true; });
+                      setSelectedTagsFilter(resetTags);
+                    }}
+                    className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer"
+                    title="Khôi phục trạng thái xem mặc định"
+                  >
+                    <span>Lọc đang mở</span>
+                    <RotateCcw className="w-2.5 h-2.5" />
+                  </button>
+                )}
+              </div>
 
               <div className="flex items-center gap-2 relative">
                 {/* Add New Question */}
                 <button
                   onClick={addNewQuestion}
-                  className="px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-extrabold text-[10px] text-slate-750 dark:text-slate-300 hover:shadow-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1"
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-extrabold text-[11px] text-slate-750 dark:text-slate-200 hover:shadow-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1"
                 >
-                  <Plus className="w-3.5 h-3.5 text-slate-400" /> New Question
+                  <Plus className="w-3.5 h-3.5 text-slate-500" />
+                  <span>New Question</span>
                 </button>
 
-                {/* Filter and settings button (Gear) */}
+                {/* Filter & Sort Button */}
                 <button
-                  onClick={() => { setIsFilterSettingsOpen(!isFilterSettingsOpen); }}
+                  type="button"
+                  onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
                   className={cn(
-                    "p-1.5 rounded-lg border cursor-pointer hover:shadow-sm transition-all",
-                    isFilterSettingsOpen 
-                      ? "border-indigo-400 bg-indigo-50/20 text-indigo-650 dark:text-indigo-400"
-                      : "border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400"
+                    "px-3 py-1.5 rounded-xl border text-[11px] font-extrabold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm relative select-none",
+                    isFilterSettingsOpen || filterAndSortEnabled
+                      ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 ring-2 ring-indigo-500/20"
+                      : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300"
                   )}
-                  title="Filter & Sort"
+                  title="Filter & Sort settings"
                 >
-                  <Settings className="w-4 h-4" />
+                  <SlidersHorizontal className="w-3.5 h-3.5" />
+                  <span>Filter & Sort</span>
+                  {filterAndSortEnabled && (
+                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+                  )}
                 </button>
 
-                {/* --- POPOVER 2: FILTER & SORT --- */}
+                {/* --- REDESIGNED POPOVER: FILTER & SORT --- */}
                 {isFilterSettingsOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-64 z-30 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl p-4 space-y-4">
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1.5">
-                      <h5 className="text-[10px] font-black text-slate-750 dark:text-slate-300 uppercase tracking-wider">Filter & Sort</h5>
+                  <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
+                    {/* Header */}
+                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                          <Filter className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h5 className="text-xs font-black text-slate-850 dark:text-slate-100">
+                            Bộ lọc & Sắp xếp
+                          </h5>
+                          <p className="text-[10px] text-slate-400 font-medium">
+                            Tùy chỉnh hiển thị và thứ tự ưu tiên câu hỏi
+                          </p>
+                        </div>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => setIsFilterSettingsOpen(false)}
+                        className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Master Switch */}
+                    <div 
+                      onClick={() => setFilterAndSortEnabled(!filterAndSortEnabled)}
+                      className={cn(
+                        "p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between select-none",
+                        filterAndSortEnabled
+                          ? "border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 shadow-sm"
+                          : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20"
+                      )}
+                    >
+                      <div>
+                        <span className="block text-xs font-black text-slate-800 dark:text-slate-200">
+                          Kích hoạt lọc & sắp xếp
+                        </span>
+                        <span className="block text-[10px] text-slate-400 font-medium">
+                          Áp dụng các tiêu chí lọc bên dưới cho danh sách
+                        </span>
+                      </div>
                       <input 
                         type="checkbox"
                         checked={filterAndSortEnabled}
                         onChange={(e) => setFilterAndSortEnabled(e.target.checked)}
-                        className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
+                        className="w-4 h-4 text-indigo-600 rounded cursor-pointer shrink-0 ml-2"
                       />
                     </div>
 
-                    <div className="space-y-3 max-h-[260px] overflow-y-auto custom-scrollbar pr-1">
-                      {/* Question types filter */}
-                      <div className="space-y-1.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide">Type</span>
-                        <div className="space-y-1 mt-1">
-                          <label className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
+                    {/* Scrollable Form Sections */}
+                    <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
+                      
+                      {/* Section 1: Question Types */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                          1. Loại câu hỏi
+                        </span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className={cn(
+                            "p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
+                            filterType.singleChoice
+                              ? "border-indigo-500 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300"
+                              : "border-slate-200 dark:border-slate-800 text-slate-500"
+                          )}>
+                            <span>Single Choice</span>
                             <input 
                               type="checkbox"
                               checked={filterType.singleChoice}
                               onChange={() => setFilterType(prev => ({ ...prev, singleChoice: !prev.singleChoice }))}
-                              className="w-3 h-3 text-indigo-600 rounded"
+                              className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
                             />
-                            <span>Single Choice</span>
                           </label>
-                          <label className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
+
+                          <label className={cn(
+                            "p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
+                            filterType.multipleChoice
+                              ? "border-indigo-500 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300"
+                              : "border-slate-200 dark:border-slate-800 text-slate-500"
+                          )}>
+                            <span>Multiple Choice</span>
                             <input 
                               type="checkbox"
                               checked={filterType.multipleChoice}
                               onChange={() => setFilterType(prev => ({ ...prev, multipleChoice: !prev.multipleChoice }))}
-                              className="w-3 h-3 text-indigo-600 rounded"
+                              className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
                             />
-                            <span>Multiple Choice</span>
                           </label>
                         </div>
                       </div>
 
-                      {/* Filter by tags */}
+                      {/* Section 2: Tags Filter */}
                       {allUniqueTags.length > 0 && (
-                        <div className="space-y-1.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide">Tags</span>
-                          <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto custom-scrollbar">
-                            {allUniqueTags.map(tag => (
-                              <label key={tag} className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
-                                <input 
-                                  type="checkbox"
-                                  checked={!!selectedTagsFilter[tag]}
-                                  onChange={() => setSelectedTagsFilter(prev => ({ ...prev, [tag]: !prev[tag] }))}
-                                  className="w-3 h-3 text-indigo-600 rounded"
-                                />
-                                <span>{tag}</span>
-                              </label>
-                            ))}
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                              2. Lọc theo Thẻ Nhãn (Tags)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const allSelected = allUniqueTags.every(t => selectedTagsFilter[t]);
+                                const nextState: Record<string, boolean> = {};
+                                allUniqueTags.forEach(t => { nextState[t] = !allSelected; });
+                                setSelectedTagsFilter(nextState);
+                              }}
+                              className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                            >
+                              {allUniqueTags.every(t => selectedTagsFilter[t]) ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                            </button>
+                          </div>
+                          <div className="grid grid-cols-2 gap-1.5 max-h-[110px] overflow-y-auto custom-scrollbar p-1">
+                            {allUniqueTags.map(tag => {
+                              const isChecked = !!selectedTagsFilter[tag];
+                              return (
+                                <label 
+                                  key={tag} 
+                                  className={cn(
+                                    "p-2 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
+                                    isChecked 
+                                      ? "border-indigo-500/60 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300" 
+                                      : "border-slate-200 dark:border-slate-800 text-slate-400"
+                                  )}
+                                >
+                                  <span className="truncate max-w-[100px]">{tag}</span>
+                                  <input 
+                                    type="checkbox"
+                                    checked={isChecked}
+                                    onChange={() => setSelectedTagsFilter(prev => ({ ...prev, [tag]: !prev[tag] }))}
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer shrink-0"
+                                  />
+                                </label>
+                              );
+                            })}
                           </div>
                         </div>
                       )}
 
-                      {/* Sort Priority Ordering */}
-                      <div className="space-y-1.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide">Sort priorities</span>
+                      {/* Section 3: Others Filter */}
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                          3. Tiêu chí phụ
+                        </span>
+                        <div className="space-y-1.5">
+                          {[
+                            { key: "haveCorrectAnswer", label: "Chỉ hiện câu CÓ đáp án đúng" },
+                            { key: "haveExplanation", label: "Chỉ hiện câu CÓ lời giải thích" },
+                            { key: "haveDisplayBlock", label: "Chỉ hiện câu CÓ Display Block" }
+                          ].map(item => {
+                            const isChecked = (filterOthers as any)[item.key];
+                            return (
+                              <label
+                                key={item.key}
+                                className={cn(
+                                  "p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
+                                  isChecked
+                                    ? "border-indigo-500 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300"
+                                    : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
+                                )}
+                              >
+                                <span>{item.label}</span>
+                                <input 
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => setFilterOthers(prev => ({ ...prev, [item.key]: !(prev as any)[item.key] }))}
+                                  className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
+                                />
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Section 4: Sort Priorities */}
+                      <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                          4. Thứ tự ưu tiên sắp xếp
+                        </span>
                         
-                        {/* Type prioritization */}
-                        <div className="space-y-1.5 mt-1 border-b border-slate-150 dark:border-slate-800 pb-1.5">
-                          <span className="text-[8px] font-black text-slate-400 uppercase">Question types order</span>
+                        {/* Type Order */}
+                        <div className="space-y-1.5">
+                          <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">Ưu tiên theo Loại câu hỏi:</span>
                           {typeOrder.map((t, idx) => (
-                            <div key={t} className="flex items-center justify-between text-[10px] font-bold text-slate-700 bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-150">
-                              <span>{t === "single_choice" ? "Single Choice" : "Multiple Choice"}</span>
-                              <div className="flex gap-0.5">
-                                <button onClick={() => moveTypeOrder(idx, "UP")} className="p-0.5 hover:bg-slate-100"><ArrowUp className="w-3 h-3" /></button>
-                                <button onClick={() => moveTypeOrder(idx, "DOWN")} className="p-0.5 hover:bg-slate-100"><ArrowDown className="w-3 h-3" /></button>
+                            <div key={t} className="flex items-center justify-between text-xs font-extrabold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200 dark:border-slate-750">
+                              <span>{idx + 1}. {t === "single_choice" ? "Single Choice" : "Multiple Choice"}</span>
+                              <div className="flex gap-1">
+                                <button type="button" onClick={() => moveTypeOrder(idx, "UP")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowUp className="w-3.5 h-3.5 text-slate-500" /></button>
+                                <button type="button" onClick={() => moveTypeOrder(idx, "DOWN")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowDown className="w-3.5 h-3.5 text-slate-500" /></button>
                               </div>
                             </div>
                           ))}
                         </div>
 
-                        {/* Tag prioritization */}
+                        {/* Tag Order */}
                         {tagOrder.length > 0 && (
-                          <div className="space-y-1.5 mt-1 pb-1">
-                            <span className="text-[8px] font-black text-slate-400 uppercase">Tag priority order</span>
-                            <div className="space-y-1 max-h-[100px] overflow-y-auto custom-scrollbar">
+                          <div className="space-y-1.5 pt-1">
+                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">Ưu tiên theo Thẻ nhãn:</span>
+                            <div className="space-y-1.5 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
                               {tagOrder.map((tag, idx) => (
-                                <div key={tag} className="flex items-center justify-between text-[10px] font-bold text-slate-700 bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-150">
-                                  <span className="truncate max-w-[80px]">{tag}</span>
-                                  <div className="flex gap-0.5">
-                                    <button onClick={() => moveTagOrder(idx, "UP")} className="p-0.5 hover:bg-slate-100"><ArrowUp className="w-3 h-3 text-slate-400" /></button>
-                                    <button onClick={() => moveTagOrder(idx, "DOWN")} className="p-0.5 hover:bg-slate-100"><ArrowDown className="w-3 h-3 text-slate-400" /></button>
+                                <div key={tag} className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200 dark:border-slate-750">
+                                  <span className="truncate max-w-[120px]">{idx + 1}. {tag}</span>
+                                  <div className="flex gap-1">
+                                    <button type="button" onClick={() => moveTagOrder(idx, "UP")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowUp className="w-3.5 h-3.5 text-slate-500" /></button>
+                                    <button type="button" onClick={() => moveTagOrder(idx, "DOWN")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowDown className="w-3.5 h-3.5 text-slate-500" /></button>
                                   </div>
                                 </div>
                               ))}
@@ -1212,44 +1361,32 @@ export default function QuestionModification({
                         )}
                       </div>
 
-                      {/* Filter other criteria */}
-                      <div className="space-y-1.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide">Others</span>
-                        <div className="space-y-1 mt-1">
-                          <label className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
-                            <input 
-                              type="checkbox"
-                              checked={filterOthers.haveCorrectAnswer}
-                              onChange={() => setFilterOthers(prev => ({ ...prev, haveCorrectAnswer: !prev.haveCorrectAnswer }))}
-                              className="w-3 h-3 text-indigo-600 rounded"
-                            />
-                            <span>Có đáp án đúng</span>
-                          </label>
-                          <label className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
-                            <input 
-                              type="checkbox"
-                              checked={filterOthers.haveExplanation}
-                              onChange={() => setFilterOthers(prev => ({ ...prev, haveExplanation: !prev.haveExplanation }))}
-                              className="w-3 h-3 text-indigo-600 rounded"
-                            />
-                            <span>Có giải thích</span>
-                          </label>
-                          <label className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
-                            <input 
-                              type="checkbox"
-                              checked={filterOthers.haveDisplayBlock}
-                              onChange={() => setFilterOthers(prev => ({ ...prev, haveDisplayBlock: !prev.haveDisplayBlock }))}
-                              className="w-3 h-3 text-indigo-600 rounded"
-                            />
-                            <span>Có display block</span>
-                          </label>
-                        </div>
-                      </div>
                     </div>
 
-                    <div className="flex gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                      <button onClick={() => setIsFilterSettingsOpen(false)} className="flex-1 py-1.5 border border-slate-250 dark:border-slate-700 rounded-lg text-[10px] font-bold text-slate-650 hover:bg-slate-55 cursor-pointer">Cancel</button>
-                      <button onClick={() => setIsFilterSettingsOpen(false)} className="flex-1 py-1.5 bg-indigo-650 text-white rounded-lg text-[10px] font-extrabold shadow-sm cursor-pointer">Apply</button>
+                    {/* Footer Action Buttons */}
+                    <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          setFilterAndSortEnabled(false);
+                          setFilterType({ singleChoice: true, multipleChoice: true });
+                          setFilterOthers({ haveCorrectAnswer: false, haveExplanation: false, haveDisplayBlock: false });
+                          const resetTags: Record<string, boolean> = {};
+                          allUniqueTags.forEach(t => { resetTags[t] = true; });
+                          setSelectedTagsFilter(resetTags);
+                        }} 
+                        className="flex-1 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        <span>Mặc định</span>
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => setIsFilterSettingsOpen(false)} 
+                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-500/20 active:scale-98 transition-all cursor-pointer"
+                      >
+                        Áp dụng
+                      </button>
                     </div>
                   </div>
                 )}

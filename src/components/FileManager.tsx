@@ -306,32 +306,36 @@ export default function FileManager() {
                       <FileCode className="w-4.5 h-4.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate">
-                          {f.name}
-                        </span>
-                        <span className={cn(
-                          "text-[9px] font-black px-1.5 py-0.5 rounded-full shrink-0 border leading-none flex items-center gap-0.5",
-                          isFileValidStatus 
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
-                            : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
-                        )}>
-                          {isFileValidStatus ? "✓ Hợp lệ" : "✕ Chưa hợp lệ"}
-                        </span>
-                      </div>
+                      <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate block">
+                        {f.name}
+                      </span>
                       <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 block">
                         {formatBytes(getItemBytes(f))} • {f.questions?.length || 0} câu hỏi
                       </span>
                     </div>
                   </div>
 
-                  <button 
-                    onClick={() => setConfirmDeleteId(f.id)}
-                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-500 opacity-60 group-hover:opacity-100 transition-all cursor-pointer shrink-0"
-                    title="Xóa Quiz File"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <div 
+                      className={cn(
+                        "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 transition-transform hover:scale-110",
+                        isFileValidStatus 
+                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
+                          : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+                      )}
+                      title={isFileValidStatus ? "Tệp hợp lệ (Đủ câu hỏi và đáp án)" : "Tệp chưa hợp lệ (Thiếu câu hỏi hoặc đáp án)"}
+                    >
+                      {isFileValidStatus ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
+                    </div>
+
+                    <button 
+                      onClick={() => setConfirmDeleteId(f.id)}
+                      className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-500 opacity-60 group-hover:opacity-100 transition-all cursor-pointer shrink-0"
+                      title="Xóa Quiz File"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               );
             })
