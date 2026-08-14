@@ -16,7 +16,8 @@ export default function Home() {
   const state = useQuizStore((state) => state.state);
   const theme = useQuizStore((state) => state.theme);
   const isSettingsOpen = useQuizStore((state) => state.isSettingsOpen);
-  const [activeSection, setActiveSection] = useState<"quiz" | "create">("quiz");
+  const activeSection = useQuizStore((state) => state.activeSection);
+  const setActiveSection = useQuizStore((state) => state.setActiveSection);
   
   // Specific selectors to avoid full-store subscriptions causing unnecessary updates
   const sources = useQuizStore((state) => state.sources);

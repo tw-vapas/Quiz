@@ -97,8 +97,9 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   };
 
   const handleAnswerTextChange = (ansId: string, text: string) => {
+    const sliced = text.slice(0, 150);
     const updatedOptions = question.options.map(opt => 
-      opt.id === ansId ? { ...opt, text, originalText: `${opt.originalText.substring(0, 3)}${text}` } : opt
+      opt.id === ansId ? { ...opt, text: sliced, originalText: `${opt.originalText.substring(0, 3)}${sliced}` } : opt
     );
     onUpdate({ options: updatedOptions });
   };
@@ -259,7 +260,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 <div 
                   key={ans.id}
                   className={cn(
-                    "flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-[#22325a]",
+                    "flex items-start gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-[#22325a]",
                     isCorrect 
                       ? "border-green-500/35 bg-green-500/5 dark:bg-green-950/30" 
                       : "border-slate-200 dark:border-slate-600"
@@ -269,7 +270,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   <button
                     onClick={() => handleToggleAnswerCorrect(ans.id)}
                     className={cn(
-                      "w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer",
+                      "w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer mt-1",
                       isCorrect 
                         ? "bg-green-500 border-green-500 text-white" 
                         : "border-slate-300 dark:border-slate-500 text-transparent hover:border-green-500/55"
@@ -278,21 +279,34 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     <Check className="w-3 h-3" />
                   </button>
 
-                  <span className="text-xs font-black text-slate-400 dark:text-slate-300 shrink-0">
+                  <span className="text-xs font-black text-slate-400 dark:text-slate-300 shrink-0 mt-0.5">
                     {String.fromCharCode(65 + idx)}
                   </span>
 
-                  <input 
-                    type="text"
-                    value={ans.text}
-                    onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
-                    placeholder={`Đáp án ${String.fromCharCode(65 + idx)}...`}
-                    className="flex-1 bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none"
-                  />
+                  <div className="flex-1 flex flex-col gap-1 min-w-0">
+                    <textarea 
+                      maxLength={150}
+                      value={ans.text}
+                      onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
+                      placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
+                      rows={1}
+                      className="w-full bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed min-h-[26px]"
+                      onInput={(e) => {
+                        const target = e.currentTarget;
+                        target.style.height = "auto";
+                        target.style.height = `${target.scrollHeight}px`;
+                      }}
+                    />
+                    {ans.text.length >= 100 && (
+                      <span className={cn("text-[9px] font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-bold" : "text-slate-400")}>
+                        {ans.text.length}/150
+                      </span>
+                    )}
+                  </div>
 
                   <button
                     onClick={() => handleRemoveAnswer(ans.id)}
-                    className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors cursor-pointer"
+                    className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors cursor-pointer shrink-0 mt-0.5"
                     title="Xóa đáp án"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -356,14 +370,20 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {(question.display_blocks || []).length > 0 && (
         <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-white/10">
           {(question.display_blocks || []).map((db, blockIdx) => (
-            <div key={blockIdx} className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-3 relative group/block">
-              <button
-                onClick={() => handleRemoveDisplayBlock(blockIdx)}
-                className="absolute top-2 right-2 p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 cursor-pointer"
-                title="Xóa block"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
+            <div key={blockIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-2.5 relative group/block">
+              {/* Top Header Bar with Block Label and Delete Button */}
+              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-1.5">
+                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                  DISPLAY BLOCK #{blockIdx + 1}
+                </span>
+                <button
+                  onClick={() => handleRemoveDisplayBlock(blockIdx)}
+                  className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                  title="Xóa block"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="space-y-1.5 shrink-0 w-32">
@@ -381,7 +401,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-[9px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Content</span>
-                    <span className={cn("text-[9px] font-mono font-bold pr-6 sm:pr-0", db.content.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
+                    <span className={cn("text-[9px] font-mono font-bold", db.content.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
                   </div>

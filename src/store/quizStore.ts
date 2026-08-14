@@ -50,6 +50,9 @@ export interface QuizStore {
   theme: 'light' | 'dark';
   setTheme: (val: 'light' | 'dark') => void;
   
+  activeSection: 'quiz' | 'create';
+  setActiveSection: (val: 'quiz' | 'create') => void;
+  
   isSettingsOpen: boolean;
   settingsOpenedAt: number | null;
   setSettingsOpen: (val: boolean) => void;
@@ -254,6 +257,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   
   theme: 'light',
   setTheme: (val) => set({ theme: val }),
+
+  activeSection: 'quiz',
+  setActiveSection: (val) => set({ activeSection: val }),
   
   isSettingsOpen: false,
   settingsOpenedAt: null,

@@ -170,19 +170,6 @@ const VirtualSourceCard = React.memo(({
                     {source.name}
                   </p>
                 )}
-                {!source.isValid && (
-                  <button
-                    onClick={() => {
-                      useQuizStore.getState().setActiveFileId(source.id);
-                      useQuizStore.getState().setSettingsOpen(false);
-                    }}
-                    className="mt-1 flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer select-none"
-                    title="Nhấp để chuyển tới File Manager chỉnh sửa"
-                  >
-                    <FileWarning className="w-3.5 h-3.5" />
-                    <span>Chưa hợp lệ (Chỉnh sửa trong File Manager)</span>
-                  </button>
-                )}
               </>
             )}
           </div>
@@ -222,10 +209,18 @@ const VirtualSourceCard = React.memo(({
             <span className="font-mono">{sourceSizeText}</span>
           </p>
         ) : (
-          <div className="text-xs text-red-600 dark:text-red-400 mt-1 flex items-start gap-1">
+          <button
+            onClick={() => {
+              useQuizStore.getState().setActiveFileId(source.id);
+              useQuizStore.getState().setSettingsOpen(false);
+              useQuizStore.getState().setActiveSection("create");
+            }}
+            className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline mt-1 flex items-center gap-1 cursor-pointer select-none text-left"
+            title={source.error || "Nhấp để chuyển tới File Manager chỉnh sửa"}
+          >
             <FileWarning className="w-4 h-4 shrink-0" />
-            <span className="truncate" title={source.error}>{source.error}</span>
-          </div>
+            <span className="truncate">Chưa hợp lệ (Chỉnh sửa trong File Manager)</span>
+          </button>
         )}
       </div>
     </div>
