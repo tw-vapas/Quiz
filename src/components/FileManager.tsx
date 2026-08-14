@@ -65,7 +65,7 @@ export default function FileManager() {
         setParseStatus(status);
       });
       
-      if (result.isValid) {
+      if (result.questions && result.questions.length > 0) {
         // Estimate total localStorage bytes after adding this file
         const testNewFile = {
           id: "temp_test_id",
@@ -100,14 +100,14 @@ export default function FileManager() {
         });
         setNewFileNameInput(file.name);
         
-        const missingCount = result.questions.filter(q => q.correctOptionIds.length === 0).length;
+        const missingCount = result.questions.filter(q => !q.correctOptionIds || q.correctOptionIds.length === 0).length;
         if (missingCount > 0) {
-          useQuizStore.getState().showNotification(`Đã trích xuất ${result.questions.length} câu hỏi. Có ${missingCount} câu chưa có đáp án đúng.`, "info");
+          useQuizStore.getState().showNotification(`Đã trích xuất ${result.questions.length} câu hỏi. Có ${missingCount} câu chưa có đáp án đúng, bạn có thể bổ sung trong File Manager.`, "info");
         } else {
           useQuizStore.getState().showNotification(`Đã trích xuất thành công ${result.questions.length} câu hỏi.`, "success");
         }
       } else {
-        useQuizStore.getState().showNotification("Lỗi đọc file: " + result.error, "error");
+        useQuizStore.getState().showNotification("Không tìm thấy câu hỏi nào trong tệp: " + (result.error || "Kiểm tra lại định dạng file."), "error");
       }
     } catch (err) {
       useQuizStore.getState().showNotification("Đã xảy ra lỗi khi đọc file.", "error");

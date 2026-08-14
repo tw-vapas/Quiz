@@ -24,6 +24,16 @@ import {
   ArrowDown
 } from "lucide-react";
 
+export function isQuestionValid(q: Question): boolean {
+  if (!q || !q.text || q.text.trim().length === 0) return false;
+  if (!Array.isArray(q.options) || q.options.length === 0) return false;
+  const hasEmptyOption = q.options.some(opt => !opt.text || opt.text.trim().length === 0);
+  if (hasEmptyOption) return false;
+  if (!Array.isArray(q.correctOptionIds) || q.correctOptionIds.length === 0) return false;
+  const optionIds = new Set(q.options.map(o => o.id));
+  return q.correctOptionIds.every(id => optionIds.has(id));
+}
+
 interface QuestionCardProps {
   index: number;
   question: Question;
@@ -34,6 +44,7 @@ interface QuestionCardProps {
 function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps) {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [tagsInput, setTagsInput] = useState(() => question?.tags?.join(", ") || "");
+  const isValid = isQuestionValid(question);
 
   useEffect(() => {
     if (!question) return;
@@ -187,10 +198,25 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   };
 
   return (
-    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
+    <div className={cn(
+      "p-5 rounded-2xl border-2 transition-all duration-200 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative",
+      isValid
+        ? "border-emerald-500/80 dark:border-emerald-500/70 shadow-emerald-500/10"
+        : "border-red-500 dark:border-red-500 shadow-red-500/10 ring-2 ring-red-500/20"
+    )}>
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
-        <span className="text-xs font-black text-indigo-650 dark:text-indigo-400">CÂU HỎI {index + 1}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-black text-indigo-650 dark:text-indigo-400">CÂU HỎI {index + 1}</span>
+          <span className={cn(
+            "text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1",
+            isValid
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+              : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30"
+          )}>
+            {isValid ? "✓ Hợp lệ" : "✕ Chưa hợp lệ"}
+          </span>
+        </div>
         <button 
           onClick={onDelete}
           className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors"
@@ -1210,22 +1236,35 @@ export default function QuestionModification({
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map((q, idx) => {
                         const isSelected = panelQuestion?.id === q.id;
+                        const qValid = isQuestionValid(q);
                         return (
                           <div 
                             key={q.id}
                             onClick={() => setSelectedPanelQuestionId(q.id)}
                             className={cn(
-                              "p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none text-left",
-                              isSelected 
-                                ? "border-indigo-500 bg-white dark:bg-slate-900 shadow-sm"
-                                : "border-slate-200/60 dark:border-slate-800 hover:bg-white/80 dark:hover:bg-slate-900/50"
+                              "p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none text-left relative",
+                              qValid
+                                ? (isSelected 
+                                    ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 shadow-sm"
+                                    : "border-emerald-500/70 dark:border-emerald-500/50 bg-white dark:bg-slate-900 hover:border-emerald-500")
+                                : (isSelected
+                                    ? "border-red-500 bg-red-50/20 dark:bg-red-950/30 shadow-sm ring-2 ring-red-500/20"
+                                    : "border-red-500/80 dark:border-red-500/60 bg-red-50/10 dark:bg-red-950/10 hover:border-red-500")
                             )}
                           >
                             <div className="flex justify-between items-center mb-1">
-                              <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                                <span className={cn(
+                                  "text-[8px] px-1.5 py-0.2 rounded font-black uppercase",
+                                  qValid ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"
+                                )}>
+                                  {qValid ? "✓ Hợp lệ" : "✕ Thiếu tin"}
+                                </span>
+                              </div>
                               <span className="text-[8px] font-extrabold text-slate-400 uppercase">{q.type === "single_choice" ? "Single" : "Multiple"}</span>
                             </div>
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text}</p>
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1.5">
                                 {q.tags.filter(Boolean).map((t, tagIdx) => {

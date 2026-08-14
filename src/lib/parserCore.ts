@@ -638,12 +638,11 @@ export function parseQuizJson(rawText: string): ParseResult {
     }
 
     const questions: Question[] = [];
+    let hasInvalidQuestion = false;
+
     for (let index = 0; index < data.questions.length; index++) {
       const q = data.questions[index];
       const questionText = q.question !== undefined ? String(q.question) : (q.text !== undefined ? String(q.text) : "");
-      if (!questionText) {
-        return { questions: [], isValid: false, error: `Câu hỏi thứ ${index + 1} thiếu trường 'question' hoặc 'text'.` };
-      }
 
       let options: Option[] = [];
       let correctOptionIds: string[] = [];
@@ -671,7 +670,7 @@ export function parseQuizJson(rawText: string): ParseResult {
           const id = opt.id ? String(opt.id) : String.fromCharCode(65 + optIdx);
           return {
             id: id,
-            text: opt.text ? String(opt.text) : "",
+            text: opt.text !== undefined ? String(opt.text) : "",
             originalText: `${id}. ${opt.text || ""}`
           };
         });
@@ -681,18 +680,10 @@ export function parseQuizJson(rawText: string): ParseResult {
         } else if (Array.isArray(q.correct_answer)) {
           correctOptionIds = q.correct_answer.map((ans: string | number) => String(ans));
         }
-      } else {
-        return { questions: [], isValid: false, error: `Câu hỏi thứ ${index + 1} thiếu hoặc rỗng danh sách 'options' hoặc 'answers'.` };
       }
 
-      if (correctOptionIds.length === 0) {
-        return { questions: [], isValid: false, error: `Câu hỏi thứ ${index + 1} thiếu đáp án đúng.` };
-      }
-
-      const optionIds = new Set(options.map(o => o.id));
-      const invalidCorrect = correctOptionIds.filter((id: string) => !optionIds.has(id));
-      if (invalidCorrect.length > 0) {
-        return { questions: [], isValid: false, error: `Câu hỏi thứ ${index + 1} có đáp án đúng '${invalidCorrect.join(", ")}' không nằm trong danh sách options.` };
+      if (!questionText.trim() || options.length === 0 || correctOptionIds.length === 0) {
+        hasInvalidQuestion = true;
       }
 
       let tags: string[] = [];
@@ -731,9 +722,13 @@ export function parseQuizJson(rawText: string): ParseResult {
       last_modified: data.metadata.last_modified ? data.metadata.last_modified : Date.now()
     } : undefined;
 
+    const isAllValid = questions.length > 0 && !hasInvalidQuestion && questions.every(q => 
+      q.text.trim().length > 0 && q.options.length > 0 && q.correctOptionIds.length > 0
+    );
+
     return {
       questions,
-      isValid: true,
+      isValid: isAllValid,
       metadata,
       document: data.document ? String(data.document) : undefined,
       note: data.note ? String(data.note) : undefined

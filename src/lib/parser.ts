@@ -117,7 +117,7 @@ export async function parseFile(
       worker.onmessage = (e: MessageEvent) => {
         if (e.data.type === "success") {
           const result: ParseResult = e.data.result;
-          if (result.isValid && !result.metadata) {
+          if (!result.metadata) {
             result.metadata = {
               file_name: file.name,
               question_count: result.questions.length,
