@@ -830,24 +830,38 @@ export default function QuestionModification({
 
   // Panel view selected item state
   const [selectedPanelQuestionId, setSelectedPanelQuestionId] = useState<string | null>(null);
+  const questionItemRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
   
   const panelQuestion = useMemo(() => {
     if (filteredQuestions.length === 0) return null;
     return filteredQuestions.find(q => q.id === selectedPanelQuestionId) || filteredQuestions[0];
   }, [filteredQuestions, selectedPanelQuestionId]);
 
+  // Auto scroll the selected question item into view in the list panel
+  useEffect(() => {
+    if (activeTab !== "QUESTION_VIEW" || displayMode !== "Panel" || !panelQuestion?.id) return;
+    const el = questionItemRefs.current[panelQuestion.id];
+    if (el) {
+      el.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+        inline: "nearest"
+      });
+    }
+  }, [activeTab, displayMode, panelQuestion?.id]);
+
   // Arrow key navigation for Question View panel
   useEffect(() => {
     if (activeTab !== "QUESTION_VIEW" || displayMode !== "Panel") return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
       const target = e.target as HTMLElement;
       if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
       e.preventDefault();
       const currentIdx = filteredQuestions.findIndex(q => q.id === panelQuestion?.id);
-      if (e.key === "ArrowRight" && currentIdx < filteredQuestions.length - 1) {
+      if ((e.key === "ArrowRight" || e.key === "ArrowDown") && currentIdx < filteredQuestions.length - 1) {
         setSelectedPanelQuestionId(filteredQuestions[currentIdx + 1].id);
-      } else if (e.key === "ArrowLeft" && currentIdx > 0) {
+      } else if ((e.key === "ArrowLeft" || e.key === "ArrowUp") && currentIdx > 0) {
         setSelectedPanelQuestionId(filteredQuestions[currentIdx - 1].id);
       }
     };
@@ -1278,6 +1292,7 @@ export default function QuestionModification({
                         return (
                           <div 
                             key={q.id}
+                            ref={(el) => { questionItemRefs.current[q.id] = el; }}
                             onClick={() => setSelectedPanelQuestionId(q.id)}
                             className={cn(
                               "p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none text-left relative",
