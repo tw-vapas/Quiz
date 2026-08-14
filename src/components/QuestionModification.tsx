@@ -910,7 +910,7 @@ export default function QuestionModification({
       </div>
 
       {/* 2. BODY CONTENT */}
-      <div className="flex-1 overflow-y-auto p-5 relative min-h-0">
+      <div className="flex-1 overflow-y-auto lg:overflow-hidden p-5 relative min-h-0 flex flex-col">
         
         {/* --- TAB A: DOCUMENT VIEW --- */}
         {activeTab === "DOCUMENT" && (
@@ -932,7 +932,7 @@ export default function QuestionModification({
             </div>
 
             {/* Document Editor / Viewer */}
-            <div className="flex-1">
+            <div className="flex-1 overflow-y-auto custom-scrollbar">
               {docSubTab === "PREVIEW" ? (
                 <div className="prose dark:prose-invert max-w-none text-xs">
                   {activeFile.document ? (
@@ -946,7 +946,7 @@ export default function QuestionModification({
                   value={activeFile.document}
                   onChange={(e) => updateCreatorFile(activeFile.id, { document: e.target.value })}
                   placeholder="Nhập nội dung tài liệu học tập bằng định dạng Markdown (.md)..."
-                  className="w-full h-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-xs font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none"
+                  className="w-full h-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-xs font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none custom-scrollbar"
                 />
               )}
             </div>
@@ -1011,10 +1011,10 @@ export default function QuestionModification({
 
         {/* --- TAB C: QUESTION VIEW (VISUAL EDITOR) --- */}
         {activeTab === "QUESTION_VIEW" && (
-          <div className="space-y-4 relative">
+          <div className="flex-1 min-h-0 flex flex-col space-y-3 relative overflow-hidden">
             
             {/* Options Sub-Header Bar */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <span className="text-xs font-black text-slate-700 dark:text-slate-300">
                 Total: {filteredQuestions.length} Questions
               </span>
@@ -1055,7 +1055,7 @@ export default function QuestionModification({
                       />
                     </div>
 
-                    <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1">
+                    <div className="space-y-3 max-h-[260px] overflow-y-auto custom-scrollbar pr-1">
                       {/* Question types filter */}
                       <div className="space-y-1.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
                         <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide">Type</span>
@@ -1085,7 +1085,7 @@ export default function QuestionModification({
                       {allUniqueTags.length > 0 && (
                         <div className="space-y-1.5 p-2 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
                           <span className="text-[9px] font-black text-slate-400 uppercase tracking-wide">Tags</span>
-                          <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto">
+                          <div className="space-y-1 mt-1 max-h-[90px] overflow-y-auto custom-scrollbar">
                             {allUniqueTags.map(tag => (
                               <label key={tag} className="flex items-center gap-2 text-xs font-bold text-slate-650 dark:text-slate-350 cursor-pointer select-none">
                                 <input 
@@ -1123,7 +1123,7 @@ export default function QuestionModification({
                         {tagOrder.length > 0 && (
                           <div className="space-y-1.5 mt-1 pb-1">
                             <span className="text-[8px] font-black text-slate-400 uppercase">Tag priority order</span>
-                            <div className="space-y-1 max-h-[100px] overflow-y-auto">
+                            <div className="space-y-1 max-h-[100px] overflow-y-auto custom-scrollbar">
                               {tagOrder.map((tag, idx) => (
                                 <div key={tag} className="flex items-center justify-between text-[10px] font-bold text-slate-700 bg-white dark:bg-slate-900 p-1.5 rounded-lg border border-slate-150">
                                   <span className="truncate max-w-[80px]">{tag}</span>
@@ -1183,14 +1183,12 @@ export default function QuestionModification({
             </div>
 
             {/* --- VISUAL DISPLAY MODES WORKSPACES --- */}
-            
-
 
             {/* Chế độ Panel split view */}
             {displayMode === "Panel" && (
-              <div className="grid grid-cols-1 lg:grid-cols-10 gap-4 min-h-[480px]">
-                {/* Editor on the left */}
-                <div className="lg:col-span-7 space-y-4">
+              <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-10 gap-4 overflow-y-auto lg:overflow-hidden">
+                {/* Section 1: Question Setting (Editor on the left) */}
+                <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar pr-2 space-y-4">
                   {panelQuestion ? (
                     <QuestionCard 
                       index={filteredQuestions.indexOf(panelQuestion)}
@@ -1208,49 +1206,51 @@ export default function QuestionModification({
                   )}
                 </div>
 
-                {/* List selector on the right */}
-                <div className="lg:col-span-3 border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 overflow-y-auto max-h-[500px] space-y-2">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1.5 mb-2">Danh sách câu hỏi</h5>
-                  {filteredQuestions.length > 0 ? (
-                    filteredQuestions.map((q, idx) => {
-                      const isSelected = panelQuestion?.id === q.id;
-                      return (
-                        <div 
-                          key={q.id}
-                          onClick={() => setSelectedPanelQuestionId(q.id)}
-                          className={cn(
-                            "p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none text-left",
-                            isSelected 
-                              ? "border-indigo-500 bg-white dark:bg-slate-900 shadow-sm"
-                              : "border-slate-200/60 dark:border-slate-800 hover:bg-white/80 dark:hover:bg-slate-900/50"
-                          )}
-                        >
-                          <div className="flex justify-between items-center mb-1">
-                            <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
-                            <span className="text-[8px] font-extrabold text-slate-400 uppercase">{q.type === "single_choice" ? "Single" : "Multiple"}</span>
-                          </div>
-                          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text}</p>
-                          {q.tags && q.tags.filter(Boolean).length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1.5">
-                              {q.tags.filter(Boolean).map((t, tagIdx) => {
-                                const colors = getTagColor(t);
-                                return (
-                                  <span key={`${t}_${tagIdx}`} className={cn(
-                                    "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold border shadow-sm",
-                                    colors.bg,
-                                    colors.text,
-                                    colors.border
-                                  )}>{t}</span>
-                                );
-                              })}
+                {/* Section 2: Question List (List selector on the right) */}
+                <div className="lg:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0">
+                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1.5 mb-2 shrink-0">Danh sách câu hỏi</h5>
+                  <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                    {filteredQuestions.length > 0 ? (
+                      filteredQuestions.map((q, idx) => {
+                        const isSelected = panelQuestion?.id === q.id;
+                        return (
+                          <div 
+                            key={q.id}
+                            onClick={() => setSelectedPanelQuestionId(q.id)}
+                            className={cn(
+                              "p-3 rounded-xl border cursor-pointer transition-all duration-200 select-none text-left",
+                              isSelected 
+                                ? "border-indigo-500 bg-white dark:bg-slate-900 shadow-sm"
+                                : "border-slate-200/60 dark:border-slate-800 hover:bg-white/80 dark:hover:bg-slate-900/50"
+                            )}
+                          >
+                            <div className="flex justify-between items-center mb-1">
+                              <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                              <span className="text-[8px] font-extrabold text-slate-400 uppercase">{q.type === "single_choice" ? "Single" : "Multiple"}</span>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div className="text-center py-6 text-xs text-slate-400 font-bold select-none">Danh sách trống.</div>
-                  )}
+                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text}</p>
+                            {q.tags && q.tags.filter(Boolean).length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1.5">
+                                {q.tags.filter(Boolean).map((t, tagIdx) => {
+                                  const colors = getTagColor(t);
+                                  return (
+                                    <span key={`${t}_${tagIdx}`} className={cn(
+                                      "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold border shadow-sm",
+                                      colors.bg,
+                                      colors.text,
+                                      colors.border
+                                    )}>{t}</span>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center py-6 text-xs text-slate-400 font-bold select-none">Danh sách trống.</div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
