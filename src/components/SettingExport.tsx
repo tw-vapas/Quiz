@@ -10,7 +10,12 @@ import {
   ChevronDown, 
   Clock, 
   Tag, 
-  X
+  X,
+  Check,
+  Filter,
+  Sparkles,
+  FileJson,
+  FileText
 } from "lucide-react";
 
 interface SettingExportProps {
@@ -494,179 +499,253 @@ export default function SettingExport({
         </button>
       </div>
 
-      {/* --- EXPORT SETTING POPUP MODAL --- */}
+      {/* --- EXPORT SETTING POPUP MODAL (REDESIGNED) --- */}
       {isExportModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 flex flex-col max-h-[95vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md transition-all duration-300">
+          <div className="w-full max-w-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5 flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             
-            {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
-              <div className="flex items-center gap-2">
-                <Download className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                <h3 className="text-base font-extrabold text-slate-850 dark:text-slate-100">
-                  Cấu hình xuất bản tệp
-                </h3>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-md shadow-indigo-500/20 text-white shrink-0">
+                  <Download className="w-5 h-5" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="text-base font-black text-slate-850 dark:text-slate-100 truncate">
+                    Xuất bản tệp đề thi
+                  </h3>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate" title={activeFile.name}>
+                    {activeFile.name} ({activeFile.questions.length} câu hỏi)
+                  </p>
+                </div>
               </div>
               <button 
+                type="button"
                 onClick={() => setIsExportModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Scrollable Form Body */}
-            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+            <div className="flex-1 overflow-y-auto space-y-5 pr-1 custom-scrollbar">
               
-              {/* Question quantity select */}
-              <div className="space-y-1.5 relative">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  Number of Question
+              {/* 1. Format Selection Cards (JSON vs DOCX) */}
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                  Định dạng xuất bản (File Format)
                 </label>
-                <button
-                  onClick={() => setIsQtyDropdownOpen(!isQtyDropdownOpen)}
-                  className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-855 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
-                >
-                  <span>{getQtyModeLabel(quantityMode)}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <div
+                    onClick={() => setFileFormat("JSON")}
+                    className={cn(
+                      "p-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col justify-between gap-2 select-none",
+                      fileFormat === "JSON"
+                        ? "border-indigo-600 bg-indigo-50/30 dark:bg-indigo-950/30 shadow-md shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-slate-700"
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-xs",
+                        fileFormat === "JSON" ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                      )}>
+                        JSON
+                      </div>
+                      {fileFormat === "JSON" && (
+                        <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">Gói dữ liệu JSON</h4>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                        Đầy đủ cấu trúc, giải thích, display blocks và metadata
+                      </p>
+                    </div>
+                  </div>
 
-                {isQtyDropdownOpen && (
-                  <div className="absolute left-0 right-0 mt-1.5 z-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-1.5 space-y-1">
-                    {([
-                      { id: "ALL", label: "Tất cả" },
-                      { id: "FIRST", label: "Câu đầu tiên" },
-                      { id: "LAST", label: "Câu cuối cùng" },
-                      { id: "RANGE", label: "Khoảng tùy chọn" }
-                    ] as const).map((opt) => (
-                      <button
-                        key={opt.id}
-                        onClick={() => { setQuantityMode(opt.id); setIsQtyDropdownOpen(false); }}
-                        className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", quantityMode === opt.id ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                  <div
+                    onClick={() => setFileFormat("DOCX")}
+                    className={cn(
+                      "p-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex flex-col justify-between gap-2 select-none",
+                      fileFormat === "DOCX"
+                        ? "border-indigo-600 bg-indigo-50/30 dark:bg-indigo-950/30 shadow-md shadow-indigo-500/10 ring-1 ring-indigo-500/30"
+                        : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300 dark:hover:border-slate-700"
+                    )}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className={cn(
+                        "w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-xs",
+                        fileFormat === "DOCX" ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
+                      )}>
+                        DOCX
+                      </div>
+                      {fileFormat === "DOCX" && (
+                        <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">Văn bản Word DOCX</h4>
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                        Định dạng văn bản thô hỗ trợ in ấn hoặc chỉnh sửa Word
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Question Quantity Mode Selection */}
+              <div className="space-y-2">
+                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                  Số lượng câu hỏi xuất bản
+                </label>
+
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { id: "ALL", label: "Tất cả câu hỏi", desc: `Toàn bộ ${activeFile.questions.length} câu` },
+                    { id: "FIRST", label: "N câu đầu tiên", desc: "Lấy từ đầu danh sách" },
+                    { id: "LAST", label: "N câu cuối cùng", desc: "Lấy từ cuối danh sách" },
+                    { id: "RANGE", label: "Khoảng chỉ định", desc: "Chỉ định vị trí Từ - Đến" }
+                  ].map((mode) => (
+                    <div
+                      key={mode.id}
+                      onClick={() => setQuantityMode(mode.id as any)}
+                      className={cn(
+                        "p-3 rounded-2xl border-2 cursor-pointer transition-all duration-150 flex items-center justify-between select-none",
+                        quantityMode === mode.id
+                          ? "border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-200 shadow-sm"
+                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 text-slate-700 dark:text-slate-300"
+                      )}
+                    >
+                      <div>
+                        <div className="text-xs font-black">{mode.label}</div>
+                        <div className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">{mode.desc}</div>
+                      </div>
+                      {quantityMode === mode.id && (
+                        <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0 ml-1" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Range Numeric Inputs */}
+                {quantityMode === "FIRST" && (
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-indigo-150 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
+                    <input 
+                      type="number" 
+                      min={1}
+                      max={activeFile.questions.length}
+                      value={firstCount}
+                      onChange={(e) => setFirstCount(Math.max(1, Math.min(activeFile.questions.length, parseInt(e.target.value) || 1)))}
+                      className="w-24 px-3 py-1.5 text-xs font-black border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                      / {activeFile.questions.length} câu đầu tiên
+                    </span>
+                  </div>
+                )}
+
+                {quantityMode === "LAST" && (
+                  <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-indigo-150 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
+                    <input 
+                      type="number" 
+                      min={1}
+                      max={activeFile.questions.length}
+                      value={lastCount}
+                      onChange={(e) => setLastCount(Math.max(1, Math.min(activeFile.questions.length, parseInt(e.target.value) || 1)))}
+                      className="w-24 px-3 py-1.5 text-xs font-black border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                      / {activeFile.questions.length} câu cuối cùng
+                    </span>
+                  </div>
+                )}
+
+                {quantityMode === "RANGE" && (
+                  <div className="flex items-center justify-between gap-2 p-3.5 rounded-2xl border border-indigo-150 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <div className="flex items-center gap-2">
+                      <span>Từ câu:</span>
+                      <input 
+                        type="number" 
+                        min={1}
+                        max={rangeEnd}
+                        value={rangeStart}
+                        onChange={(e) => setRangeStart(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-20 px-2.5 py-1.5 border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-center font-black"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span>Đến câu:</span>
+                      <input 
+                        type="number" 
+                        min={rangeStart}
+                        max={activeFile.questions.length}
+                        value={rangeEnd}
+                        onChange={(e) => setRangeEnd(Math.min(activeFile.questions.length, parseInt(e.target.value) || 1))}
+                        className="w-20 px-2.5 py-1.5 border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-center font-black"
+                      />
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Range settings */}
-              {quantityMode === "FIRST" && (
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                  <input 
-                    type="number" 
-                    min={1}
-                    max={activeFile.questions.length}
-                    value={firstCount}
-                    onChange={(e) => setFirstCount(parseInt(e.target.value) || 1)}
-                    className="w-20 px-2.5 py-1.5 text-xs font-bold border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
-                  />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Câu đầu tiên của đề thi
-                  </span>
-                </div>
-              )}
-
-              {quantityMode === "LAST" && (
-                <div className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20">
-                  <input 
-                    type="number" 
-                    min={1}
-                    max={activeFile.questions.length}
-                    value={lastCount}
-                    onChange={(e) => setLastCount(parseInt(e.target.value) || 1)}
-                    className="w-20 px-2.5 py-1.5 text-xs font-bold border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
-                  />
-                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Câu cuối cùng của đề thi
-                  </span>
-                </div>
-              )}
-
-              {quantityMode === "RANGE" && (
-                <div className="flex items-center gap-2 p-3 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-xs font-bold text-slate-650 dark:text-slate-350">
-                  <span>Từ câu</span>
-                  <input 
-                    type="number" 
-                    min={1}
-                    max={rangeEnd}
-                    value={rangeStart}
-                    onChange={(e) => setRangeStart(parseInt(e.target.value) || 1)}
-                    className="w-16 px-2 py-1 border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
-                  />
-                  <span>Đến câu</span>
-                  <input 
-                    type="number" 
-                    min={rangeStart}
-                    max={activeFile.questions.length}
-                    value={rangeEnd}
-                    onChange={(e) => setRangeEnd(parseInt(e.target.value) || 1)}
-                    className="w-16 px-2 py-1 border border-slate-250 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-900 text-center"
-                  />
-                </div>
-              )}
-
-              {/* Format selection dropdown */}
-              <div className="space-y-1.5 relative">
-                <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-                  File Format
-                </label>
-                <button
-                  onClick={() => setIsFormatDropdownOpen(!isFormatDropdownOpen)}
-                  className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-855 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-250 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+              {/* 3. Apply Filter Setting Toggle Card */}
+              <div className="pt-1">
+                <div 
+                  onClick={() => setApplyFilterSetting(!applyFilterSetting)}
+                  className={cn(
+                    "p-3.5 rounded-2xl border-2 cursor-pointer transition-all duration-200 flex items-center justify-between select-none",
+                    applyFilterSetting
+                      ? "border-indigo-600 bg-indigo-50/30 dark:bg-indigo-950/30 shadow-sm"
+                      : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 hover:border-slate-300"
+                  )}
                 >
-                  <span>{fileFormat}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-
-                {isFormatDropdownOpen && (
-                  <div className="absolute left-0 right-0 mt-1.5 z-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-1.5 space-y-1">
-                    {(["JSON", "DOCX"] as const).map((fmt) => (
-                      <button
-                        key={fmt}
-                        onClick={() => { setFileFormat(fmt); setIsFormatDropdownOpen(false); }}
-                        className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", fileFormat === fmt ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
-                      >
-                        {fmt}
-                      </button>
-                    ))}
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-8 h-8 rounded-xl flex items-center justify-center shrink-0",
+                      applyFilterSetting ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-400"
+                    )}>
+                      <Filter className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="block text-xs font-black text-slate-800 dark:text-slate-200">
+                        Áp dụng bộ lọc câu hỏi hiện tại
+                      </span>
+                      <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                        Chỉ xuất các câu hỏi thỏa mãn bộ lọc loại câu hỏi/thẻ nhãn đang kích hoạt
+                      </span>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {/* Filter checkboxes */}
-              <div className="pt-2">
-                <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-150 dark:border-slate-800 hover:bg-slate-50/50 cursor-pointer transition-colors select-none">
                   <input 
                     type="checkbox"
                     checked={applyFilterSetting}
                     onChange={(e) => setApplyFilterSetting(e.target.checked)}
-                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded cursor-pointer"
+                    className="w-4 h-4 text-indigo-600 focus:ring-indigo-500 rounded cursor-pointer shrink-0 ml-2"
                   />
-                  <div>
-                    <span className="block text-xs font-extrabold text-slate-855 dark:text-slate-300">
-                      Apply Filter Setting
-                    </span>
-                  </div>
-                </label>
+                </div>
               </div>
 
             </div>
 
             {/* Action buttons */}
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 shrink-0 flex gap-3">
+            <div className="pt-3.5 border-t border-slate-100 dark:border-slate-800 shrink-0 flex gap-3">
               <button 
+                type="button"
                 onClick={() => setIsExportModalOpen(false)}
-                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-800 rounded-xl font-bold text-xs text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer"
+                className="flex-1 py-2.5 border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
                 Hủy
               </button>
               <button 
+                type="button"
                 onClick={handleExportFile}
-                className="flex-1 py-2.5 bg-indigo-650 hover:bg-indigo-755 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs rounded-2xl shadow-md shadow-indigo-500/20 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                <Download className="w-4 h-4" /> Export
+                <Download className="w-4 h-4" />
+                <span>Xuất file {fileFormat}</span>
               </button>
             </div>
 

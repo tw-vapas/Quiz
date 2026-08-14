@@ -226,26 +226,39 @@ export default function FileManager() {
         </button>
       </div>
 
-      {/* Storage Bar */}
-      <div className="px-5 pb-3 shrink-0">
-        <div className="flex items-center justify-between text-[9px] font-bold mb-1">
-          <span className={cn(
-            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
-          )}>
-            {(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+      {/* Storage Bar (Unified Quiz File Storage) */}
+      <div className="px-5 pb-3 shrink-0 space-y-1.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
+        <div className="flex items-center justify-between text-[10px] font-bold">
+          <span className="text-slate-600 dark:text-slate-400">
+            Bộ nhớ: <span className="font-mono text-slate-800 dark:text-slate-200 font-extrabold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
           </span>
           <span className={cn(
-            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
+            "font-extrabold px-1.5 py-0.5 rounded text-[9px]",
+            storagePercent >= 90 
+              ? "bg-red-500/10 text-red-500" 
+              : storagePercent >= 70 
+                ? "bg-amber-500/10 text-amber-500" 
+                : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
           )}>
             {storagePercent >= 90 ? "Sắp đầy!" : `${storagePercent.toFixed(0)}%`}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+
+        <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
           <div
-            className="h-full bg-indigo-500 transition-all duration-300"
-            style={{ width: `${storagePercent}%` }}
+            className={cn(
+              "h-full rounded-full transition-all duration-300 shadow-sm",
+              storagePercent >= 90 
+                ? "bg-gradient-to-r from-red-500 to-rose-600" 
+                : storagePercent >= 70 
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500" 
+                  : "bg-gradient-to-r from-indigo-500 to-indigo-600"
+            )}
+            style={{ width: `${Math.max(2, storagePercent)}%` }}
+            title={`Quiz Files storage: ${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`}
           />
         </div>
+
         {isStorageFull && (
           <div className="text-[10px] text-red-500 font-bold mt-1">
             Đã đạt giới hạn dung lượng. Vui lòng xóa bớt file để tạo mới.

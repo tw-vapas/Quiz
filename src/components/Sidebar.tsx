@@ -575,53 +575,47 @@ const SidebarList = React.memo(({
         />
       </div>
 
-      {/* Storage Bar */}
-      <div className="px-5 md:px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50">
-        <div className="flex items-center justify-between text-[10px] font-bold mb-1">
-          <span className={cn(
-            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
-          )}>
-            {(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+      {/* Storage Bar (Unified Quiz File Storage) */}
+      <div className="px-5 md:px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 space-y-1.5">
+        <div className="flex items-center justify-between text-[10px] font-bold">
+          <span className="text-slate-600 dark:text-slate-400">
+            Dung lượng lưu trữ: <span className="font-mono text-slate-800 dark:text-slate-200 font-extrabold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
           </span>
           <span className={cn(
-            storagePercent >= 90 ? "text-red-500" : storagePercent >= 70 ? "text-amber-500" : "text-slate-400"
+            "font-extrabold px-1.5 py-0.5 rounded text-[9px]",
+            storagePercent >= 90 
+              ? "bg-red-500/10 text-red-500" 
+              : storagePercent >= 70 
+                ? "bg-amber-500/10 text-amber-500" 
+                : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
           )}>
-            {storagePercent >= 90 ? "Sắp đầy!" : `${storagePercent.toFixed(0)}%`}
+            {storagePercent >= 90 ? "Bộ nhớ sắp đầy!" : `${storagePercent.toFixed(0)}%`}
           </span>
         </div>
-        <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-          <div className="flex h-full">
-            {sourcesPercent > 0 && (
-              <div
-                className="h-full bg-indigo-500 transition-all duration-300"
-                style={{ width: `${sourcesPercent}%` }}
-                title={`Nguồn dữ liệu: ${(sourcesBytes / (1024 * 1024)).toFixed(2)} MB`}
-              />
+
+        <div className="w-full h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden p-0.5 shadow-inner">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-300 shadow-sm",
+              storagePercent >= 90 
+                ? "bg-gradient-to-r from-red-500 to-rose-600" 
+                : storagePercent >= 70 
+                  ? "bg-gradient-to-r from-amber-500 to-orange-500" 
+                  : "bg-gradient-to-r from-indigo-500 to-indigo-600"
             )}
-            {creatorFilesPercent > 0 && (
-              <div
-                className="h-full bg-amber-500 transition-all duration-300"
-                style={{ width: `${creatorFilesPercent}%` }}
-                title={`Tệp tạo quiz: ${(creatorFilesBytes / (1024 * 1024)).toFixed(2)} MB`}
-              />
-            )}
-          </div>
+            style={{ width: `${Math.max(2, storagePercent)}%` }}
+            title={`Quiz Files storage: ${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`}
+          />
         </div>
-        <div className="flex gap-4 text-[10px] mt-1">
-          <span className="flex items-center gap-1 text-indigo-500">
-            <span className="w-2 h-2 rounded bg-indigo-500"></span>
-            Nguồn dữ liệu: {(sourcesBytes / (1024 * 1024)).toFixed(2)} MB
-          </span>
-          <span className="flex items-center gap-1 text-amber-500">
-            <span className="w-2 h-2 rounded bg-amber-500"></span>
-            Tệp tạo quiz: {(creatorFilesBytes / (1024 * 1024)).toFixed(2)} MB
-          </span>
+
+        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+          <span>{localSources.length} / 10 Quiz Files</span>
+          {isStorageFull && (
+            <span className="text-red-500 font-bold">
+              Đã đạt giới hạn dung lượng bộ nhớ.
+            </span>
+          )}
         </div>
-        {isStorageFull && (
-          <div className="text-[10px] text-red-500 font-bold mt-1">
-            Đã đạt giới hạn dung lượng. Vui lòng xóa bớt nguồn dữ liệu.
-          </div>
-        )}
       </div>
 
       <div className="p-5 md:p-6 flex-1 min-h-0 relative">
