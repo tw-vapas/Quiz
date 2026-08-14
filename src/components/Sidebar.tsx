@@ -566,7 +566,7 @@ const SidebarList = React.memo(({
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading || isStorageFull}
           className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
-          title={isStorageFull ? "Đã đạt giới hạn dung lượng" : "Tải lên tệp .docx, .txt, .json"}
+          title={isStorageFull ? "Đã đạt giới hạn dung lượng" : "Tải lên tệp .txt, .json, .docx, .pdf, hình ảnh"}
         >
           <Plus className="w-5 h-5" />
         </button>
@@ -574,7 +574,7 @@ const SidebarList = React.memo(({
           type="file"
           ref={fileInputRef}
           onChange={handleFileUpload}
-          accept=".txt,.docx,.json"
+          accept=".txt,.json,.docx,.pdf,image/*"
           multiple
           className="hidden"
         />

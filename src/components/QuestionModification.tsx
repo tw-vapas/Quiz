@@ -198,12 +198,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   };
 
   return (
-    <div className={cn(
-      "p-5 rounded-2xl border-2 transition-all duration-200 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative",
-      isValid
-        ? "border-emerald-500/80 dark:border-emerald-500/70 shadow-emerald-500/10"
-        : "border-red-500 dark:border-red-500 shadow-red-500/10 ring-2 ring-red-500/20"
-    )}>
+    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
         <div className="flex items-center gap-2">
@@ -1253,16 +1248,15 @@ export default function QuestionModification({
                             )}
                           >
                             <div className="flex justify-between items-center mb-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
-                                <span className={cn(
-                                  "text-[8px] px-1.5 py-0.2 rounded font-black uppercase",
-                                  qValid ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-red-500/10 text-red-600 dark:text-red-400"
-                                )}>
-                                  {qValid ? "✓ Hợp lệ" : "✕ Thiếu tin"}
-                                </span>
-                              </div>
-                              <span className="text-[8px] font-extrabold text-slate-400 uppercase">{q.type === "single_choice" ? "Single" : "Multiple"}</span>
+                              <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                              <span className={cn(
+                                "text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0 leading-none",
+                                qValid 
+                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
+                                  : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30"
+                              )} title={qValid ? "Câu hỏi hợp lệ" : "Câu hỏi chưa hợp lệ (thiếu đáp án hoặc thông tin)"}>
+                                {qValid ? "✓" : "✕"}
+                              </span>
                             </div>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
