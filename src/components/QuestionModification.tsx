@@ -880,11 +880,8 @@ export default function QuestionModification({
           <span className="text-xs font-black text-slate-850 dark:text-slate-100 truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
-          <span className={cn(
-            "text-[9px] px-2 py-0.5 rounded font-extrabold uppercase shrink-0",
-            activeFile.type === "QUIZ" ? "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-          )}>
-            {activeFile.type === "QUIZ" ? "Quiz File" : "Supported File"}
+          <span className="text-[9px] px-2 py-0.5 rounded font-extrabold uppercase shrink-0 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+            Quiz File
           </span>
         </div>
 

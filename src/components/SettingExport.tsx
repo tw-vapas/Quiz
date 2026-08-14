@@ -337,37 +337,6 @@ export default function SettingExport({
             />
           </div>
 
-          {/* Type Select Dropdown */}
-          <div className="space-y-1.5 relative">
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Type
-            </label>
-            <button
-              onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-255 flex items-center justify-between hover:border-slate-350 dark:hover:border-slate-700 cursor-pointer"
-            >
-              <span>{activeFile.type === "QUIZ" ? "Quiz File" : "Supported File"}</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-            </button>
-
-            {isTypeDropdownOpen && (
-              <div className="absolute left-0 right-0 mt-1.5 z-15 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg p-1.5 space-y-1">
-                <button
-                  onClick={() => { updateCreatorFile(activeFile.id, { type: "QUIZ" }); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", activeFile.type === "QUIZ" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
-                >
-                  Quiz File
-                </button>
-                <button
-                  onClick={() => { updateCreatorFile(activeFile.id, { type: "SUPPORT" }); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", activeFile.type === "SUPPORT" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-750")}
-                >
-                  Supported File
-                </button>
-              </div>
-            )}
-          </div>
-
           {/* Status Display */}
           <div className="space-y-1.5 relative">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
