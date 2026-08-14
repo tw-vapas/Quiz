@@ -170,6 +170,19 @@ const VirtualSourceCard = React.memo(({
                     {source.name}
                   </p>
                 )}
+                {!source.isValid && (
+                  <button
+                    onClick={() => {
+                      useQuizStore.getState().setActiveFileId(source.id);
+                      useQuizStore.getState().setSettingsOpen(false);
+                    }}
+                    className="mt-1 flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 hover:underline cursor-pointer select-none"
+                    title="Nhấp để chuyển tới File Manager chỉnh sửa"
+                  >
+                    <FileWarning className="w-3.5 h-3.5" />
+                    <span>Chưa hợp lệ (Chỉnh sửa trong File Manager)</span>
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -728,56 +741,57 @@ export default function Sidebar() {
     if (!files || files.length === 0) return;
 
     setIsUploading(true);
-    const parsedSources: SourceFile[] = [];
+    const creatorFiles = useQuizStore.getState().creatorFiles;
+
+    if (creatorFiles.length + files.length > 10) {
+      useQuizStore.getState().showNotification(`Không thể tải lên: Vượt quá giới hạn tối đa 10 tệp tin. (Hiện tại: ${creatorFiles.length})`, "error");
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    let addedCount = 0;
+    let invalidCount = 0;
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       try {
         const result = await parseFile(file);
-        parsedSources.push({
-          id: Math.random().toString(36).substring(2, 9),
-          name: file.name,
-          questionsCount: result.questions.length,
-          active: result.isValid,
-          questions: result.questions,
-          isValid: result.isValid,
-          error: result.error,
-          metadata: result.metadata,
-          document: result.document,
-          note: result.note
+        useQuizStore.getState().createCreatorFile(file.name, {
+          questions: result.questions || [],
+          document: result.document || "",
+          note: result.note || ""
         });
+        
+        const fileValid = result.isValid && result.questions.length > 0 && result.questions.every(q => q.options && q.options.length > 0 && q.correctOptionIds && q.correctOptionIds.length > 0);
+        if (!fileValid) {
+          invalidCount++;
+        }
+        addedCount++;
       } catch (err) {
-        console.error("Parse error:", err);
-        parsedSources.push({
-          id: Math.random().toString(36).substring(2, 9),
-          name: file.name,
-          questionsCount: 0,
-          active: false,
+        useQuizStore.getState().createCreatorFile(file.name, {
           questions: [],
-          isValid: false,
-          error: err instanceof Error ? err.message : String(err)
+          document: "",
+          note: ""
         });
+        invalidCount++;
+        addedCount++;
       }
     }
-    const nextSources = [...localSources, ...parsedSources];
-    const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
-    const estimatedNewSourcesBytes = JSON.stringify(nextSources).length * 2;
-    const totalEstimatedBytes = otherBytes + estimatedNewSourcesBytes;
 
-    if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
-      useQuizStore.getState().showNotification("Không thể tải tệp lên: Dung lượng tệp quá lớn và bộ nhớ lưu trữ đã đầy.", "error");
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-      return;
-    }
-
-    setLocalSources(nextSources);
+    const updatedSources = useQuizStore.getState().sources;
+    setLocalSources(updatedSources);
     setIsUploading(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
-  }, [localSources]);
+
+    if (invalidCount > 0) {
+      useQuizStore.getState().showNotification(`Đã nạp ${addedCount} tệp vào File Manager. Có ${invalidCount} tệp chưa hợp lệ, bạn có thể chỉnh sửa trong File Manager để kích hoạt tệp làm quiz.`, "info");
+    } else {
+      useQuizStore.getState().showNotification(`Đã nạp thành công ${addedCount} tệp tin!`, "success");
+    }
+  }, []);
 
   const toggleLocalSource = useCallback((id: string) => {
     setLocalSources(prev => {

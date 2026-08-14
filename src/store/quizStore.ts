@@ -211,6 +211,29 @@ const initialCreatorFiles: CreatorFile[] = [
   }
 ];
 
+function checkFileValidity(f: CreatorFile): boolean {
+  if (!f.questions || f.questions.length === 0) return false;
+  return f.questions.every(q => 
+    !!q.text && 
+    Array.isArray(q.options) && 
+    q.options.length > 0 && 
+    Array.isArray(q.correctOptionIds) && 
+    q.correctOptionIds.length > 0
+  );
+}
+
+const initialSources = initialCreatorFiles.map(f => ({
+  id: f.id,
+  name: f.name,
+  customName: f.customName,
+  questionsCount: f.questions.length,
+  active: f.active !== false && checkFileValidity(f),
+  isValid: checkFileValidity(f),
+  questions: f.questions,
+  document: f.document,
+  note: f.note
+}));
+
 export const useQuizStore = create<QuizStore>((set, get) => ({
   showResultAfterQuestion: true,
   autoNext: false,
@@ -242,17 +265,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   selectedDocumentSourceId: null,
   setSelectedDocumentSourceId: (id) => set({ selectedDocumentSourceId: id }),
 
-  sources: initialCreatorFiles.map(f => ({
-    id: f.id,
-    name: f.name,
-    customName: f.customName,
-    questionsCount: f.questions.length,
-    active: f.active !== false,
-    isValid: f.questions.length > 0,
-    questions: f.questions,
-    document: f.document,
-    note: f.note
-  })),
+  sources: initialSources,
   addSource: (source) => set((state) => {
     const newFile: CreatorFile = {
       id: source.id || `qf_${Date.now()}`,
@@ -275,8 +288,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         name: f.name,
         customName: f.customName,
         questionsCount: f.questions.length,
-        active: f.active !== false,
-        isValid: f.questions.length > 0,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
         questions: f.questions,
         document: f.document,
         note: f.note
@@ -292,8 +305,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         name: f.name,
         customName: f.customName,
         questionsCount: f.questions.length,
-        active: f.active !== false,
-        isValid: f.questions.length > 0,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
         questions: f.questions,
         document: f.document,
         note: f.note
@@ -311,8 +324,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         name: f.name,
         customName: f.customName,
         questionsCount: f.questions.length,
-        active: f.active !== false,
-        isValid: f.questions.length > 0,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
         questions: f.questions,
         document: f.document,
         note: f.note
@@ -361,8 +374,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
           name: f.name,
           customName: f.customName,
           questionsCount: f.questions.length,
-          active: f.active !== false,
-          isValid: f.questions.length > 0,
+          active: f.active !== false && checkFileValidity(f),
+          isValid: checkFileValidity(f),
           questions: f.questions,
           document: f.document,
           note: f.note
@@ -382,8 +395,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         name: f.name,
         customName: f.customName,
         questionsCount: f.questions.length,
-        active: f.active !== false,
-        isValid: f.questions.length > 0,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
         questions: f.questions,
         document: f.document,
         note: f.note
@@ -429,8 +442,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         name: f.name,
         customName: f.customName,
         questionsCount: f.questions.length,
-        active: f.active !== false,
-        isValid: f.questions.length > 0,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
         questions: f.questions,
         document: f.document,
         note: f.note
