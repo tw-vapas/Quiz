@@ -34,17 +34,14 @@ Tệp dữ liệu nhập xuất dưới dạng JSON phải tuân thủ schema đ
 
 ---
 
-## 3. Quy tắc Đề thi & Tệp hỗ trợ (Quiz & Supported Files)
+## 3. Quy tắc Tệp Đề thi (Quiz Files)
 
-Trong trình tạo đề thi, hệ thống phân chia các tệp soạn thảo thành hai loại:
-- **Quiz File (Đề thi chính - Giới hạn tối đa 5 tệp)**: Đề thi hoàn chỉnh dùng để thi hoặc xuất bản.
-- **Supported File (Tài liệu hỗ trợ - Giới hạn tối đa 15 tệp)**: Chứa ngân hàng câu hỏi theo chuyên đề hoặc tài liệu lý thuyết bổ trợ.
-
-### Quy tắc liên kết dữ liệu (Linking Rules):
-1. Một Quiz File có thể liên kết với nhiều Supported Files (`supportedFileIds`).
-2. Khi liên kết một tệp hỗ trợ vào đề thi chính, hệ thống tự động sao chép toàn bộ câu hỏi của tệp hỗ trợ đó vào Quiz File, đồng thời đổi ID câu hỏi thành định dạng `${supportFileId}_${questionId}` để tránh xung đột định danh và lưu nguồn gốc tệp hỗ trợ (`sourceId`, `sourceName`).
-3. Khi gỡ liên kết (Unlink), tất cả câu hỏi có tiền tố ID thuộc tệp hỗ trợ đó sẽ tự động bị xóa khỏi Quiz File.
-4. Khi đồng bộ (Sync), hệ thống lọc bỏ các câu hỏi cũ của tệp hỗ trợ trong Quiz File và nạp lại danh sách câu hỏi mới nhất từ Supported File gốc.
+Trong trình tạo đề thi, hệ thống đã thống nhất quản lý toàn bộ tệp dưới một khái niệm duy nhất là **Quiz File** (loại bỏ khái niệm Supported File rắc rối cũ).
+- **Giới hạn tệp**: Danh sách File Manager chứa tối đa **10 Quiz Files**.
+- **Quy tắc gộp tệp & Chọn nguồn khả dụng**:
+  1. Trong modal tạo tệp mới hoặc trong phần Cài đặt Quiz, người dùng có thể chọn **"Chọn từ File Manager"** và tích chọn nhiều tệp nguồn (multi-select) để gộp lại thành một tệp đề thi mới.
+  2. **Quét tệp không hợp lệ**: Khi nạp bất kỳ tệp nào (.txt, .docx, .json, .pdf, hình ảnh), hệ thống luôn quét và giữ lại **tất cả câu hỏi** tìm thấy (kể cả các câu bị thiếu thông tin/đáp án).
+  3. Tệp chưa hợp lệ sẽ hiển thị badge cảnh báo **`Chưa hợp lệ (Chỉnh sửa trong File Manager)`**. Khi người dùng vào Question View sửa các câu thiếu thông tin thành hợp lệ, tệp sẽ tự động chuyển trạng thái `isValid: true` và được phép chọn để làm bài trong Quiz Settings.
 
 ---
 
@@ -66,5 +63,10 @@ Khi người dùng chọn cấu hình làm bài thi tùy chỉnh số lượng c
 
 ## 5. Các Ràng buộc Trình soạn thảo (Editor Constraints)
 
-- **Giới hạn thẻ nhãn (Tags)**: Mỗi câu hỏi chỉ được gán tối đa **5 thẻ**. Mỗi thẻ chỉ được chứa tối đa **16 ký tự**. Khi người dùng nhập thẻ dài hơn hoặc nhiều hơn, hệ thống sẽ từ chối lưu và hiển thị thông báo lỗi.
+- **Giới hạn Display Block**: Mỗi câu hỏi chỉ được thêm tối đa **2 Display Block**. Nút `+ Add Display Block` tự động ẩn/khóa khi đã đạt 2 block.
+- **Giới hạn số ký tự (Text Limit)**:
+  * **Nội dung câu hỏi (Question)**: Tối đa **1000 ký tự**.
+  * **Nội dung Display Block (Content)**: Tối đa **1000 ký tự**.
+  * **Nội dung giải thích (Explanation)**: Tối đa **1000 ký tự**.
+- **Giới hạn thẻ nhãn (Tags)**: Mỗi câu hỏi chỉ được gán tối đa **5 thẻ**. Mỗi thẻ chỉ được chứa tối đa **16 ký tự**.
 - **Giới hạn từ ghi chú (Note)**: Ghi chú đính kèm tệp tin giới hạn tối đa **200 từ**. Logic trong `SettingExport.tsx` sẽ tự động cắt bỏ các từ từ thứ 201 trở đi.

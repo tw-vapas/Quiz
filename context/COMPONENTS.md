@@ -5,14 +5,14 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 ---
 
 ## 1. FileManager (`src/components/FileManager.tsx`)
-- **Mục đích**: Cột bên trái trong giao diện "Tạo Quiz". Quản lý danh sách các tệp đề thi (Quiz File) và tệp tài liệu hỗ trợ (Supported File).
+- **Mục đích**: Cột bên trái trong giao diện "Tạo Quiz". Quản lý danh sách duy nhất các tệp đề thi **Quiz File** (đã gộp bỏ khái niệm Supported File, giới hạn tối đa 10 tệp).
 - **Trạng thái cục bộ (State)**:
-  * `expandedQuizFiles`: Bản ghi các file quiz đang được mở rộng danh sách file liên kết.
-  * Các state quản lý mở đóng hộp thoại tạo tệp (`isCreateModalOpen`) và liên kết tệp hỗ trợ (`isAddSupportModalOpen`).
+  * Quản lý mở/đóng hộp thoại tạo tệp mới (`isCreateModalOpen`) hỗ trợ chọn nhiều file nguồn khả dụng để gộp thành file mới.
 - **Logic quan trọng**:
-  * Đọc tệp tin tải lên máy qua `parseFile` chạy bất đồng bộ.
+  * Đọc tệp tin tải lên máy qua `parseFile` bất đồng bộ (hỗ trợ .txt, .json, .docx, .pdf, và OCR hình ảnh).
+  * Trích xuất toàn bộ câu hỏi (kể cả câu chưa hoàn thiện đáp án) để đẩy vào File Manager cho người dùng chỉnh sửa.
   * **Kiểm tra giới hạn dung lượng trước khi thêm**: Dự phóng kích thước mảng `creatorFiles` sau khi thêm tệp mới, so sánh với `STORAGE_LIMIT_BYTES` (4.5MB) để ngăn lỗi tràn `localStorage`.
-  * Hiển thị thanh tiến trình dung lượng (Storage bar) phân tách thành 2 màu: Indigo (Nguồn dữ liệu) và Amber (Tệp tạo quiz).
+  * Hiển thị thanh tiến trình dung lượng (Storage bar) của bộ nhớ File Manager.
 - **Lỗi thường gặp**: Tải lên tệp quá lớn có thể kích hoạt cảnh báo vượt hạn mức dung lượng. Cần xóa bớt các tệp cũ để tiếp tục.
 
 ---
@@ -21,12 +21,18 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 - **Mục đích**: Cột trung tâm trong giao diện "Tạo Quiz". Cung cấp giao diện trực quan để chỉnh sửa câu hỏi trắc nghiệm hoặc sửa đổi trực tiếp cấu trúc JSON gốc của tệp tin.
 - **Các tab chính**:
   * **Document**: Nhập tài liệu ôn tập bằng Markdown hoặc xem trước kết quả hiển thị lý thuyết.
-  * **Question View**: Chỉnh sửa trực quan các câu hỏi. Hỗ trợ hiển thị dạng Panel split-view (danh sách câu hỏi bên phải, form chỉnh sửa nội dung/đáp án/tags bên trái).
+  * **Question View**: Chỉnh sửa trực quan các câu hỏi dạng Panel split-view (danh sách câu hỏi bên phải, form chỉnh sửa nội dung/đáp án/tags/display block/explanation bên trái).
   * **Code View**: IDE Editor (`IdeEditor`) tích hợp PrismJS để sửa JSON thô trực tiếp.
+- **Quy tắc UI & Giới hạn biên tập**:
+  * **Question List (Bảng bên phải)**: Đã bỏ nhãn loại câu ("SINGLE"/"MULTIPLE") và chữ "Hợp lệ"/"Thiếu tin". Hiển thị dấu **`✓`** (Xanh lá) hoặc **`✕`** (Đỏ) căn phải. Viền ô câu hỏi dạng xanh lá/đỏ giúp nhận diện nhanh câu thiếu thông tin.
+  * **Question Card (Giao diện biên tập bên trái)**:
+    * Giới hạn tối đa **2 Display Block** cho mỗi câu hỏi. Căn ngang 2 tiêu đề `Block Type` và `Content`.
+    * Nút **`+ Add Explanation`** chỉ hiển thị khi câu hỏi chưa có giải thích (bỏ block tĩnh "Giải thích đã tồn tại").
+    * Ô nhập **Question**, **Display Block Content**, và **Explanation** đồng bộ style cố định `h-28`, `resize-none`, `overflow-y-auto custom-scrollbar` và giới hạn tối đa **1000 ký tự** kèm bộ đếm `x/1000`.
+    * Truyền `key={panelQuestion.id}` và đồng bộ `tagsInput` qua ref để tối ưu hiệu năng render, triệt tiêu lỗi `Maximum update depth exceeded`.
 - **Logic quan trọng**:
   * Tự động kiểm tra và báo lỗi cú pháp JSON thời gian thực khi chỉnh sửa trong Code View thông qua hàm `parseQuizJson`.
   * Bộ lọc câu hỏi (`filterType`, `filterOthers`) và bộ sắp xếp đa lớp (theo độ ưu tiên của loại câu hỏi hoặc thứ tự của nhãn tag).
-- **Lỗi thường gặp**: Chỉnh sửa JSON sai cú pháp (như thiếu dấu phẩy, ngoặc) sẽ bị khóa lưu và hiển thị thông báo lỗi chi tiết. Cần sửa đúng định dạng schema để có thể nhấn lưu.
 
 ---
 
@@ -35,18 +41,17 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 - **Logic quan trọng**:
   * Tự động kiểm thử tính hợp lệ (Auto Evaluate Status) của tệp tin: Phát hiện đề trống (`Empty File`), lỗi cấu trúc (`Syntax Error`), thiếu lựa chọn đáp án (`Missing Answer Option`), hoặc chưa chọn đáp án đúng (`Missing Correct Answer`).
   * Giới hạn ghi chú ghi tối đa **200 từ**. Nếu nhập vượt quá, hệ thống sẽ tự động cắt ngắn chuỗi tại từ thứ 200.
-  * Vẽ biểu đồ hình quạt (Pie chart) biểu diễn phân phối tỉ trọng các Tags bằng mã SVG thuần túy (dựa trên thuật toán tính góc tích lũy `cumulativePercentage`).
-  * Xuất bản tệp đề thi (JSON hoặc văn bản DOCX) hỗ trợ cắt lát câu hỏi (Range, First N, Last N) và áp dụng cấu hình bộ lọc động.
+  * Vẽ biểu đồ hình quạt (Pie chart) biểu diễn phân phối tỉ trọng các Tags bằng mã SVG thuần túy.
+  * Xuất bản tệp đề thi (JSON hoặc văn bản DOCX) hỗ trợ cắt lát câu hỏi và áp dụng cấu hình bộ lọc động.
 
 ---
 
 ## 4. Sidebar (`src/components/Sidebar.tsx`)
-- **Mục đích**: Bảng cài đặt hiển thị dưới dạng popup modal khi chuẩn bị bắt đầu làm bài kiểm tra ở trang chủ.
+- **Mục đích**: Bảng cài đặt nguồn dữ liệu hiển thị dưới dạng drawer khi chuẩn bị bắt đầu làm bài kiểm tra.
 - **Logic quan trọng**:
-  * Quản lý tải lên tệp tin nguồn dữ liệu (.docx, .txt, .json).
-  * Hỗ trợ kéo thả sắp xếp thứ tự tệp nguồn trắc nghiệm bằng cơ chế HTML5 Drag & Drop thuần túy (`VirtualSourceCard`).
-  * Sử dụng state cục bộ cho tất cả cấu hình (`localShowResult`, `localAutoNext`,...) và chỉ ghi đè vào Zustand Store khi người dùng nhấn nút **"Lưu"**. Nếu nhấn "Hủy" hoặc đóng popup, các thay đổi tạm thời sẽ bị hủy bỏ.
-- **Lỗi thường gặp**: Kéo thả trên thiết bị di động có thể khó khăn nếu không chạm đúng vào tay cầm kéo (`GripVertical`). Do đó, tay cầm kéo được tối ưu hóa tăng kích thước vùng chạm trên màn hình cảm ứng.
+  * Đồng bộ cơ chế nạp file với File Manager: Cho phép tải các định dạng `.txt`, `.json`, `.docx`, `.pdf`, và hình ảnh. Các file tải lên (dù hợp lệ hay chưa) đều được đẩy vào File Manager.
+  * Hiển thị badge cảnh báo **`Chưa hợp lệ (Chỉnh sửa trong File Manager)`** cho file chưa hoàn thiện. Khi người dùng sửa xong trong File Manager, file tự động trở thành hợp lệ (`isValid: true`) và cho phép chọn làm quiz trong Sidebar.
+  * Đổi nhãn nút import "Chọn từ nguồn đã nhập" thành **"Chọn từ File Manager"** với tiêu đề cùng kích thước chuẩn font.
 
 ---
 

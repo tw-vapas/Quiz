@@ -46,16 +46,11 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   const [tagsInput, setTagsInput] = useState(() => question?.tags?.join(", ") || "");
   const isValid = isQuestionValid(question);
 
-  useEffect(() => {
-    if (!question) return;
-    const currentParsedTags = tagsInput.split(",").map(t => t.trim()).filter(Boolean);
-    const incomingTags = question.tags || [];
-    const isSame = currentParsedTags.length === incomingTags.length && 
-                   currentParsedTags.every((t, i) => t === incomingTags[i]);
-    if (!isSame) {
-      setTagsInput(incomingTags.join(", "));
-    }
-  }, [question?.tags]);
+  const prevQuestionIdRef = React.useRef(question?.id);
+  if (prevQuestionIdRef.current !== question?.id) {
+    prevQuestionIdRef.current = question?.id;
+    setTagsInput(question?.tags?.join(", ") || "");
+  }
 
   // Keyboard shortcut: press A/B/C/D to toggle correct answer
   useEffect(() => {
@@ -613,11 +608,11 @@ export default function QuestionModification({
   };
 
   useEffect(() => {
-    if (activeFile && activeTab !== "CODE_VIEW") {
+    if (activeFile && activeTab === "CODE_VIEW") {
       setCodeText(getFileJson(activeFile));
       setJsonError(null);
     }
-  }, [activeFile, activeTab]);
+  }, [activeFile?.id, activeTab]);
 
   // --- POPOVER VISIBILITY CONTROLS ---
   const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
@@ -1236,6 +1231,7 @@ export default function QuestionModification({
                 <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar pr-2 space-y-4">
                   {panelQuestion ? (
                     <QuestionCard 
+                      key={panelQuestion.id}
                       index={filteredQuestions.indexOf(panelQuestion)}
                       question={panelQuestion}
                       onUpdate={(updates) => updateQuestion(panelQuestion.id, updates)}
