@@ -229,28 +229,27 @@ export default function SettingExport({
       return;
     }
 
-    // 3. Trigger download
+    // 3. Prepare File & Data
+    const rawName = fileFormat === "JSON" 
+      ? (activeFile.metadata?.file_name || activeFile.name) 
+      : activeFile.name;
+    const defaultFileName = sanitizeFileName(rawName, fileFormat === "JSON" ? ".json" : ".docx");
+
+    let blob: Blob;
+
     if (fileFormat === "JSON") {
       const pkg = {
         metadata: {
-          file_name: activeFile.metadata.file_name,
+          file_name: defaultFileName,
           question_count: exportedQuestions.length,
-          last_modified: activeFile.metadata.last_modified
+          last_modified: activeFile.metadata?.last_modified || new Date().toISOString()
         },
         document: activeFile.document,
         note: activeFile.note,
         questions: exportedQuestions
       };
 
-      const blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = activeFile.metadata.file_name.endsWith(".json") 
-        ? activeFile.metadata.file_name 
-        : `${activeFile.metadata.file_name.replace(/\.[^/.]+$/, "")}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+      blob = new Blob([JSON.stringify(pkg, null, 2)], { type: "application/json" });
     } else {
       // DOCX formatting - text representation
       let textContent = "";
@@ -271,15 +270,50 @@ export default function SettingExport({
         textContent += `\n`;
       });
 
-      const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${activeFile.name.replace(/\.[^/.]+$/, "")}.docx`;
-      a.click();
-      URL.revokeObjectURL(url);
+      blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
     }
 
+    // 4. Trigger system File Manager save dialog (showSaveFilePicker)
+    if (typeof window !== "undefined" && "showSaveFilePicker" in window) {
+      try {
+        const fileHandle = await (window as any).showSaveFilePicker({
+          suggestedName: defaultFileName,
+          types: fileFormat === "JSON" ? [
+            {
+              description: "Tệp JSON (*.json)",
+              accept: { "application/json": [".json"] }
+            }
+          ] : [
+            {
+              description: "Tệp văn bản Word (*.docx)",
+              accept: { "text/plain": [".docx", ".txt"] }
+            }
+          ]
+        });
+
+        const writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+
+        useQuizStore.getState().showNotification("Đã xuất tệp thành công!", "success");
+        setIsExportModalOpen(false);
+        return;
+      } catch (err: any) {
+        if (err.name === "AbortError") {
+          return;
+        }
+      }
+    }
+
+    // Fallback download qua thẻ a
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = defaultFileName;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    useQuizStore.getState().showNotification("Đã xuất tệp thành công!", "success");
     setIsExportModalOpen(false);
   };
 

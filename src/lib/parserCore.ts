@@ -171,8 +171,12 @@ function cleanAdministrativeNoise(text: string): string {
 function extractAnswerKeyMap(text: string, cutoffIndex: number): Map<number, string> {
   const keyMap = new Map<number, string>();
   
-  // Chỉ quét bảng đáp án từ vị trí cutoffIndex trở đi nếu tìm thấy điểm cắt hợp lệ
-  const footerText = cutoffIndex !== -1 ? text.substring(cutoffIndex) : text;
+  // Nếu không tìm thấy vị trí bảng đáp án thực sự (cutoffIndex === -1), không tự động quét thân bài
+  if (cutoffIndex === -1) {
+    return keyMap;
+  }
+  
+  const footerText = text.substring(cutoffIndex);
   
   // Quét các cặp câu và đáp án: 1-A, 2. B, 3: C, 4/D, hoặc định dạng bảng 1A, 2B, 3C...
   const pairRegex = /(\d+)\s*[\.\:\-\/\s]*\s*([A-D])(?!\w)/gi;
@@ -237,9 +241,9 @@ function parseOptionsFromBlock(blockText: string): { questionText: string, optio
       optionText = optionText.substring(0, optionText.length - 2).trim();
     }
     
-    // Kiểm tra xem tiền tố hay nội dung có dấu sao * không
+    // Kiểm tra tiền tố dấu sao * đứng ngay trước đáp án
     const precedingText = blockText.substring(Math.max(0, current.index - 3), current.index);
-    if (precedingText.includes("*")) {
+    if (/^\s*\*+\s*$/.test(precedingText) || precedingText.trim().endsWith("*")) {
       isCorrect = true;
     }
     if (optionText.startsWith("*")) {
@@ -263,14 +267,21 @@ function parseOptionsFromBlock(blockText: string): { questionText: string, optio
     });
   }
   
-  return { questionText, options };
+  return {
+    questionText,
+    options
+  };
 }
 
-export function parseQuizText(rawText: string, isDocx: boolean = false): ParseResult {
+export function parseQuizText(rawText: string, isDocx = false): ParseResult {
+  if (!rawText || !rawText.trim()) {
+    return { questions: [], isValid: false, error: "Nội dung văn bản rỗng." };
+  }
+
   const normalizedText = rawText.replace(/\[\\(\+|\?|\>|\=)\]/gi, (match, tag) => `[/${tag}]`);
   
   // 1. Tìm vị trí bảng đáp án thực sự ở cuối tài liệu (không bị trùng với từ "đáp án" trong câu hỏi)
-  const sheetRegex = /(?:\r?\n|^)\s*(?:bảng\s+đáp\s+án|đáp\s+án|answer\s*key|hướng\s+dẫn\s+giải)(?:\s*:|\s*\r?\n|$)/gi;
+  const sheetRegex = /(?:\r?\n|^)\s*(?:bảng\s+đáp\s+án|đáp\s+án|answer\s+key|hướng\s+dẫn\s+giải)(?:\s*:|\s*\r?\n|$)/gi;
   let sheetMatch;
   let cutoffIndex = -1;
   
@@ -278,7 +289,7 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
     const candidateIndex = sheetMatch.index;
     const remainingText = normalizedText.substring(candidateIndex + sheetMatch[0].length);
     // Kiểm tra xem phía sau vị trí này còn chứa câu hỏi nào khác không (Câu X:, Question X., [?])
-    const hasSubsequentQuestions = /(?:(?:Câu|Question|Q)\s*\d+(?:\s*[\.:\)\/\-])?|\d+\s*[\.:\)\/\-]|\[\?\])/i.test(remainingText);
+    const hasSubsequentQuestions = /(?:[\*\_\#\>\s]*(?:Câu|Question|Q)\s*\d+(?:\s*[\.:\)\/\-])?|\d+\s*[\.:\)\/\-]|\[\?\])/i.test(remainingText);
     
     if (!hasSubsequentQuestions) {
       cutoffIndex = candidateIndex;
@@ -287,7 +298,6 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
   }
   
   // 2. Tìm vị trí của các phần không phải trắc nghiệm (Tự luận, bài tập ngắn, câu hỏi ngắn...)
-  // Hệ thống sẽ cắt bỏ phần tự luận này để tránh quét nhầm các câu hỏi tự luận làm câu hỏi trắc nghiệm
   const endingHeaderRegex = /(?:\r?\n|^)\s*(?:câu\s+hỏi\s+ngắn|tự\s+luận|bài\s+tập(?!\s+trắc\s+nghiệm)|phần\s+(?:ii|2)(?!\s+trắc\s+nghiệm)|short\s+questions|essay|exercises(?!\s+multiple\s+choice))(?:\s*:|\s*\r?\n|$)/gi;
   let endingMatch;
   let essayCutoffIndex = -1;
@@ -295,7 +305,6 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
   while ((endingMatch = endingHeaderRegex.exec(normalizedText)) !== null) {
     const candidateIndex = endingMatch.index;
     const remainingText = normalizedText.substring(candidateIndex + endingMatch[0].length);
-    // Kiểm tra xem phía sau còn chứa câu hỏi trắc nghiệm nào không (bằng cách tìm chuỗi a..b..c..d của đáp án MCQ)
     const hasSubsequentMcq = /a[\.\:\)\/\-\]][\s\S]{1,400}b[\.\:\)\/\-\]][\s\S]{1,400}c[\.\:\)\/\-\]][\s\S]{1,400}d[\.\:\)\/\-\]]/i.test(remainingText);
     
     if (!hasSubsequentMcq) {
@@ -304,7 +313,6 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
     }
   }
   
-  // Điểm cắt cuối cùng sẽ là điểm xuất hiện sớm nhất giữa bảng đáp án và phần tự luận
   let finalCutoffIndex = -1;
   if (cutoffIndex !== -1 && essayCutoffIndex !== -1) {
     finalCutoffIndex = Math.min(cutoffIndex, essayCutoffIndex);
@@ -314,19 +322,17 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
     finalCutoffIndex = essayCutoffIndex;
   }
   
-  // 3. Quét bảng đáp án ở cuối đề thi nếu có (sử dụng cutoffIndex ban đầu của bảng đáp án)
+  // 3. Quét bảng đáp án ở cuối đề thi nếu có
   const answerKeyMap = extractAnswerKeyMap(normalizedText, cutoffIndex);
   
-  // 4. Tách riêng phần chứa câu hỏi (bỏ đi phần bảng đáp án và phần tự luận nếu tìm thấy)
+  // 4. Tách riêng phần chứa câu hỏi
   const questionsTextSection = finalCutoffIndex !== -1 ? normalizedText.substring(0, finalCutoffIndex) : normalizedText;
   
   // 5. Lọc nhiễu hành chính
   const cleanedText = cleanAdministrativeNoise(questionsTextSection);
   
   // 4. Tìm kiếm các điểm bắt đầu của câu hỏi
-  // Quét theo biểu thức chính quy hỗ trợ các kiểu Câu X:, Question X., X. X: X) ... và cả tag cũ [?][type]
-  // Nếu có tiền tố như Câu/Question/Q, dấu phân cách phía sau là không bắt buộc (ví dụ "Câu 211 Không có...")
-  const qRegex = /(?:\r?\n|^)(?:(?:Câu|Question|Q)\s*(\d+)(?:\s*[\.:\)\/\-])?|(\d+)\s*[\.:\)\/\-]|\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\])\s*/gi;
+  const qRegex = /(?:\r?\n|^)[\*\_\#\>\s]*(?:(?:Câu|Question|Q)\s*(\d+)(?:\s*[\.:\)\/\-])?|(\d+)\s*[\.:\)\/\-]|\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\])[\*\_\s]*/gi;
   const questionsList = [];
   let qMatch;
   while ((qMatch = qRegex.exec(cleanedText)) !== null) {
@@ -341,8 +347,8 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
   const questions: Question[] = [];
   
   if (questionsList.length === 0) {
-    // Luồng dự phòng (Fallback): Nếu không quét được theo mẫu câu hỏi thông minh, split theo kiểu cũ
-    const parts = cleanedText.split(/(Câu\s+\d+\s*:|\[\?\]\s*\[\s*(?:single_choice|multiple_choice)\s*\])/gi);
+    // Luồng dự phòng (Fallback): split theo kiểu cũ
+    const parts = cleanedText.split(/(?:(?:\r?\n|^)[\*\_\#\>\s]*(?:Câu|Question|Q)\s*\d+(?:\s*[\.:\)\/\-])?[\*\_\s]*|\[\?\]\s*\[\s*(?:single_choice|multiple_choice)\s*\])/gi);
     if (parts.length < 3) {
       return { questions: [], isValid: false, error: "Không tìm thấy câu hỏi nào. Đảm bảo đúng định dạng câu hỏi." };
     }
@@ -363,11 +369,6 @@ export function parseQuizText(rawText: string, isDocx: boolean = false): ParseRe
       const taggedQuestion = parseTaggedQuestionBlock(fullQuestionBlock);
       
       let cleanedBlock = fullQuestionBlock;
-      cleanedBlock = cleanedBlock.replace(/\[\?\]\s*\[\s*(single_choice|multiple_choice)\s*\]([\s\S]*?)(?:\[\/\?\]|(?=\[\+\]|\[=\]|\[\>\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-      cleanedBlock = cleanedBlock.replace(/\[\+\]\s*\[\s*([a-zA-Z0-9_]+)\s*\]([\s\S]*?)(?:\[\/\+\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-      cleanedBlock = cleanedBlock.replace(/\[\>\]([\s\S]*?)(?:\[\/\>\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-      cleanedBlock = cleanedBlock.replace(/\[=\]\s*\[\s*([TF])\s*\]([\s\S]*?)(?:\[\/=\]|(?=\[\+\]|\[=\]|\[\>\]|\[\/\?\]|\[\?\]|\r?\n\s*Câu\s+\d+\s*:|\r?\n\s*[A-D][\.\)]|$))/gi, "");
-      
       if (!display_block) {
         const displayBlockRegex = /\[\+\]\s*:\s*\(\s*type\s*=\s*([a-zA-Z_0-9]+)\s*\)\s*\.\s*\(\s*"([^"\\]*(?:\\.[^"\\]*)*)"\s*\)/g;
         cleanedBlock = cleanedBlock.replace(displayBlockRegex, (match, type, content) => {
