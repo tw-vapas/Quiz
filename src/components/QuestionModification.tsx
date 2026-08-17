@@ -747,6 +747,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         totalCount: parsedQuestions.length,
         validCount: validQuestionsCount,
         questions: parsedQuestions,
+        warnings: result.warnings || [],
         error: result.error || null
       };
     } catch (err: any) {
@@ -1109,13 +1110,30 @@ D. Oát (W)`}
                       <span>{rawTextAnalysis.error}</span>
                     </div>
                   ) : (
-                    <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        <span>
-                          Đã bóc tách thành công <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{rawTextAnalysis.totalCount}</strong> câu hỏi ({rawTextAnalysis.validCount} câu hợp lệ).
-                        </span>
+                    <div className="space-y-2">
+                      <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>
+                            Đã bóc tách thành công <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{rawTextAnalysis.totalCount}</strong> câu hỏi ({rawTextAnalysis.validCount} câu hợp lệ).
+                          </span>
+                        </div>
                       </div>
+
+                      {/* Render warnings if STT gaps are detected */}
+                      {Boolean(rawTextAnalysis.warnings && rawTextAnalysis.warnings.length > 0) && (
+                        <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 style-scrollbar">
+                          <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <span>Thông tin STT văn bản gốc:</span>
+                          </div>
+                          <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
+                            {rawTextAnalysis.warnings.map((w, idx) => (
+                              <li key={idx}>{w}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
