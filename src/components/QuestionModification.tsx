@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useQuizStore, CreatorFile } from "@/store/quizStore";
 import { Question, Option, DisplayBlock } from "../lib/parser";
 import MarkdownRenderer from "./MarkdownRenderer";
-import { parseQuizJson } from "@/lib/parser";
+import { parseQuizJson, parseQuizText } from "@/lib/parser";
 import { cn, getTagColor, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept } from "@/lib/utils";
 import Prism from "prismjs";
 import "prismjs/components/prism-json";
@@ -17,6 +17,7 @@ import {
   Settings, 
   ChevronDown, 
   FileCode, 
+  FileText,
   X,
   ChevronLeft,
   ChevronRight,
@@ -583,8 +584,6 @@ Trả về KẾT QUẢ DUY NHẤT dưới dạng mảng JSON thuần túy (khôn
   }
 ]
 
-Quy tắc:
-- "Question": Số thứ tự câu hỏi trong đề thi (1, 2, 3...).
 - "CorrectOptions": Mảng chứa các chữ cái đại diện cho đáp án đúng (ví dụ: ["A"] hoặc ["A", "C"]).
 - "Explanation": Chuỗi giải thích lý do tại sao đáp án đó đúng.
 
@@ -599,16 +598,25 @@ interface SupplementComponentModalProps {
 }
 
 function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: SupplementComponentModalProps) {
+  const [mainMode, setMainMode] = useState<"ANSWERS_EXPLANATION" | "RAW_TEXT_QUESTIONS">("ANSWERS_EXPLANATION");
   const [activeTab, setActiveTab] = useState<"FILE" | "PASTE">("FILE");
   const [jsonText, setJsonText] = useState("");
   const [fileName, setFileName] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
 
+  // Tab 2 Raw text questions state
+  const [rawText, setRawText] = useState("");
+  const [importStrategy, setImportStrategy] = useState<"APPEND" | "OVERWRITE" | "REPLACE_ALL">("APPEND");
+
   useEffect(() => {
     if (isOpen) {
+      setMainMode("ANSWERS_EXPLANATION");
+      setActiveTab("FILE");
       setJsonText("");
       setFileName(null);
       setIsCopied(false);
+      setRawText("");
+      setImportStrategy("APPEND");
     }
   }, [isOpen]);
 
@@ -637,7 +645,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   };
 
   const analysis = useMemo(() => {
-    if (!isOpen || !activeFile || !jsonText.trim()) return null;
+    if (!isOpen || !activeFile || mainMode !== "ANSWERS_EXPLANATION" || !jsonText.trim()) return null;
 
     let cleaned = jsonText.trim();
     if (cleaned.startsWith("```")) {
@@ -725,25 +733,77 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
       warnings,
       updatesMap
     };
-  }, [isOpen, jsonText, activeFile]);
+  }, [isOpen, mainMode, jsonText, activeFile]);
+
+  // Live Analysis for Tab 2 Raw text questions
+  const rawTextAnalysis = useMemo(() => {
+    if (!isOpen || !activeFile || mainMode !== "RAW_TEXT_QUESTIONS" || !rawText.trim()) return null;
+
+    try {
+      const result = parseQuizText(rawText, false);
+      const parsedQuestions = result.questions || [];
+      const validQuestionsCount = parsedQuestions.filter((q: Question) => isQuestionValid(q)).length;
+      return {
+        totalCount: parsedQuestions.length,
+        validCount: validQuestionsCount,
+        questions: parsedQuestions,
+        error: result.error || null
+      };
+    } catch (err: any) {
+      return {
+        totalCount: 0,
+        validCount: 0,
+        questions: [],
+        error: `Lỗi phân tích cú pháp: ${err.message}`
+      };
+    }
+  }, [isOpen, mainMode, rawText, activeFile]);
 
   const handleConfirm = () => {
-    if (!activeFile || !analysis || analysis.error || !analysis.updatesMap) return;
+    if (!activeFile) return;
 
-    const newQuestions = activeFile.questions.map((q, idx) => {
-      const update = analysis.updatesMap?.get(idx);
-      if (!update) return q;
+    if (mainMode === "ANSWERS_EXPLANATION") {
+      if (!analysis || analysis.error || !analysis.updatesMap) return;
 
-      return {
-        ...q,
-        correctOptionIds: update.correctOptionIds.length > 0 ? update.correctOptionIds : q.correctOptionIds,
-        type: update.correctOptionIds.length > 1 ? "multiple_choice" : q.type,
-        explanation: update.explanation !== undefined ? update.explanation : q.explanation
-      };
-    });
+      const newQuestions = activeFile.questions.map((q, idx) => {
+        const update = analysis.updatesMap?.get(idx);
+        if (!update) return q;
 
-    onApply(newQuestions, analysis.matchedCount);
-    onClose();
+        return {
+          ...q,
+          correctOptionIds: update.correctOptionIds.length > 0 ? update.correctOptionIds : q.correctOptionIds,
+          type: update.correctOptionIds.length > 1 ? "multiple_choice" : q.type,
+          explanation: update.explanation !== undefined ? update.explanation : q.explanation
+        };
+      });
+
+      onApply(newQuestions, analysis.matchedCount);
+      onClose();
+    } else {
+      if (!rawTextAnalysis || rawTextAnalysis.questions.length === 0) return;
+
+      const newParsed = rawTextAnalysis.questions;
+      let finalQuestions: Question[] = [];
+
+      if (importStrategy === "APPEND") {
+        finalQuestions = [...activeFile.questions, ...newParsed];
+      } else if (importStrategy === "REPLACE_ALL") {
+        finalQuestions = newParsed;
+      } else if (importStrategy === "OVERWRITE") {
+        const merged = [...activeFile.questions];
+        newParsed.forEach((q: Question, idx: number) => {
+          if (idx < merged.length) {
+            merged[idx] = q;
+          } else {
+            merged.push(q);
+          }
+        });
+        finalQuestions = merged;
+      }
+
+      onApply(finalQuestions, newParsed.length);
+      onClose();
+    }
   };
 
   if (!isOpen || !activeFile) return null;
@@ -760,10 +820,10 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                Bổ sung Đáp án & Giải thích
+                Bổ sung Thành phần &amp; Câu hỏi
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Ghép tự động bộ đáp án đúng và lời giải thích từ AI vào tệp <span className="font-bold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu)
+                Thao tác tệp <span className="font-bold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu hiện có)
               </p>
             </div>
           </div>
@@ -776,152 +836,286 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
           </button>
         </div>
 
+        {/* Main Mode Navigation Tabs */}
+        <div className="flex items-center gap-2 px-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30">
+          <button
+            type="button"
+            onClick={() => setMainMode("ANSWERS_EXPLANATION")}
+            className={cn(
+              "py-2.5 text-xs font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
+              mainMode === "ANSWERS_EXPLANATION"
+                ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            )}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Bổ sung Đáp án &amp; Giải thích (JSON)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMainMode("RAW_TEXT_QUESTIONS")}
+            className={cn(
+              "py-2.5 text-xs font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
+              mainMode === "RAW_TEXT_QUESTIONS"
+                ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            )}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Nhập nhanh Câu hỏi (Text thô)</span>
+          </button>
+        </div>
+
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-5 flex-1 style-scrollbar">
           
-          {/* Copy Prompt Section */}
-          <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="space-y-0.5">
-              <div className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-                <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                <span>Bạn chưa có file đáp án JSON từ AI?</span>
-              </div>
-              <p className="text-[11px] text-indigo-700 dark:text-indigo-300">
-                Sao chép Prompt mẫu bên dưới dán vào ChatGPT / Gemini để nhận lại file JSON đúng chuẩn.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleCopyPrompt}
-              className={cn(
-                "px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 cursor-pointer transition-all shadow-xs",
-                isCopied 
-                  ? "bg-emerald-600 text-white" 
-                  : "bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95"
-              )}
-            >
-              {isCopied ? (
-                <>
-                  <Check className="w-3.5 h-3.5" />
-                  <span>Đã sao chép!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Sao chép Prompt AI</span>
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Import Modes Switcher */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                Phương thức nhập dữ liệu JSON:
-              </label>
-              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-750">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("FILE")}
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                    activeTab === "FILE"
-                      ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                  )}
-                >
-                  Tải tệp JSON
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("PASTE")}
-                  className={cn(
-                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                    activeTab === "PASTE"
-                      ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                  )}
-                >
-                  Dán đoạn JSON
-                </button>
-              </div>
-            </div>
-
-            {/* Input Area */}
-            {activeTab === "FILE" ? (
-              <div className="relative border-2 border-dashed border-slate-200 dark:border-slate-750 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl p-6 text-center transition-colors bg-slate-50/50 dark:bg-slate-900/30">
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleFileUpload}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                />
-                <div className="flex flex-col items-center justify-center space-y-2">
-                  <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                    <Upload className="w-5 h-5" />
+          {mainMode === "ANSWERS_EXPLANATION" ? (
+            <>
+              {/* Copy Prompt Section */}
+              <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                    <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    <span>Bạn chưa có file đáp án JSON từ AI?</span>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                      {fileName ? (
-                        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{fileName}</span>
-                      ) : (
-                        "Nhấp để chọn tệp .json hoặc kéo thả vào đây"
+                  <p className="text-[11px] text-indigo-700 dark:text-indigo-300">
+                    Sao chép Prompt mẫu bên dưới dán vào ChatGPT / Gemini để nhận lại file JSON đúng chuẩn.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyPrompt}
+                  className={cn(
+                    "px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 cursor-pointer transition-all shadow-xs",
+                    isCopied 
+                      ? "bg-emerald-600 text-white" 
+                      : "bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95"
+                  )}
+                >
+                  {isCopied ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Đã sao chép!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Sao chép Prompt AI</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Import Modes Switcher */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                    Phương thức nhập dữ liệu JSON:
+                  </label>
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-750">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("FILE")}
+                      className={cn(
+                        "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                        activeTab === "FILE"
+                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                       )}
-                    </p>
-                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                      Chỉ chấp nhận tệp có định dạng .json
-                    </p>
+                    >
+                      Tải tệp JSON
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("PASTE")}
+                      className={cn(
+                        "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                        activeTab === "PASTE"
+                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                      )}
+                    >
+                      Dán đoạn JSON
+                    </button>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div className="relative">
-                <textarea
-                  value={jsonText}
-                  onChange={(e) => setJsonText(e.target.value)}
-                  placeholder={`[
+
+                {/* Input Area */}
+                {activeTab === "FILE" ? (
+                  <div className="relative border-2 border-dashed border-slate-200 dark:border-slate-750 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl p-6 text-center transition-colors bg-slate-50/50 dark:bg-slate-900/30">
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleFileUpload}
+                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                    />
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                          {fileName ? (
+                            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{fileName}</span>
+                          ) : (
+                            "Nhấp để chọn tệp .json hoặc kéo thả vào đây"
+                          )}
+                        </p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                          Chỉ chấp nhận tệp có định dạng .json
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <textarea
+                      value={jsonText}
+                      onChange={(e) => setJsonText(e.target.value)}
+                      placeholder={`[
   { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
   { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
 ]`}
+                      className="w-full h-40 p-3 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Analysis & Validation Results */}
+              {analysis && (
+                <div className="space-y-3 pt-2">
+                  {analysis.error ? (
+                    <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+                      <span>{analysis.error}</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {/* Summary badge */}
+                      <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>
+                            Đã tìm thấy <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.totalItems}</strong> mục JSON. Đủ điều kiện bổ sung cho <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.matchedCount} / {activeFile.questions.length}</strong> câu hỏi.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Warnings list if any */}
+                      {Boolean(analysis.warnings && analysis.warnings.length > 0) && (
+                        <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
+                          <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                            <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
+                          </div>
+                          <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
+                            {analysis.warnings?.map((w, idx) => (
+                              <li key={idx}>{w}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-750 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                Dán danh sách câu hỏi dạng văn bản thô (ví dụ: <code className="bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded font-mono text-[11px]">Câu 1: ... A. ... B. ...</code>). Hệ thống sẽ tự động quét và bóc tách câu hỏi.
+              </div>
+
+              {/* Import Strategy selector */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Chế độ áp dụng câu hỏi:
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setImportStrategy("APPEND")}
+                    className={cn(
+                      "p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between select-none",
+                      importStrategy === "APPEND"
+                        ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20 font-bold"
+                        : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                    )}
+                  >
+                    <span className="text-xs font-bold">Thêm nối tiếp</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Nối vào cuối tệp hiện tại</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setImportStrategy("OVERWRITE")}
+                    className={cn(
+                      "p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between select-none",
+                      importStrategy === "OVERWRITE"
+                        ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20 font-bold"
+                        : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                    )}
+                  >
+                    <span className="text-xs font-bold">Ghi đè từ đầu</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Thay thế từ câu số 1</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setImportStrategy("REPLACE_ALL")}
+                    className={cn(
+                      "p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between select-none",
+                      importStrategy === "REPLACE_ALL"
+                        ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20 font-bold"
+                        : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                    )}
+                  >
+                    <span className="text-xs font-bold">Thay thế toàn bộ</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Xóa bộ cũ &amp; thay bằng bộ mới</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Raw Textarea */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Nội dung văn bản câu hỏi:
+                </label>
+                <textarea
+                  value={rawText}
+                  onChange={(e) => setRawText(e.target.value)}
+                  placeholder={`Câu 1: Thủ đô của Việt Nam là gì?
+A. Hà Nội /
+B. TP. Hồ Chí Minh
+C. Đà Nẵng
+D. Cần Thơ
+
+Câu 2: Đơn vị đo cường độ dòng điện là gì?
+A. Vôn (V)
+B. Ampe (A) /
+C. Ôm (Ω)
+D. Oát (W)`}
                   className="w-full h-40 p-3 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
                 />
               </div>
-            )}
-          </div>
 
-          {/* Analysis & Validation Results */}
-          {analysis && (
-            <div className="space-y-3 pt-2">
-              {analysis.error ? (
-                <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
-                  <span>{analysis.error}</span>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {/* Summary badge */}
-                  <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      <span>
-                        Đã tìm thấy <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.totalItems}</strong> mục JSON. Đủ điều kiện bổ sung cho <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.matchedCount} / {activeFile.questions.length}</strong> câu hỏi.
-                      </span>
+              {/* Live Preview badge for Raw Text */}
+              {rawTextAnalysis && (
+                <div className="space-y-2 pt-1">
+                  {rawTextAnalysis.error && rawTextAnalysis.totalCount === 0 ? (
+                    <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
+                      <span>{rawTextAnalysis.error}</span>
                     </div>
-                  </div>
-
-                  {/* Warnings list if any */}
-                  {Boolean(analysis.warnings && analysis.warnings.length > 0) && (
-                    <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
-                      <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
-                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                        <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
+                  ) : (
+                    <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>
+                          Đã bóc tách thành công <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{rawTextAnalysis.totalCount}</strong> câu hỏi ({rawTextAnalysis.validCount} câu hợp lệ).
+                        </span>
                       </div>
-                      <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
-                        {analysis.warnings?.map((w, idx) => (
-                          <li key={idx}>{w}</li>
-                        ))}
-                      </ul>
                     </div>
                   )}
                 </div>
@@ -943,11 +1137,19 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
           <button
             type="button"
             onClick={handleConfirm}
-            disabled={!analysis || Boolean(analysis.error) || analysis.matchedCount === 0}
+            disabled={
+              mainMode === "ANSWERS_EXPLANATION"
+                ? !analysis || Boolean(analysis.error) || analysis.matchedCount === 0
+                : !rawTextAnalysis || Boolean(rawTextAnalysis.error && rawTextAnalysis.totalCount === 0) || rawTextAnalysis.totalCount === 0
+            }
             className="px-5 py-2 rounded-xl bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
           >
             <Sparkles className="w-4 h-4" />
-            <span>Xác nhận bổ sung ({analysis?.matchedCount || 0} câu)</span>
+            <span>
+              {mainMode === "ANSWERS_EXPLANATION"
+                ? `Xác nhận bổ sung (${analysis?.matchedCount || 0} câu)`
+                : `Xác nhận nhập (${rawTextAnalysis?.totalCount || 0} câu)`}
+            </span>
           </button>
         </div>
 
