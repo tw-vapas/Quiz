@@ -612,8 +612,6 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
     }
   }, [isOpen]);
 
-  if (!isOpen || !activeFile) return null;
-
   const handleCopyPrompt = async () => {
     try {
       await navigator.clipboard.writeText(SYSTEM_PROMPT_TEMPLATE);
@@ -639,7 +637,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   };
 
   const analysis = useMemo(() => {
-    if (!jsonText.trim()) return null;
+    if (!isOpen || !activeFile || !jsonText.trim()) return null;
 
     let cleaned = jsonText.trim();
     if (cleaned.startsWith("```")) {
@@ -727,13 +725,13 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
       warnings,
       updatesMap
     };
-  }, [jsonText, activeFile]);
+  }, [isOpen, jsonText, activeFile]);
 
   const handleConfirm = () => {
-    if (!analysis || analysis.error || !analysis.updatesMap) return;
+    if (!activeFile || !analysis || analysis.error || !analysis.updatesMap) return;
 
     const newQuestions = activeFile.questions.map((q, idx) => {
-      const update = analysis.updatesMap.get(idx);
+      const update = analysis.updatesMap?.get(idx);
       if (!update) return q;
 
       return {
@@ -747,6 +745,8 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
     onApply(newQuestions, analysis.matchedCount);
     onClose();
   };
+
+  if (!isOpen || !activeFile) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
