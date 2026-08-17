@@ -25,7 +25,11 @@ import {
   SlidersHorizontal,
   RotateCcw,
   Filter,
-  Sparkles
+  Sparkles,
+  Copy,
+  Upload,
+  AlertTriangle,
+  CheckCircle2
 } from "lucide-react";
 
 export function isQuestionValid(q: Question): boolean {
@@ -567,6 +571,391 @@ function IdeEditor({ value, onChange, jsonError }: IdeEditorProps) {
   );
 }
 
+const SYSTEM_PROMPT_TEMPLATE = `Bạn là một trợ lý giáo dục chuyên nghiệp. Dưới đây là danh sách các câu hỏi trắc nghiệm.
+Hãy đọc kỹ từng câu hỏi và xác định đáp án đúng cùng với lời giải thích chi tiết.
+Trả về KẾT QUẢ DUY NHẤT dưới dạng mảng JSON thuần túy (không chứa markdown \`\`\`json hay bất kỳ văn bản nào khác ngoài JSON) theo đúng cấu trúc sau:
+
+[
+  {
+    "Question": 1,
+    "CorrectOptions": ["A"],
+    "Explanation": "Lời giải thích chi tiết..."
+  }
+]
+
+Quy tắc:
+- "Question": Số thứ tự câu hỏi trong đề thi (1, 2, 3...).
+- "CorrectOptions": Mảng chứa các chữ cái đại diện cho đáp án đúng (ví dụ: ["A"] hoặc ["A", "C"]).
+- "Explanation": Chuỗi giải thích lý do tại sao đáp án đó đúng.
+
+Danh sách câu hỏi cần xử lý:
+[Dán danh sách câu hỏi của bạn vào đây]`;
+
+interface SupplementComponentModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  activeFile: CreatorFile | undefined;
+  onApply: (updatedQuestions: Question[], countUpdated: number) => void;
+}
+
+function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: SupplementComponentModalProps) {
+  const [activeTab, setActiveTab] = useState<"FILE" | "PASTE">("FILE");
+  const [jsonText, setJsonText] = useState("");
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setJsonText("");
+      setFileName(null);
+      setIsCopied(false);
+    }
+  }, [isOpen]);
+
+  if (!isOpen || !activeFile) return null;
+
+  const handleCopyPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(SYSTEM_PROMPT_TEMPLATE);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2500);
+      useQuizStore.getState().showNotification("Đã sao chép Prompt mẫu cho AI!", "success");
+    } catch {
+      useQuizStore.getState().showNotification("Không thể sao chép tự động, hãy chọn văn bản và sao chép thủ công.", "error");
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setJsonText(content || "");
+    };
+    reader.readAsText(file, "UTF-8");
+  };
+
+  const analysis = useMemo(() => {
+    if (!jsonText.trim()) return null;
+
+    let cleaned = jsonText.trim();
+    if (cleaned.startsWith("```")) {
+      cleaned = cleaned.replace(/^```[a-zA-Z]*\n?/, "").replace(/\n?```$/, "").trim();
+    }
+
+    let parsed: any;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (err: any) {
+      return { error: `Định dạng JSON không hợp lệ: ${err.message}` };
+    }
+
+    if (!Array.isArray(parsed)) {
+      if (typeof parsed === "object" && parsed !== null && Array.isArray(parsed.questions)) {
+        parsed = parsed.questions;
+      } else {
+        return { error: "Dữ liệu JSON phải là một mảng danh sách [ { ... }, { ... } ]" };
+      }
+    }
+
+    const totalQuestions = activeFile.questions.length;
+    let matchedCount = 0;
+    const warnings: string[] = [];
+    const updatesMap = new Map<number, { correctOptionIds: string[]; type: "single_choice" | "multiple_choice"; explanation?: string }>();
+
+    parsed.forEach((item: any, index: number) => {
+      const itemStt = item.Question ?? item.question ?? (index + 1);
+      if (typeof itemStt !== "number" || isNaN(itemStt)) {
+        warnings.push(`Mục thứ ${index + 1}: Trường "Question" không hợp lệ (không phải dạng số).`);
+        return;
+      }
+
+      const qIndex = itemStt - 1;
+      if (qIndex < 0 || qIndex >= totalQuestions) {
+        warnings.push(`Câu STT ${itemStt}: Không tồn tại trong tệp hiện tại (Tệp có tổng cộng ${totalQuestions} câu hỏi).`);
+        return;
+      }
+
+      const targetQuestion = activeFile.questions[qIndex];
+      const correctOptionIds: string[] = [];
+
+      const rawOptions = item.CorrectOptions ?? item.correctOptions ?? item.correct_options ?? item.correctOptionsLetters;
+      let letters: string[] = [];
+      if (Array.isArray(rawOptions)) {
+        letters = rawOptions.map(l => String(l).trim());
+      } else if (typeof rawOptions === "string") {
+        letters = rawOptions.split(/[,;\s]+/).filter(Boolean);
+      } else if (typeof rawOptions === "number") {
+        letters = [String.fromCharCode(64 + rawOptions)];
+      }
+
+      letters.forEach(letter => {
+        const cleanLetter = letter.toUpperCase();
+        let letterIdx = cleanLetter.charCodeAt(0) - 65;
+        if (isNaN(letterIdx) || letterIdx < 0) {
+          const num = parseInt(cleanLetter, 10);
+          if (!isNaN(num) && num >= 1) {
+            letterIdx = num - 1;
+          }
+        }
+
+        if (letterIdx >= 0 && letterIdx < targetQuestion.options.length) {
+          correctOptionIds.push(targetQuestion.options[letterIdx].id);
+        } else {
+          warnings.push(`Câu STT ${itemStt}: Đáp án "${letter}" không tồn tại (Câu này có ${targetQuestion.options.length} lựa chọn A-${String.fromCharCode(64 + targetQuestion.options.length)}).`);
+        }
+      });
+
+      const explanation = typeof item.Explanation === "string" ? item.Explanation.trim() : typeof item.explanation === "string" ? item.explanation.trim() : undefined;
+
+      if (correctOptionIds.length > 0 || explanation) {
+        matchedCount++;
+        updatesMap.set(qIndex, {
+          correctOptionIds: correctOptionIds.length > 0 ? correctOptionIds : targetQuestion.correctOptionIds,
+          type: correctOptionIds.length > 1 ? "multiple_choice" : "single_choice",
+          explanation: explanation !== undefined ? explanation : targetQuestion.explanation
+        });
+      }
+    });
+
+    return {
+      totalItems: parsed.length,
+      matchedCount,
+      warnings,
+      updatesMap
+    };
+  }, [jsonText, activeFile]);
+
+  const handleConfirm = () => {
+    if (!analysis || analysis.error || !analysis.updatesMap) return;
+
+    const newQuestions = activeFile.questions.map((q, idx) => {
+      const update = analysis.updatesMap.get(idx);
+      if (!update) return q;
+
+      return {
+        ...q,
+        correctOptionIds: update.correctOptionIds.length > 0 ? update.correctOptionIds : q.correctOptionIds,
+        type: update.correctOptionIds.length > 1 ? "multiple_choice" : q.type,
+        explanation: update.explanation !== undefined ? update.explanation : q.explanation
+      };
+    });
+
+    onApply(newQuestions, analysis.matchedCount);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-800 dark:text-slate-100">
+        
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center text-indigo-650 dark:text-indigo-400 shrink-0">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                Bổ sung Đáp án & Giải thích
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Ghép tự động bộ đáp án đúng và lời giải thích từ AI vào tệp <span className="font-bold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu)
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div className="p-6 overflow-y-auto space-y-5 flex-1 style-scrollbar">
+          
+          {/* Copy Prompt Section */}
+          <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="space-y-0.5">
+              <div className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <span>Bạn chưa có file đáp án JSON từ AI?</span>
+              </div>
+              <p className="text-[11px] text-indigo-700 dark:text-indigo-300">
+                Sao chép Prompt mẫu bên dưới dán vào ChatGPT / Gemini để nhận lại file JSON đúng chuẩn.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyPrompt}
+              className={cn(
+                "px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 cursor-pointer transition-all shadow-xs",
+                isCopied 
+                  ? "bg-emerald-600 text-white" 
+                  : "bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95"
+              )}
+            >
+              {isCopied ? (
+                <>
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Đã sao chép!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Sao chép Prompt AI</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Import Modes Switcher */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                Phương thức nhập dữ liệu JSON:
+              </label>
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-750">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("FILE")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    activeTab === "FILE"
+                      ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  )}
+                >
+                  Tải tệp JSON
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("PASTE")}
+                  className={cn(
+                    "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
+                    activeTab === "PASTE"
+                      ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                  )}
+                >
+                  Dán đoạn JSON
+                </button>
+              </div>
+            </div>
+
+            {/* Input Area */}
+            {activeTab === "FILE" ? (
+              <div className="relative border-2 border-dashed border-slate-200 dark:border-slate-750 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl p-6 text-center transition-colors bg-slate-50/50 dark:bg-slate-900/30">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileUpload}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
+                />
+                <div className="flex flex-col items-center justify-center space-y-2">
+                  <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+                    <Upload className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                      {fileName ? (
+                        <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{fileName}</span>
+                      ) : (
+                        "Nhấp để chọn tệp .json hoặc kéo thả vào đây"
+                      )}
+                    </p>
+                    <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
+                      Chỉ chấp nhận tệp có định dạng .json
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative">
+                <textarea
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder={`[
+  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
+  { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
+]`}
+                  className="w-full h-40 p-3 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Analysis & Validation Results */}
+          {analysis && (
+            <div className="space-y-3 pt-2">
+              {analysis.error ? (
+                <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+                  <span>{analysis.error}</span>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {/* Summary badge */}
+                  <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>
+                        Đã tìm thấy <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.totalItems}</strong> mục JSON. Đủ điều kiện bổ sung cho <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.matchedCount} / {activeFile.questions.length}</strong> câu hỏi.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Warnings list if any */}
+                  {Boolean(analysis.warnings && analysis.warnings.length > 0) && (
+                    <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
+                      <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                        <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
+                      </div>
+                      <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
+                        {analysis.warnings?.map((w, idx) => (
+                          <li key={idx}>{w}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-2.5 bg-slate-50/50 dark:bg-slate-900/50">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+          >
+            Hủy
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={!analysis || Boolean(analysis.error) || analysis.matchedCount === 0}
+            className="px-5 py-2 rounded-xl bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>Xác nhận bổ sung ({analysis?.matchedCount || 0} câu)</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
 interface QuestionModificationProps {
   className?: string;
   filterType: {
@@ -641,6 +1030,13 @@ export default function QuestionModification({
   // --- POPOVER VISIBILITY CONTROLS ---
   const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
   const [isQtyDropdownOpen, setIsQtyDropdownOpen] = useState(false);
+  const [isSupplementModalOpen, setIsSupplementModalOpen] = useState(false);
+
+  const handleApplySupplement = (updatedQuestions: Question[], countUpdated: number) => {
+    if (!activeFile) return;
+    updateCreatorFile(activeFile.id, { questions: updatedQuestions });
+    useQuizStore.getState().showNotification(`Đã bổ sung thành công đáp án & giải thích cho ${countUpdated} câu hỏi!`, "success");
+  };
 
   const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("Panel");
 
@@ -1127,6 +1523,17 @@ export default function QuestionModification({
                   <span>New Question</span>
                 </button>
 
+                {/* Bổ sung thành phần (Supplement Component) */}
+                <button
+                  type="button"
+                  onClick={() => setIsSupplementModalOpen(true)}
+                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 font-extrabold text-[11px] text-indigo-700 dark:text-indigo-300 hover:shadow-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+                  title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Bổ sung thành phần</span>
+                </button>
+
                 {/* Filter & Sort Button */}
                 <button
                   type="button"
@@ -1482,6 +1889,14 @@ export default function QuestionModification({
 
           </div>
         )}
+
+        {/* Supplement Component Modal */}
+        <SupplementComponentModal
+          isOpen={isSupplementModalOpen}
+          onClose={() => setIsSupplementModalOpen(false)}
+          activeFile={activeFile}
+          onApply={handleApplySupplement}
+        />
 
       </div>
     </div>
