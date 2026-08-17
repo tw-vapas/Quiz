@@ -38,6 +38,7 @@ export interface ParseResult {
   questions: Question[];
   isValid: boolean;
   error?: string;
+  warnings?: string[];
   metadata?: {
     file_name: string;
     question_count: number;

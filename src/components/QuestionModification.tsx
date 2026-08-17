@@ -1128,7 +1128,7 @@ D. Oát (W)`}
                             <span>Thông tin STT văn bản gốc:</span>
                           </div>
                           <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
-                            {rawTextAnalysis.warnings.map((w, idx) => (
+                            {rawTextAnalysis.warnings?.map((w: string, idx: number) => (
                               <li key={idx}>{w}</li>
                             ))}
                           </ul>
