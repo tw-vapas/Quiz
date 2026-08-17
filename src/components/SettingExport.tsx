@@ -18,6 +18,12 @@ import {
   FileText
 } from "lucide-react";
 
+function sanitizeFileName(name: string, targetExt: ".json" | ".docx"): string {
+  if (!name || !name.trim()) return `quiz_export${targetExt}`;
+  const cleaned = name.replace(/\.(json|docx|txt|pdf)$/i, "").trim();
+  return `${cleaned}${targetExt}`;
+}
+
 interface SettingExportProps {
   className?: string;
   filterType: {
@@ -194,7 +200,7 @@ export default function SettingExport({
   };
 
   // --- EXPORT DOWNLOAD TRIGGER ---
-  const handleExportFile = () => {
+  const handleExportFile = async () => {
     // 1. Filter questions based on configuration
     let list = [...activeFile.questions];
     if (applyFilterSetting) {
