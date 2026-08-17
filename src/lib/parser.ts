@@ -36,9 +36,11 @@ async function parseFileMainThread(file: File): Promise<ParseResult> {
       const arrayBuffer = await file.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       let html = result.value;
+      html = html.replace(/<\/(p|div|tr|li|h[1-6])>/gi, "\n");
+      html = html.replace(/<br\s*\/?>/gi, "\n");
       html = html.replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, "**$2**");
       html = html.replace(/<u\b[^>]*>([\s\S]*?)<\/u>/gi, "__$2__");
-      text = html.replace(/<[^>]+>/g, " ");
+      text = html.replace(/<[^>]+>/g, " ").split("\n").map(l => l.replace(/[ \t]+/g, " ").trim()).join("\n");
     } else {
       return { questions: [], isValid: false, error: "Định dạng file không được hỗ trợ. Vui lòng chọn file .txt, .docx, .pdf, .json hoặc hình ảnh." };
     }

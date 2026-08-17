@@ -15,9 +15,11 @@ self.onmessage = async (e: MessageEvent) => {
     } else if (fileName.endsWith(".docx")) {
       const resultDoc = await mammoth.convertToHtml({ arrayBuffer: fileContents });
       let html = resultDoc.value;
+      html = html.replace(/<\/(p|div|tr|li|h[1-6])>/gi, "\n");
+      html = html.replace(/<br\s*\/?>/gi, "\n");
       html = html.replace(/<(strong|b)\b[^>]*>([\s\S]*?)<\/\1>/gi, "**$2**");
       html = html.replace(/<u\b[^>]*>([\s\S]*?)<\/u>/gi, "__$2__");
-      const text = html.replace(/<[^>]+>/g, " ");
+      const text = html.replace(/<[^>]+>/g, " ").split("\n").map(l => l.replace(/[ \t]+/g, " ").trim()).join("\n");
       const result = parseQuizText(text, true);
       self.postMessage({ type: "success", result });
     } else {

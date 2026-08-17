@@ -797,6 +797,7 @@ export default function Sidebar() {
   }, []);
 
   const removeLocalSource = useCallback((id: string) => {
+    useQuizStore.getState().deleteCreatorFile(id);
     setLocalSources(prev => {
       const nextSources = prev.filter(s => s.id !== id);
       const nextTotal = nextSources.filter(s => s.active && s.isValid).reduce((acc, curr) => acc + curr.questionsCount, 0);
