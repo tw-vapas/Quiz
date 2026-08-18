@@ -1652,41 +1652,44 @@ export default function QuestionModification({
               </div>
 
               <div className="flex items-center gap-2 relative">
-                {/* Add New Question */}
-                <button
-                  onClick={addNewQuestion}
-                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-650 font-extrabold text-[10px] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
-                >
-                  <Plus className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Thêm câu hỏi</span>
-                </button>
-
-                {/* Bổ sung thành phần (Supplement Component) */}
+                {/* 1. Tạo Quiz Nhanh (Fast Quiz Generator) */}
                 <button
                   type="button"
                   onClick={() => setIsSupplementModalOpen(true)}
-                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-650 font-extrabold text-[10px] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-extrabold text-[10px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                   title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
-                  <span>Bổ sung thành phần</span>
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <span>Tạo Quiz Nhanh</span>
                 </button>
 
-                {/* Filter & Sort Button */}
+                {/* 2. Bộ lọc & Sắp xếp (Filter & Sort) */}
                 <button
                   type="button"
                   onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
                   className={cn(
-                    "px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-650 font-extrabold text-[10px] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 relative select-none",
-                    (isFilterSettingsOpen || filterAndSortEnabled) && "border-indigo-500/80 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 ring-2 ring-indigo-500/20"
+                    "px-3 py-1.5 rounded-xl font-extrabold text-[10px] cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
+                    isFilterSettingsOpen || filterAndSortEnabled
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-black"
+                      : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
                   )}
-                  title="Filter & Sort settings"
+                  title="Bộ lọc & Sắp xếp"
                 >
                   <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Lọc & Sắp xếp</span>
+                  <span>Bộ lọc & Sắp xếp</span>
                   {filterAndSortEnabled && (
                     <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
                   )}
+                </button>
+
+                {/* 3. Thêm câu hỏi (Add New Question) */}
+                <button
+                  type="button"
+                  onClick={addNewQuestion}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-extrabold text-[10px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                >
+                  <Plus className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Thêm câu hỏi</span>
                 </button>
 
                 {/* --- REDESIGNED POPOVER: FILTER & SORT --- */}
