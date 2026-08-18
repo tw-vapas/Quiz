@@ -10,7 +10,6 @@ import CreateQuizSection from "@/components/CreateQuizSection";
 import NotificationToast from "@/components/NotificationToast";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sun, Moon } from "lucide-react";
 
 export default function Home() {
   const state = useQuizStore((state) => state.state);
@@ -184,16 +183,6 @@ export default function Home() {
               Tạo Quiz
             </button>
           </div>
-          <button
-            onClick={() => {
-              const newTheme = theme === 'dark' ? 'light' : 'dark';
-              useQuizStore.getState().setTheme(newTheme);
-            }}
-            className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer shrink-0"
-            title={theme === 'dark' ? 'Chế độ sáng' : 'Chế độ tối'}
-          >
-            {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
         </div>
       </nav>
       )}

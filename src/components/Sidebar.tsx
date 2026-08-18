@@ -6,7 +6,7 @@ import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
-import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
+import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen, Sun, Moon } from "lucide-react";
 import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept, getQuizStorageUsedBytesByKey, getItemBytes, formatBytes } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
@@ -303,6 +303,8 @@ interface SidebarControlsProps {
   setLocalShowResult: (val: boolean) => void;
   localAutoNext: boolean;
   setLocalAutoNext: (val: boolean) => void;
+  localTheme: 'light' | 'dark';
+  setLocalTheme: (val: 'light' | 'dark') => void;
   localTimeLimitMode: 'UNLIMITED' | 'LIMITED';
   setLocalTimeLimitMode: (val: 'UNLIMITED' | 'LIMITED') => void;
   localTimeLimitMinutes: number;
@@ -322,6 +324,8 @@ const SidebarControls = React.memo(({
   setLocalShowResult,
   localAutoNext,
   setLocalAutoNext,
+  localTheme,
+  setLocalTheme,
   localTimeLimitMode,
   setLocalTimeLimitMode,
   localTimeLimitMinutes,
@@ -337,158 +341,206 @@ const SidebarControls = React.memo(({
 }: SidebarControlsProps) => {
   useRenderProfiler("SidebarControls");
   return (
-    <div className="p-4 md:p-6 space-y-5 bg-white dark:bg-slate-900 shrink-0">
-      <label className="flex items-start space-x-3 cursor-pointer group">
-        <div className="relative flex items-center pt-0.5">
-          <input
-            type="checkbox"
-            className="peer sr-only"
-            checked={localShowResult}
-            onChange={(e) => setLocalShowResult(e.target.checked)}
-          />
-          <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
-            {localShowResult && (
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </div>
-        </div>
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Hiển thị kết quả sau mỗi câu</span>
-      </label>
-
-      <label className="flex items-start space-x-3 cursor-pointer group">
-        <div className="relative flex items-center pt-0.5">
-          <input
-            type="checkbox"
-            className="peer sr-only"
-            checked={localAutoNext}
-            onChange={(e) => setLocalAutoNext(e.target.checked)}
-          />
-          <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
-            {localAutoNext && (
-              <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </div>
-        </div>
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
-      </label>
-
-      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
-        <div className="space-y-3">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="radio"
-              name="timeLimitMode"
-              checked={localTimeLimitMode === 'UNLIMITED'}
-              onChange={() => setLocalTimeLimitMode('UNLIMITED')}
-              className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
-            />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn thời gian</span>
-          </label>
-          <div className="flex items-center space-x-3">
-            <label className="flex items-center space-x-3 cursor-pointer shrink-0">
-              <input
-                type="radio"
-                name="timeLimitMode"
-                checked={localTimeLimitMode === 'LIMITED'}
-                onChange={() => setLocalTimeLimitMode('LIMITED')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Giới hạn thời gian:</span>
-            </label>
-            <input
-              type="number"
-              min={1}
-              disabled={localTimeLimitMode !== 'LIMITED'}
-              value={localTimeLimitMinutes === 0 ? '' : localTimeLimitMinutes}
-              onChange={(e) => {
-                const valStr = e.target.value;
-                if (valStr === '') {
-                  setLocalTimeLimitMinutes(0);
-                  return;
-                }
-                let val = parseInt(valStr);
-                if (isNaN(val)) val = 0;
-                val = Math.max(1, val);
-                setLocalTimeLimitMinutes(val);
-              }}
-              onBlur={() => {
-                if (localTimeLimitMinutes < 1) {
-                  setLocalTimeLimitMinutes(15);
-                }
-              }}
-              className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
-            />
-            <span className="text-sm text-slate-500 dark:text-slate-400">phút</span>
-          </div>
-        </div>
+    <div className="flex flex-col shrink-0 bg-white dark:bg-slate-900">
+      {/* Sticky Header for Tùy chỉnh chung */}
+      <div className="sticky top-0 z-10 px-5 md:px-6 py-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
+        <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Tùy chỉnh chung</h2>
       </div>
 
-      <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
-        <div className="space-y-3">
-          <label className="flex items-center space-x-3 cursor-pointer">
-            <input
-              type="radio"
-              name="questionCountMode"
-              value="ALL"
-              checked={localCountMode === 'ALL'}
-              onChange={() => setLocalCountMode('ALL')}
-              className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
-            />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tất cả ({totalAvailable})</span>
-          </label>
-
-          <div className="flex items-center space-x-3">
-            <label className="flex items-center space-x-3 cursor-pointer shrink-0">
+      <div className="p-5 md:p-6 space-y-6">
+        {/* Số lượng câu hỏi */}
+        <div>
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3 cursor-pointer">
               <input
                 type="radio"
                 name="questionCountMode"
-                value="CUSTOM"
-                checked={localCountMode === 'CUSTOM'}
-                onChange={() => setLocalCountMode('CUSTOM')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600"
+                value="ALL"
+                checked={localCountMode === 'ALL'}
+                onChange={() => setLocalCountMode('ALL')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
               />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tùy chỉnh:</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tất cả ({totalAvailable})</span>
             </label>
-            <input
-              type="number"
-              min={1}
-              max={totalAvailable || 1}
-              disabled={localCountMode !== 'CUSTOM'}
-              value={localCustomCount === 0 ? '' : localCustomCount}
-              onChange={(e) => {
-                const valStr = e.target.value;
-                if (valStr === '') {
-                  setLocalCustomCount(0);
-                  return;
-                }
-                let val = parseInt(valStr);
-                if (isNaN(val)) val = 0;
-                val = Math.max(0, Math.min(val, totalAvailable));
-                setLocalCustomCount(val);
-              }}
-              onBlur={() => {
-                if (localCustomCount < 1) {
-                  setLocalCustomCount(Math.min(1, totalAvailable));
-                }
-              }}
-              className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
-            />
-          </div>
 
-          {localCountMode === 'CUSTOM' && localSources.filter(s => s.active && s.isValid).length > 0 && (
-            <SourceAllocation
-              sources={localSources}
-              totalQuestions={localCustomCount}
-              allocations={localAllocations}
-              onChange={setLocalAllocations}
-            />
-          )}
+            <div className="flex items-center space-x-3">
+              <label className="flex items-center space-x-3 cursor-pointer shrink-0">
+                <input
+                  type="radio"
+                  name="questionCountMode"
+                  value="CUSTOM"
+                  checked={localCountMode === 'CUSTOM'}
+                  onChange={() => setLocalCountMode('CUSTOM')}
+                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tùy chỉnh:</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={totalAvailable || 1}
+                disabled={localCountMode !== 'CUSTOM'}
+                value={localCustomCount === 0 ? '' : localCustomCount}
+                onChange={(e) => {
+                  const valStr = e.target.value;
+                  if (valStr === '') {
+                    setLocalCustomCount(0);
+                    return;
+                  }
+                  let val = parseInt(valStr);
+                  if (isNaN(val)) val = 0;
+                  val = Math.max(0, Math.min(val, totalAvailable));
+                  setLocalCustomCount(val);
+                }}
+                onBlur={() => {
+                  if (localCustomCount < 1) {
+                    setLocalCustomCount(Math.min(1, totalAvailable));
+                  }
+                }}
+                className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
+              />
+            </div>
+
+            {localCountMode === 'CUSTOM' && localSources.filter(s => s.active && s.isValid).length > 0 && (
+              <SourceAllocation
+                sources={localSources}
+                totalQuestions={localCustomCount}
+                allocations={localAllocations}
+                onChange={setLocalAllocations}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Tương tác */}
+        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Tương tác</h3>
+          <div className="space-y-3">
+            <label className="flex items-start space-x-3 cursor-pointer group">
+              <div className="relative flex items-center pt-0.5">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={localShowResult}
+                  onChange={(e) => setLocalShowResult(e.target.checked)}
+                />
+                <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+                  {localShowResult && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Hiển thị kết quả sau mỗi câu</span>
+            </label>
+
+            <label className="flex items-start space-x-3 cursor-pointer group">
+              <div className="relative flex items-center pt-0.5">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={localAutoNext}
+                  onChange={(e) => setLocalAutoNext(e.target.checked)}
+                />
+                <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+                  {localAutoNext && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Giao diện */}
+        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="themeMode"
+                value="light"
+                checked={localTheme === 'light'}
+                onChange={() => setLocalTheme('light')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <Sun className="w-4 h-4 text-amber-500" /> Sáng
+              </span>
+            </label>
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="themeMode"
+                value="dark"
+                checked={localTheme === 'dark'}
+                onChange={() => setLocalTheme('dark')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <Moon className="w-4 h-4 text-indigo-400" /> Tối
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Thời gian */}
+        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="timeLimitMode"
+                checked={localTimeLimitMode === 'UNLIMITED'}
+                onChange={() => setLocalTimeLimitMode('UNLIMITED')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn thời gian</span>
+            </label>
+            <div className="flex items-center space-x-3">
+              <label className="flex items-center space-x-3 cursor-pointer shrink-0">
+                <input
+                  type="radio"
+                  name="timeLimitMode"
+                  checked={localTimeLimitMode === 'LIMITED'}
+                  onChange={() => setLocalTimeLimitMode('LIMITED')}
+                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Giới hạn thời gian:</span>
+              </label>
+              <input
+                type="number"
+                min={1}
+                disabled={localTimeLimitMode !== 'LIMITED'}
+                value={localTimeLimitMinutes === 0 ? '' : localTimeLimitMinutes}
+                onChange={(e) => {
+                  const valStr = e.target.value;
+                  if (valStr === '') {
+                    setLocalTimeLimitMinutes(0);
+                    return;
+                  }
+                  let val = parseInt(valStr);
+                  if (isNaN(val)) val = 0;
+                  val = Math.max(1, val);
+                  setLocalTimeLimitMinutes(val);
+                }}
+                onBlur={() => {
+                  if (localTimeLimitMinutes < 1) {
+                    setLocalTimeLimitMinutes(15);
+                  }
+                }}
+                className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
+              />
+              <span className="text-sm text-slate-500 dark:text-slate-400">phút</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -705,6 +757,7 @@ export default function Sidebar() {
   // Local state initialized via getState to prevent subscriptions to home page modifications
   const [localShowResult, setLocalShowResult] = useState(() => useQuizStore.getState().showResultAfterQuestion);
   const [localAutoNext, setLocalAutoNext] = useState(() => useQuizStore.getState().autoNext);
+  const [localTheme, setLocalTheme] = useState<'light' | 'dark'>(() => useQuizStore.getState().theme);
   const [localTimeLimitMode, setLocalTimeLimitMode] = useState(() => useQuizStore.getState().timeLimitMode);
   const [localTimeLimitMinutes, setLocalTimeLimitMinutes] = useState(() => useQuizStore.getState().timeLimitMinutes);
   const [localCountMode, setLocalCountMode] = useState(() => useQuizStore.getState().questionCountMode);
@@ -824,8 +877,10 @@ export default function Sidebar() {
       questionCountMode: localCountMode,
       customQuestionCount: localCustomCount,
       sourceAllocations: localAllocations,
-      sources: localSources
+      sources: localSources,
+      theme: localTheme
     });
+    useQuizStore.getState().setTheme(localTheme);
     setIsSaved(true);
     setTimeout(() => setIsSaved(false), 2000);
   };
@@ -854,6 +909,8 @@ export default function Sidebar() {
           setLocalShowResult={setLocalShowResult}
           localAutoNext={localAutoNext}
           setLocalAutoNext={setLocalAutoNext}
+          localTheme={localTheme}
+          setLocalTheme={setLocalTheme}
           localTimeLimitMode={localTimeLimitMode}
           setLocalTimeLimitMode={setLocalTimeLimitMode}
           localTimeLimitMinutes={localTimeLimitMinutes}
