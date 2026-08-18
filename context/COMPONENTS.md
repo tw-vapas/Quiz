@@ -5,7 +5,10 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 ---
 
 ## 1. FileManager (`src/components/FileManager.tsx`)
-- **Mục đích**: Cột bên trái trong giao diện "Tạo Quiz". Quản lý danh sách duy nhất các tệp đề thi **Quiz File** (đã gộp bỏ khái niệm Supported File, giới hạn tối đa 10 tệp).
+- **Mục đích**: Cột bên trái trong giao diện "Tạo Quiz". Quản lý danh sách duy nhất các tệp đề thi **Tệp trắc nghiệm (Quiz File)** (giới hạn tối đa 10 tệp).
+- **Giao diện & Nhãn tiếng Việt**:
+  - `Quản lý tệp` (Header chính), `Thêm tệp` (Nút tạo file mới), `Tệp trắc nghiệm` (Danh sách tệp).
+  - Cấu trúc File Card tối ưu: Dòng 2 bên dưới tên tệp chỉ hiển thị số lượng câu hỏi (ví dụ: `10 câu hỏi`). Dung lượng tệp tin (File size) hiển thị gọn gàng góc phải bên trái nút Thùng rác. Đã gỡ bỏ badge dấu check/X để giao diện tối giản.
 - **Trạng thái cục bộ (State)**:
   * Quản lý mở/đóng hộp thoại tạo tệp mới (`isCreateModalOpen`) hỗ trợ chọn nhiều file nguồn khả dụng để gộp thành file mới.
 - **Logic quan trọng**:
@@ -18,40 +21,48 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 ---
 
 ## 2. QuestionModification (`src/components/QuestionModification.tsx`)
-- **Mục đích**: Cột trung tâm trong giao diện "Tạo Quiz". Cung cấp giao diện trực quan để chỉnh sửa câu hỏi trắc nghiệm hoặc sửa đổi trực tiếp cấu trúc JSON gốc của tệp tin.
+- **Mục đích**: Cột trung tâm trong giao diện "Tạo Quiz". Cung cấp giao diện trực quan chuyên nghiệp để biên tập chi tiết câu hỏi trắc nghiệm.
 - **Các tab chính**:
-  * **Document**: Nhập tài liệu ôn tập bằng Markdown hoặc xem trước kết quả hiển thị lý thuyết.
-  * **Question View**: Chỉnh sửa trực quan các câu hỏi dạng Panel split-view (danh sách câu hỏi bên phải, form chỉnh sửa nội dung/đáp án/tags/display block/explanation bên trái).
-  * **Code View**: IDE Editor (`IdeEditor`) tích hợp PrismJS để sửa JSON thô trực tiếp.
-- **Quy tắc UI & Giới hạn biên tập**:
-  * **Question List (Bảng bên phải)**: Đã bỏ nhãn loại câu ("SINGLE"/"MULTIPLE") và chữ "Hợp lệ"/"Thiếu tin". Hiển thị dấu **`✓`** (Xanh lá) hoặc **`✕`** (Đỏ) căn phải. Viền ô câu hỏi dạng xanh lá/đỏ giúp nhận diện nhanh câu thiếu thông tin.
-  * **Question Card (Giao diện biên tập bên trái)**:
-    * Giới hạn tối đa **2 Display Block** cho mỗi câu hỏi. Căn ngang 2 tiêu đề `Block Type` và `Content`.
-    * Nút **`+ Add Explanation`** chỉ hiển thị khi câu hỏi chưa có giải thích (bỏ block tĩnh "Giải thích đã tồn tại").
-    * Ô nhập **Question**, **Display Block Content**, và **Explanation** đồng bộ style cố định `h-28`, `resize-none`, `overflow-y-auto custom-scrollbar` và giới hạn tối đa **1000 ký tự** kèm bộ đếm `x/1000`.
-    * Truyền `key={panelQuestion.id}` và đồng bộ `tagsInput` qua ref để tối ưu hiệu năng render, triệt tiêu lỗi `Maximum update depth exceeded`.
-- **Logic quan trọng**:
-  * Tự động kiểm tra và báo lỗi cú pháp JSON thời gian thực khi chỉnh sửa trong Code View thông qua hàm `parseQuizJson`.
+  * **Tài Liệu**: Nhập tài liệu ôn tập bằng Markdown hoặc xem trước kết quả hiển thị lý thuyết.
+  * **Câu Hỏi**: Chỉnh sửa trực quan các câu hỏi dạng Panel split-view (danh sách câu hỏi bên phải, form chỉnh sửa nội dung/đáp án/tags/display block/explanation bên trái).
+  * *(Ghi chú: Tab **Mã nguồn / Code View** đã được loại bỏ hoàn toàn để tinh gọn trải nghiệm; tính năng Xuất bản file độc lập ở cột Setting & Export vẫn đảm bảo xuất đúng chuẩn dữ liệu).*
+- **Quy tắc UI & Tinh chỉnh Giao diện**:
+  * **Thanh Header & Nút thao tác**:
+    * Bộ nút **Hoàn tác / Làm lại (Undo / Redo)** nằm sát bên trái nút `Tài Liệu` trên thanh Header chính, thiết kế dạng icon button phẳng mượt mà.
+    * Thống kê tổng số câu hỏi định dạng: `Tổng cộng: X câu hỏi` (hoặc `Tổng cộng: X/Y câu hỏi` khi đang lọc).
+    * Bộ 3 nút thao tác căn thứ tự từ trái sang phải: **`Tạo Quiz Nhanh`** (AI Supplement) -> **`Bộ lọc & Sắp xếp`** -> **`Thêm câu hỏi`**. Thiết kế dạng thẻ phẳng không viền outline trắng, cỡ chữ đồng bộ `10px`.
+  * **Question Card (Trình biên tập câu hỏi)**:
+    * Tiêu đề `Câu hỏi X` mang cỡ chữ nổi bật (`text-base md:text-lg font-extrabold`). Icon tròn Hợp lệ (Check/X) nằm bên trái nút Thùng rác xóa câu hỏi.
+    * Tất cả các tiêu đề mục (`Nội dung`, `Đáp án`, `Loại câu hỏi`, `Thẻ phân loại`, `Khối hiển thị`, `Loại khối`, `Nội dung khối`, `Giải thích`) chuẩn phong cách **Sentence Case**, font chữ màu **trắng `#FFFFFF`** (`text-sm md:text-base font-bold`).
+    * Ô nhập **Nội dung** câu hỏi có bộ đếm `x/1000` ký tự.
+    * Ô nhập **Đáp án**: Tự động căn giữa nội dung theo chiều dọc (`my-auto`, `leading-normal`) chuẩn hàng với nút chọn và nút xóa.
+    * **Display Block**: Chiều cao ô nhập nội dung ban đầu bằng với ô chọn `Loại khối` (`32px`), tự động mở rộng theo dòng gõ (tối đa 5 dòng / `108px`), tự kích hoạt thanh cuộn mảnh (`custom-scrollbar` / 4px thin) khi vượt quá 5 dòng.
+- **Tối ưu hóa & Logic quan trọng**:
+  * Tạo chuỗi băm primitive `tagsKey` cho `allUniqueTags` và `useEffect` giúp triệt tiêu hoàn toàn lỗi re-render lặp vô hạn `Maximum update depth exceeded` khi gõ phím.
   * Bộ lọc câu hỏi (`filterType`, `filterOthers`) và bộ sắp xếp đa lớp (theo độ ưu tiên của loại câu hỏi hoặc thứ tự của nhãn tag).
 
 ---
 
 ## 3. SettingExport (`src/components/SettingExport.tsx`)
 - **Mục đích**: Cột bên phải trong giao diện "Tạo Quiz". Quản lý siêu dữ liệu (metadata), ghi chú, thống kê và xuất bản đề thi.
+- **Giao diện & Nhãn tiếng Việt**:
+  - `Cài đặt & Xuất bản` (Header chính), `Thông tin chung` (Khu vực thông tin tệp), `Tên`, `Trạng thái`, `Chỉnh sửa lần cuối`, `Xuất bản` (Nút xuất file).
 - **Logic quan trọng**:
   * Tự động kiểm thử tính hợp lệ (Auto Evaluate Status) của tệp tin: Phát hiện đề trống (`Empty File`), lỗi cấu trúc (`Syntax Error`), thiếu lựa chọn đáp án (`Missing Answer Option`), hoặc chưa chọn đáp án đúng (`Missing Correct Answer`).
   * Giới hạn ghi chú ghi tối đa **200 từ**. Nếu nhập vượt quá, hệ thống sẽ tự động cắt ngắn chuỗi tại từ thứ 200.
   * Vẽ biểu đồ hình quạt (Pie chart) biểu diễn phân phối tỉ trọng các Tags bằng mã SVG thuần túy.
-  * Xuất bản tệp đề thi (JSON hoặc văn bản DOCX) hỗ trợ cắt lát câu hỏi và áp dụng cấu hình bộ lọc động.
+  * Xuất bản tệp đề thi (JSON hoặc văn bản DOCX) dựa trực tiếp trên `activeFile` trong Zustand Store, độc lập hoàn toàn với việc hiển thị tab Mã nguồn.
 
 ---
 
 ## 4. Sidebar (`src/components/Sidebar.tsx`)
-- **Mục đích**: Bảng cài đặt nguồn dữ liệu hiển thị dưới dạng drawer khi chuẩn bị bắt đầu làm bài kiểm tra.
+- **Mục đích**: Bảng cài đặt tùy chỉnh làm bài thi và quản lý nguồn dữ liệu dưới dạng drawer.
+- **Giao diện & Tối ưu hóa**:
+  * Hộp thoại Cài đặt (Quiz Settings Modal): Nhóm tùy chỉnh chung được gom lại dưới dạng nhóm **Tùy chỉnh chung** (thứ tự: Giao diện -> Tương tác -> Số lượng câu hỏi -> Thời gian) cùng cấp với **Nguồn dữ liệu**, có thanh tiêu đề sticky khi cuộn.
+  * Thẻ Nguồn dữ liệu (VirtualSourceCard): Tên tùy chỉnh hiển thị inline `Tên mới - (Tên gốc)` với chiều cao thẻ nén gọn `72px`, hiển thị dung lượng file sát góc phải.
+  * **Tối ưu hóa Router**: Nâng hook `useRouter()` ra khỏi từng thẻ card danh sách ảo (`VirtualSourceCard`) đưa lên cấp `SidebarList` và truyền callback `onViewDocument`, sửa triệt để lỗi Next.js Turbopack Dev `Internal Next.js error: Router action dispatched before initialization`.
 - **Logic quan trọng**:
-  * Đồng bộ cơ chế nạp file với File Manager: Cho phép tải các định dạng `.txt`, `.json`, `.docx`, `.pdf`, và hình ảnh. Các file tải lên (dù hợp lệ hay chưa) đều được đẩy vào File Manager.
-  * Hiển thị badge cảnh báo **`Chưa hợp lệ (Chỉnh sửa trong File Manager)`** cho file chưa hoàn thiện. Khi người dùng sửa xong trong File Manager, file tự động trở thành hợp lệ (`isValid: true`) và cho phép chọn làm quiz trong Sidebar.
-  * Đổi nhãn nút import "Chọn từ nguồn đã nhập" thành **"Chọn từ File Manager"** với tiêu đề cùng kích thước chuẩn font.
+  * Đồng bộ cơ chế nạp file với File Manager: Cho phép tải các định dạng `.txt`, `.json`, `.docx`, `.pdf`, và hình ảnh.
 
 ---
 

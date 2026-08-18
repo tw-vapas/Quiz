@@ -18,12 +18,11 @@ Dự án nằm trong lĩnh vực Công nghệ Giáo dục (EdTech), cụ thể l
   - Phân tích thống kê thời gian làm bài trung bình cho từng câu hỏi và vẽ biểu đồ phân phối trực quan ở màn hình kết quả.
   - Cho phép làm lại riêng các câu trả lời sai kèm theo cơ chế bổ sung thêm câu hỏi ngẫu nhiên hoặc câu hỏi tốn nhiều thời gian.
 - **Trình kiến tạo câu hỏi (Creator Suite)**:
-  - **Quản lý tệp (File Manager)**: Hỗ trợ tạo mới, chỉnh sửa và quản lý các tệp đề thi (Quiz File) và tệp dữ liệu hỗ trợ (Supported File).
-  - **Biên soạn trực quan (Visual Editor)**: Tạo câu hỏi mới, chỉnh sửa nội dung, đáp án lựa chọn, gán thẻ (Tags), đính kèm khối mã nguồn/hình ảnh (Display Block) và nội dung giải thích (Explanation).
-  - **Chỉnh sửa mã JSON (Code View)**: Hỗ trợ một IDE Editor tích hợp với tính năng tô màu cú pháp và kiểm lỗi JSON trước khi lưu.
+  - **Quản lý tệp (FileManager)**: Hỗ trợ tạo mới, gộp file và quản lý các tệp đề thi (`Tệp trắc nghiệm`).
+  - **Biên soạn trực quan (Visual Editor)**: Tạo câu hỏi mới, chỉnh sửa nội dung, đáp án lựa chọn, gán thẻ (Thẻ phân loại), đính kèm khối hiển thị mã nguồn/hình ảnh (Display Block) và nội dung giải thích (Explanation).
+  - **Bổ sung thành phần (Tạo Quiz Nhanh)**: Hỗ trợ tự động tạo đáp án đúng và lời giải thích AI.
   - **Biên soạn Tài liệu (Document Editor)**: Viết tài liệu ôn tập và ghi chú đi kèm dưới định dạng Markdown để người dùng học lý thuyết trước khi làm bài.
-  - **Liên kết & Đồng bộ (Linking & Syncing)**: Liên kết nhiều tệp hỗ trợ (Supported Files) vào một đề thi lớn (Quiz File) và đồng bộ câu hỏi tự động.
-  - **Xuất bản đề thi (Export)**: Cho phép tải xuống bộ đề dưới dạng tệp cấu trúc JSON hoặc tệp văn bản DOCX thô với các tùy chọn cắt lát câu hỏi (Range, First N, Last N).
+  - **Cài đặt & Xuất bản đề thi (SettingExport)**: Cho phép xuất bản bộ đề dưới dạng tệp cấu trúc JSON hoặc tệp văn bản DOCX với các tùy chọn cắt lát câu hỏi.
 
 ## 4. Đối tượng Người dùng (Target Users)
 - **Học sinh, sinh viên**: Sử dụng để tự ôn luyện các kỳ thi trắc nghiệm (THPT Quốc gia, Ngoại ngữ, Đại cương).

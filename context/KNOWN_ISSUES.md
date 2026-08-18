@@ -1,10 +1,24 @@
 # Các Vấn đề đã biết & Nợ Kỹ thuật (Known Issues & Tech Debt)
 
-Tài liệu này tổng hợp các lỗi giao diện nhỏ, mã nguồn chết (dead code), các tính năng chưa hoàn chỉnh, và các lỗi biên dịch/linter (ESLint check errors) hiện tại trong dự án **Vapas Quiz**.
+Tài liệu này tổng hợp các lỗi giao diện nhỏ, mã nguồn chết (dead code), các tính năng chưa hoàn chỉnh, các lỗi đã được khắc phục và các lỗi biên dịch/linter (ESLint check errors) trong dự án **Vapas Quiz**.
 
 ---
 
-## 1. Lỗi Linter & Cảnh báo Biên dịch (ESLint & React 19 Rules)
+## 1. Các Lỗi Đã Khắc Phục Gần Đây (Recently Resolved Issues)
+
+### A. Lỗi Vòng Lặp Render Vô Hạn (`Maximum update depth exceeded`)
+- **Tập tin**: `src/components/QuestionModification.tsx`
+- **Nguyên nhân**: Mảng `allUniqueTags` được tạo bằng `useMemo` phụ thuộc trực tiếp vào đối tượng `activeFile`. Mỗi lần nhập văn bản trong `QuestionCard`, Zustand cập nhật reference mới của `activeFile`, khiến `allUniqueTags` trả về mảng reference mới liên tục, kích hoạt `useEffect` -> `setSelectedTagsFilter` -> cập nhật state cha -> lặp vô hạn.
+- **Giải pháp**: Tạo chuỗi băm primitive `tagsKey` dựa trên giá trị tag. `allUniqueTags` và các `useEffect` chuyển sang phụ thuộc vào `tagsKey`, triệt tiêu hoàn toàn chuỗi re-render lặp khi gõ phím.
+
+### B. Lỗi Router Dev HMR Turbopack (`Internal Next.js error: Router action dispatched before initialization`)
+- **Tập tin**: `src/components/Sidebar.tsx`
+- **Nguyên nhân**: Gọi hook `useRouter()` bên trong từng card item trong danh sách ảo (`VirtualSourceCard`). Khi Fast Refresh/HMR re-evaluate các thẻ card trong danh sách ảo lúc dev server đang chạy, router action bị gọi trước khi App Router context hoàn tất hydrate.
+- **Giải pháp**: Nâng `useRouter()` lên component cha `SidebarList` và truyền callback `onViewDocument(sourceId)` xuống `VirtualSourceCard`.
+
+---
+
+## 2. Lỗi Linter & Cảnh báo Biên dịch (ESLint & React 19 Rules)
 
 Dự án hiện có một số lỗi vi phạm quy tắc nghiêm ngặt của React 19 và TypeScript (chạy qua lệnh `npm run lint` hoặc `npx tsc`):
 
@@ -15,28 +29,20 @@ Dự án hiện có một số lỗi vi phạm quy tắc nghiêm ngặt của Re
   * Hàm `performance.now()` là một hàm không thuần khiết (impure function). Việc gọi nó trong quá trình render vi phạm quy tắc Component/Hook phải là hàm thuần nhất (must be pure / idempotent).
 
 ### B. Lỗi kích hoạt render bắc cầu (react-hooks/set-state-in-effect)
-- **Tập tin**: `src/components/Sidebar.tsx` (dòng 531) và `src/components/SourceAllocation.tsx` (dòng 39)
+- **Tập tin**: `src/components/Sidebar.tsx` và `src/components/SourceAllocation.tsx`
 - **Chi tiết**: Gọi hàm `setStorageUsedBytes(...)` và `setLocalAllocs(...)` đồng bộ ngay trong thân hàm `useEffect`. Điều này bắt buộc React phải chạy lại một chu kỳ render phụ (cascading render) ngay sau chu kỳ render trước đó, làm giảm đáng kể hiệu năng ứng dụng.
 
 ### C. Lỗi ép kiểu lỏng lẻo (no-explicit-any & no-unused-vars)
 - **Tập tin**: `src/lib/parserCore.ts` (các dòng 333, 342, 382, 389) dùng kiểu `any` khi ép dữ liệu JSON thay vì định nghĩa interface chặt chẽ.
-- **Tập tin**: `src/components/Sidebar.tsx` (dòng 247) khai báo tham số `_parentScrollRef` trong component `VirtualSourcesList` nhưng không bao giờ sử dụng.
+- **Tập tin**: `src/components/Sidebar.tsx` khai báo tham số `_parentScrollRef` trong component `VirtualSourcesList` nhưng không bao giờ sử dụng.
 
 ---
 
-## 2. Mã nguồn chết / Không sử dụng (Dead Code)
+## 3. Mã nguồn chết / Không sử dụng (Dead Code)
 
 - **Component `SectionsSelection.tsx`**:
   * **Vị trí**: `src/components/SectionsSelection.tsx`
   * **Hiện trạng**: Component này định nghĩa cấu trúc một khối tiêu đề thẻ hiển thị thông số tệp tin và tổng số câu hỏi ôn tập (gán mác phiên bản "BETA"). Tuy nhiên, không có bất kỳ component hoặc trang nào import hay sử dụng component này. Đây là mã nguồn chết thừa cần được dọn dẹp hoặc tích hợp lại trong tương lai.
-
----
-
-## 3. Tính năng chưa hoàn thiện (Unimplemented Features)
-
-- **Chế độ hiển thị danh sách câu hỏi trong Trình soạn thảo**:
-  * **Vị trí**: `src/components/QuestionModification.tsx`
-  * **Mô tả**: Trong phần định nghĩa kiểu dữ liệu và cấu hình giao diện, biến `displayMode` hỗ trợ 3 tùy chọn hiển thị: `"List" | "Cards" | "Panel"`. Tuy nhiên, mã nguồn kết xuất thực tế chỉ viết logic render cho chế độ `"Panel"` (giao diện chia đôi cột). Nếu người dùng cố tình chuyển sang chế độ `"List"` hoặc `"Cards"`, màn hình sẽ trống rỗng và không hiển thị câu hỏi nào do thiếu code render tương ứng.
 
 ---
 
