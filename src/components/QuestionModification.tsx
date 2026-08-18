@@ -216,7 +216,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-black text-indigo-650 dark:text-indigo-400">CÂU HỎI {index + 1}</span>
+          <span className="text-xs font-bold text-indigo-650 dark:text-indigo-400">Câu hỏi {index + 1}</span>
           <span className={cn(
             "text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1",
             isValid
@@ -238,7 +238,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Question Text Area */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Câu hỏi</h5>
+          <h5 className="text-[10px] font-bold text-slate-400 dark:text-slate-300">Câu hỏi</h5>
           <span className={cn("text-[9px] font-mono font-bold", question.text.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
             {question.text.length}/1000
           </span>
@@ -255,7 +255,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Answers Options Area */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
-          <h5 className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider">Đáp án</h5>
+          <h5 className="text-[10px] font-bold text-slate-400 dark:text-slate-300">Đáp án</h5>
             <button
               onClick={handleAddNewAnswer}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-[10px] text-indigo-750 dark:text-indigo-400 font-extrabold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all cursor-pointer"
@@ -331,7 +331,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Type and Tags inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5 relative">
-          <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Loại câu hỏi</span>
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-300 block">Loại câu hỏi</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
               className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
@@ -359,7 +359,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           </div>
 
         <div className="space-y-1.5">
-          <span className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Thẻ phân loại (cách nhau bằng dấu phẩy)</span>
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-300 block">Thẻ phân loại</span>
           <input
             type="text"
             value={tagsInput}
@@ -384,8 +384,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             <div key={blockIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-2.5 relative group/block">
               {/* Top Header Bar with Block Label and Delete Button */}
               <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-1.5">
-                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-                  DISPLAY BLOCK #{blockIdx + 1}
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                  Khối hiển thị #{blockIdx + 1}
                 </span>
                 <button
                   onClick={() => handleRemoveDisplayBlock(blockIdx)}
@@ -398,7 +398,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="space-y-1.5 shrink-0 w-32">
-                  <span className="text-[9px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Block Type</span>
+                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-300 block">Loại khối</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
@@ -411,7 +411,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Content</span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-300 block">Nội dung</span>
                     <span className={cn("text-[9px] font-mono font-bold", db.content.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
@@ -434,7 +434,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {question.explanation !== undefined && question.explanation !== null && (
         <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
           <div className="flex items-center justify-between">
-            <label className="text-[10px] font-black text-slate-400 dark:text-slate-300 uppercase tracking-wider block">Giải thích</label>
+            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-300 block">Giải thích</label>
             <div className="flex items-center gap-3">
               <span className={cn("text-[9px] font-mono font-bold", (question.explanation || "").length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
                 {(question.explanation || "").length}/1000
@@ -1609,9 +1609,6 @@ export default function QuestionModification({
           <span className="text-xs font-black text-slate-850 dark:text-slate-100 truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
-          <span className="text-[9px] px-2 py-0.5 rounded font-extrabold uppercase shrink-0 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-            Quiz File
-          </span>
         </div>
 
         {/* Tab Selection */}
@@ -1743,7 +1740,7 @@ export default function QuestionModification({
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                  Total: {filteredQuestions.length} / {activeFile.questions.length} Questions
+                  Tổng cộng {filteredQuestions.length !== activeFile.questions.length ? `${filteredQuestions.length}/${activeFile.questions.length}` : activeFile.questions.length} câu hỏi
                 </span>
                 {(filterAndSortEnabled || filteredQuestions.length !== activeFile.questions.length) && (
                   <button
