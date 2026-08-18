@@ -354,7 +354,7 @@ export default function SettingExport({
         <div className="flex items-center gap-2">
           <Settings2 className="w-5 h-5 text-indigo-650 dark:text-indigo-400" />
           <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-            Setting & Export
+            Cài đặt & Xuất bản
           </h3>
         </div>
       </div>
@@ -365,13 +365,13 @@ export default function SettingExport({
         {/* SECTION A: GENERAL INFORMATION */}
         <div className="space-y-4">
           <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">
-            General Information
+            Thông tin chung
           </h4>
 
           {/* Name Input */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Name
+              Tên
             </label>
             <input 
               type="text" 
@@ -385,7 +385,7 @@ export default function SettingExport({
           {/* Status Display */}
           <div className="space-y-1.5 relative">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Status
+              Trạng thái
             </label>
             <div
               className={cn(
@@ -400,7 +400,7 @@ export default function SettingExport({
           {/* Last Changed Tag */}
           <div className="px-3.5 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold select-none">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Last Changed: {activeFile.metadata.last_modified}</span>
+            <span>Chỉnh sửa lần cuối: {activeFile.metadata.last_modified}</span>
           </div>
         </div>
 
@@ -535,7 +535,7 @@ export default function SettingExport({
           className="w-full min-h-11 bg-indigo-650 hover:bg-indigo-755 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <Download className="w-4 h-4" />
-          Export This File
+          Xuất bản
         </button>
       </div>
 

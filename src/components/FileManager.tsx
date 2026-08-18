@@ -208,7 +208,7 @@ export default function FileManager() {
         <div className="flex items-center gap-2">
           <FolderOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-            File Manager
+            Quản lý tệp
           </h3>
         </div>
         <button 
@@ -222,7 +222,7 @@ export default function FileManager() {
           )}
         >
           <Plus className="w-4 h-4" />
-          Create File
+          Thêm tệp
         </button>
       </div>
 
@@ -255,7 +255,7 @@ export default function FileManager() {
                   : "bg-gradient-to-r from-indigo-500 to-indigo-600"
             )}
             style={{ width: `${Math.max(2, storagePercent)}%` }}
-            title={`Quiz Files storage: ${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`}
+            title={`Dung lượng tệp trắc nghiệm: ${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`}
           />
         </div>
 
@@ -269,7 +269,7 @@ export default function FileManager() {
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-          Quiz File
+          Tệp trắc nghiệm
           <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded", creatorFiles.length >= FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
             {creatorFiles.length}/{FILE_LIMIT}
           </span>
@@ -331,7 +331,7 @@ export default function FileManager() {
                     <button 
                       onClick={() => setConfirmDeleteId(f.id)}
                       className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-500 opacity-60 group-hover:opacity-100 transition-all cursor-pointer shrink-0"
-                      title="Xóa Quiz File"
+                      title="Xóa tệp trắc nghiệm"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -341,7 +341,7 @@ export default function FileManager() {
             })
           ) : (
             <div className="text-center py-8 text-xs text-slate-400">
-              Chưa có Quiz File nào được tạo.
+              Chưa có tệp trắc nghiệm nào được tạo.
             </div>
           )}
         </div>
@@ -362,7 +362,7 @@ export default function FileManager() {
                     Tạo tệp câu hỏi mới
                   </h3>
                   <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                    Khởi tạo Quiz File trống hoặc nhập từ nhiều nguồn dữ liệu
+                    Khởi tạo tệp trắc nghiệm trống hoặc nhập từ nhiều nguồn dữ liệu
                   </p>
                 </div>
               </div>
@@ -387,7 +387,7 @@ export default function FileManager() {
                   type="text" 
                   value={newFileNameInput}
                   onChange={(e) => setNewFileNameInput(e.target.value)}
-                  placeholder="Nhập tên Quiz File (vd: Đề thi Toán Học Phần 1)..."
+                  placeholder="Nhập tên tệp trắc nghiệm (vd: Đề thi Toán Học Phần 1)..."
                   className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-200 dark:border-slate-750 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
                 />
               </div>
