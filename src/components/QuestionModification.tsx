@@ -1245,34 +1245,8 @@ export default function QuestionModification({
   const lastFileIdRef = React.useRef<string | null>(null);
 
   // --- TABS CONTROL ---
-  const [activeTab, setActiveTab] = useState<"DOCUMENT" | "QUESTION_VIEW" | "CODE_VIEW">("QUESTION_VIEW");
+  const [activeTab, setActiveTab] = useState<"DOCUMENT" | "QUESTION_VIEW">("QUESTION_VIEW");
   const [docSubTab, setDocSubTab] = useState<"EDIT" | "PREVIEW">("PREVIEW");
-
-  // FormatPicker dropdown state
-  const [fileFormat, setFileFormat] = useState<"JSON" | "DOCX">("JSON");
-  const [isFormatDropdownOpen, setIsFormatDropdownOpen] = useState(false);
-
-  // JSON code state (local buffer)
-  const [codeText, setCodeText] = useState("");
-  const [jsonError, setJsonError] = useState<string | null>(null);
-
-  // Sync store to local JSON buffer when selecting file or switching tabs
-  const getFileJson = (file: CreatorFile) => {
-    const pkg = {
-      metadata: file.metadata,
-      document: file.document,
-      note: file.note,
-      questions: file.questions
-    };
-    return JSON.stringify(pkg, null, 2);
-  };
-
-  useEffect(() => {
-    if (activeFile && activeTab === "CODE_VIEW") {
-      setCodeText(getFileJson(activeFile));
-      setJsonError(null);
-    }
-  }, [activeFile?.id, activeTab]);
 
   // --- POPOVER VISIBILITY CONTROLS ---
   const [isFilterSettingsOpen, setIsFilterSettingsOpen] = useState(false);
@@ -1521,72 +1495,7 @@ export default function QuestionModification({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, displayMode, filteredQuestions, panelQuestion]);
 
-  // Manual save for Code view
-  const handleSaveJson = () => {
-    if (!activeFile) return;
-    const result = parseQuizJson(codeText);
-    if (result.isValid) {
-      const updatedFileName = result.metadata?.file_name || activeFile.name;
-      const formattedTime = new Date().toLocaleString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric"
-      }).replace(",", "");
 
-      // Estimate the new size of creatorFiles after saving
-      const simulatedFiles = creatorFiles.map((f) => {
-        if (f.id === activeFile.id) {
-          return {
-            ...f,
-            name: updatedFileName,
-            questions: result.questions,
-            document: result.document || "",
-            note: result.note || "",
-            metadata: {
-              ...f.metadata,
-              file_name: updatedFileName,
-              question_count: result.questions.length,
-              last_modified: formattedTime
-            }
-          };
-        }
-        return f;
-      });
-
-      const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_creator_files");
-      const estimatedNewFilesBytes = JSON.stringify(simulatedFiles).length * 2;
-      const totalEstimatedBytes = otherBytes + estimatedNewFilesBytes;
-
-      if (totalEstimatedBytes > STORAGE_LIMIT_BYTES) {
-        useQuizStore.getState().showNotification(
-          "Không thể lưu: Dung lượng tệp tin sau chỉnh sửa vượt quá giới hạn và đầy bộ nhớ lưu trữ.",
-          "error"
-        );
-        return;
-      }
-
-      updateCreatorFile(activeFile.id, {
-        questions: result.questions,
-        document: result.document || "",
-        note: result.note || "",
-        metadata: {
-          ...activeFile.metadata,
-          file_name: updatedFileName,
-          question_count: result.questions.length,
-          last_modified: formattedTime
-        }
-      });
-      if (result.metadata?.file_name && result.metadata.file_name !== activeFile.name) {
-        updateCreatorFile(activeFile.id, { name: result.metadata.file_name });
-      }
-      setJsonError(null);
-      useQuizStore.getState().showNotification("Lưu tệp tin thành công!", "success");
-    } else {
-      setJsonError(result.error || "Lỗi schema JSON.");
-    }
-  };
 
   // Render empty state if no active file
   if (!activeFile) {
@@ -1613,7 +1522,7 @@ export default function QuestionModification({
 
         {/* Tab Selection */}
         <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl shrink-0 self-start sm:self-auto">
-          {(["DOCUMENT", "QUESTION_VIEW", "CODE_VIEW"] as const).map((tab) => (
+          {(["DOCUMENT", "QUESTION_VIEW"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -1626,7 +1535,6 @@ export default function QuestionModification({
             >
               {tab === "DOCUMENT" && "Tài Liệu"}
               {tab === "QUESTION_VIEW" && "Câu Hỏi"}
-              {tab === "CODE_VIEW" && "Mã nguồn"}
             </button>
           ))}
         </div>
@@ -1676,61 +1584,7 @@ export default function QuestionModification({
           </div>
         )}
 
-        {/* --- TAB B: CODE VIEW --- */}
-        {activeTab === "CODE_VIEW" && (
-          <div className="h-full flex flex-col gap-4">
-            <IdeEditor 
-              value={codeText}
-              onChange={setCodeText}
-              jsonError={jsonError}
-            />
 
-            {/* Validation errors banner */}
-            {jsonError && (
-              <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[10px] font-bold rounded-xl">
-                ❌ {jsonError}
-              </div>
-            )}
-
-            <div className="flex items-center justify-between">
-              {/* Format dropdown picker */}
-              <div className="flex items-center gap-3">
-                <span className="text-[10px] font-bold text-slate-500">Format:</span>
-                <div className="relative">
-                  <button
-                    onClick={() => setIsFormatDropdownOpen(!isFormatDropdownOpen)}
-                    className="px-3 py-1.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-[10px] font-bold text-slate-700 dark:text-slate-350 flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <span>{fileFormat}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                  </button>
-
-                  {isFormatDropdownOpen && (
-                    <div className="absolute left-0 bottom-full mb-1 z-15 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg p-1 space-y-0.5">
-                      {(["JSON", "DOCX"] as const).map((fmt) => (
-                        <button
-                          key={fmt}
-                          onClick={() => { setFileFormat(fmt); setIsFormatDropdownOpen(false); }}
-                          className={cn("w-full px-2.5 py-1 text-[10px] text-left font-bold rounded cursor-pointer", fileFormat === fmt ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50")}
-                        >
-                          {fmt}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Save JSON action */}
-              <button 
-                onClick={handleSaveJson}
-                className="inline-flex items-center gap-1.5 px-4.5 py-2 rounded-xl bg-indigo-650 hover:bg-indigo-755 text-white font-extrabold text-xs shadow-md cursor-pointer"
-              >
-                <Save className="w-4 h-4" /> Save
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* --- TAB C: QUESTION VIEW (VISUAL EDITOR) --- */}
         {activeTab === "QUESTION_VIEW" && (
