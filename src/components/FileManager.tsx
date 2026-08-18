@@ -58,6 +58,35 @@ export default function FileManager() {
   // Delete confirmation state
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
+  // Keyboard Hotkey: Delete key opens confirmation modal, Enter key confirms deletion
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if (confirmDeleteId) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          deleteCreatorFile(confirmDeleteId);
+          setConfirmDeleteId(null);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          setConfirmDeleteId(null);
+        }
+      } else if (!isInput) {
+        if (e.key === "Delete" || e.key === "Del") {
+          if (activeFileId) {
+            e.preventDefault();
+            setConfirmDeleteId(activeFileId);
+          }
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeFileId, confirmDeleteId, deleteCreatorFile]);
+
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

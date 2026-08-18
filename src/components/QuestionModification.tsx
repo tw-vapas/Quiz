@@ -45,6 +45,46 @@ export function isQuestionValid(q: Question): boolean {
   return q.correctOptionIds.every(id => optionIds.has(id));
 }
 
+function AnswerTextarea({
+  value,
+  onChange,
+  placeholder,
+  maxLength,
+  className,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  maxLength?: number;
+  className?: string;
+}) {
+  const ref = React.useRef<HTMLTextAreaElement>(null);
+
+  React.useLayoutEffect(() => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      ref.current.style.height = `${ref.current.scrollHeight}px`;
+    }
+  }, [value]);
+
+  return (
+    <textarea
+      ref={ref}
+      rows={1}
+      maxLength={maxLength}
+      value={value}
+      onChange={onChange}
+      placeholder={placeholder}
+      className={className}
+      onInput={(e) => {
+        const target = e.currentTarget;
+        target.style.height = "auto";
+        target.style.height = `${target.scrollHeight}px`;
+      }}
+    />
+  );
+}
+
 interface QuestionCardProps {
   index: number;
   question: Question;
@@ -68,35 +108,61 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
     setTagsInput(question?.tags?.join(", ") || "");
   }
 
-  // Keyboard shortcut: press A/B/C/D to toggle correct answer
+  // Keyboard shortcut: press A/B/C/D to toggle correct answer, Delete to open delete modal, Enter to confirm delete
   useEffect(() => {
     if (!question) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key.toUpperCase();
-      if (key.length !== 1 || key < "A" || key > "Z") return;
       const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
-      const options = question.options;
-      const correctIds = question.correctOptionIds;
-      const qType = question.type;
-      const optionIndex = key.charCodeAt(0) - 65;
-      if (optionIndex >= 0 && optionIndex < options.length) {
-        e.preventDefault();
-        const ansId = options[optionIndex].id;
-        let newCorrectIds: string[];
-        if (qType === "single_choice") {
-          newCorrectIds = [ansId];
-        } else {
-          newCorrectIds = correctIds.includes(ansId)
-            ? correctIds.filter(id => id !== ansId)
-            : [...correctIds, ansId];
+      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
+
+      if (deleteConfirmTarget) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          if (deleteConfirmTarget.type === "question") {
+            onDelete();
+          } else {
+            handleRemoveAnswer(deleteConfirmTarget.optionId);
+          }
+          setDeleteConfirmTarget(null);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          setDeleteConfirmTarget(null);
         }
-        onUpdate({ correctOptionIds: newCorrectIds });
+        return;
+      }
+
+      if (isInput) return;
+
+      if (e.key === "Delete" || e.key === "Del") {
+        e.preventDefault();
+        setDeleteConfirmTarget({ type: "question" });
+        return;
+      }
+
+      const key = e.key.toUpperCase();
+      if (key.length === 1 && key >= "A" && key <= "Z") {
+        const options = question.options;
+        const correctIds = question.correctOptionIds;
+        const qType = question.type;
+        const optionIndex = key.charCodeAt(0) - 65;
+        if (optionIndex >= 0 && optionIndex < options.length) {
+          e.preventDefault();
+          const ansId = options[optionIndex].id;
+          let newCorrectIds: string[];
+          if (qType === "single_choice") {
+            newCorrectIds = [ansId];
+          } else {
+            newCorrectIds = correctIds.includes(ansId)
+              ? correctIds.filter(id => id !== ansId)
+              : [...correctIds, ansId];
+          }
+          onUpdate({ correctOptionIds: newCorrectIds });
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [question?.options, question?.correctOptionIds, question?.type]);
+  }, [question?.options, question?.correctOptionIds, question?.type, deleteConfirmTarget, onDelete]);
 
   if (!question) return null;
 
@@ -305,18 +371,12 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   </span>
 
                   <div className="flex-1 flex flex-col justify-center min-w-0 my-auto">
-                    <textarea 
+                    <AnswerTextarea 
                       maxLength={150}
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
                       placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
-                      rows={1}
-                      className="w-full bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto"
-                      onInput={(e) => {
-                        const target = e.currentTarget;
-                        target.style.height = "auto";
-                        target.style.height = `${target.scrollHeight}px`;
-                      }}
+                      className="w-full bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto custom-scrollbar"
                     />
                     {ans.text.length >= 100 && (
                       <span className={cn("text-[9px] font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-bold" : "text-slate-400")}>
@@ -1318,6 +1378,29 @@ export default function QuestionModification({
   };
 
   const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("Panel");
+  const [selectedPanelQuestionId, setSelectedPanelQuestionId] = useState<string | null>(null);
+  const [deleteConfirmQuestionId, setDeleteConfirmQuestionId] = useState<string | null>(null);
+
+  // Keyboard Hotkey for deleting question in panel list: Enter to confirm deletion
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (deleteConfirmQuestionId) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          deleteQuestion(deleteConfirmQuestionId);
+          if (selectedPanelQuestionId === deleteConfirmQuestionId) {
+            setSelectedPanelQuestionId(null);
+          }
+          setDeleteConfirmQuestionId(null);
+        } else if (e.key === "Escape") {
+          e.preventDefault();
+          setDeleteConfirmQuestionId(null);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [deleteConfirmQuestionId, selectedPanelQuestionId]);
 
   // Filter & Sort Settings state
   const [filterAndSortEnabled, setFilterAndSortEnabled] = useState(false);
@@ -1513,7 +1596,6 @@ export default function QuestionModification({
 
 
   // Panel view selected item state
-  const [selectedPanelQuestionId, setSelectedPanelQuestionId] = useState<string | null>(null);
   const questionItemRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
   
   const panelQuestion = useMemo(() => {
@@ -2037,6 +2119,17 @@ export default function QuestionModification({
                           >
                             <div className="flex justify-between items-center mb-1">
                               <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setDeleteConfirmQuestionId(q.id);
+                                }}
+                                className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                                title="Xóa câu hỏi"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </div>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
@@ -2065,6 +2158,51 @@ export default function QuestionModification({
               </div>
             )}
 
+          </div>
+        )}
+
+        {/* Modal confirm delete question from list */}
+        {deleteConfirmQuestionId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+            <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                  Xác nhận xóa câu hỏi
+                </h3>
+                <button
+                  onClick={() => setDeleteConfirmQuestionId(null)}
+                  className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                Bạn có chắc chắn muốn xóa câu hỏi này?
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-500">
+                Hành động này không thể hoàn tác.
+              </p>
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => setDeleteConfirmQuestionId(null)}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                >
+                  Hủy
+                </button>
+                <button
+                  onClick={() => {
+                    deleteQuestion(deleteConfirmQuestionId);
+                    if (selectedPanelQuestionId === deleteConfirmQuestionId) {
+                      setSelectedPanelQuestionId(null);
+                    }
+                    setDeleteConfirmQuestionId(null);
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
