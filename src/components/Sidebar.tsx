@@ -19,6 +19,7 @@ interface VirtualSourceCardProps {
   toggleLocalSource: (id: string) => void;
   removeLocalSource: (id: string) => void;
   onDeleteRequest: (id: string) => void;
+  onViewDocument: (id: string) => void;
   draggedIndex: number | null;
   setDraggedIndex: (idx: number | null) => void;
   dropTargetIndex: number | null;
@@ -38,6 +39,7 @@ const VirtualSourceCard = React.memo(({
   toggleLocalSource,
   removeLocalSource,
   onDeleteRequest,
+  onViewDocument,
   draggedIndex,
   setDraggedIndex,
   dropTargetIndex,
@@ -46,7 +48,6 @@ const VirtualSourceCard = React.memo(({
   localSources
 }: VirtualSourceCardProps) => {
   useRenderProfiler(`VirtualSourceCard`);
-  const router = useRouter();
   const [isDraggable, setIsDraggable] = useState(false);
   const hasDocument = !!(source.document || source.note);
   
@@ -177,10 +178,7 @@ const VirtualSourceCard = React.memo(({
           <div className="flex items-center gap-2 shrink-0">
             {hasDocument && (
               <button
-                onClick={() => {
-                  useQuizStore.getState().setSelectedDocumentSourceId(source.id);
-                  router.push("/document");
-                }}
+                onClick={() => onViewDocument(source.id)}
                 className="min-w-7 min-h-7 flex items-center justify-center text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 select-none shrink-0 cursor-pointer"
                 title="Xem tài liệu"
               >
@@ -239,6 +237,7 @@ interface VirtualSourcesListProps {
   toggleLocalSource: (id: string) => void;
   removeLocalSource: (id: string) => void;
   onDeleteRequest: (id: string) => void;
+  onViewDocument: (id: string) => void;
   onReorder: (newSources: SourceFile[]) => void;
   parentScrollRef: React.RefObject<HTMLDivElement | null>;
 }
@@ -251,6 +250,7 @@ const VirtualSourcesList = ({
   toggleLocalSource,
   removeLocalSource,
   onDeleteRequest,
+  onViewDocument,
   onReorder,
   parentScrollRef: _parentScrollRef
 }: VirtualSourcesListProps) => {
@@ -278,6 +278,7 @@ const VirtualSourcesList = ({
             toggleLocalSource={toggleLocalSource}
             removeLocalSource={removeLocalSource}
             onDeleteRequest={onDeleteRequest}
+            onViewDocument={onViewDocument}
             draggedIndex={draggedIndex}
             setDraggedIndex={setDraggedIndex}
             dropTargetIndex={dropTargetIndex}
@@ -575,6 +576,12 @@ const SidebarList = React.memo(({
   parentScrollRef
 }: SidebarListProps) => {
   useRenderProfiler("SidebarList");
+  const router = useRouter();
+
+  const handleViewDocument = useCallback((sourceId: string) => {
+    useQuizStore.getState().setSelectedDocumentSourceId(sourceId);
+    router.push("/document");
+  }, [router]);
 
   const [storageUsedBytes, setStorageUsedBytes] = useState(() => {
     const otherBytes = getQuizStorageUsedBytesExcept("vapas_quiz_sources");
@@ -682,6 +689,7 @@ const SidebarList = React.memo(({
             toggleLocalSource={toggleLocalSource}
             removeLocalSource={removeLocalSource}
             onDeleteRequest={handleDeleteRequest}
+            onViewDocument={handleViewDocument}
             onReorder={onReorder}
             parentScrollRef={parentScrollRef}
           />
