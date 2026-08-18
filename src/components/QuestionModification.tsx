@@ -55,6 +55,11 @@ interface QuestionCardProps {
 function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps) {
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [tagsInput, setTagsInput] = useState(() => question?.tags?.join(", ") || "");
+  const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<
+    | { type: "question" }
+    | { type: "option"; optionId: string; optionLabel: string }
+    | null
+  >(null);
   const isValid = isQuestionValid(question);
 
   const prevQuestionIdRef = React.useRef(question?.id);
@@ -149,7 +154,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       useQuizStore.getState().showNotification("Mỗi câu hỏi chỉ được thêm tối đa 2 Display Block!", "error");
       return;
     }
-    const newBlock = { type: "code", content: "Khai báo / Code snippet..." };
+    const newBlock = { type: "code", content: "" };
     onUpdate({ display_blocks: [...blocks, newBlock] });
   };
 
@@ -231,7 +236,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             {isValid ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
           </div>
           <button 
-            onClick={onDelete}
+            onClick={() => setDeleteConfirmTarget({ type: "question" })}
             className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors cursor-pointer"
             title="Xóa câu hỏi"
           >
@@ -321,7 +326,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   </div>
 
                   <button
-                    onClick={() => handleRemoveAnswer(ans.id)}
+                    onClick={() => setDeleteConfirmTarget({ type: "option", optionId: ans.id, optionLabel: String.fromCharCode(65 + idx) })}
                     className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors cursor-pointer shrink-0"
                     title="Xóa đáp án"
                   >
@@ -422,17 +427,11 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     </span>
                   </div>
                   <textarea
-                    rows={1}
                     maxLength={1000}
-                    placeholder={db.type === "code" ? "Khai báo hàm / Code snippet..." : "Đường dẫn ảnh/URL..."}
+                    placeholder="Nhập nội dung của khối hiển thị (tối đa 1000 kí tự)..."
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-[32px] min-h-[32px] max-h-[108px] px-2.5 py-1.5 text-xs font-mono border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-normal resize-none overflow-y-auto custom-scrollbar"
-                    onInput={(e) => {
-                      const target = e.currentTarget;
-                      target.style.height = "32px";
-                      target.style.height = `${Math.min(target.scrollHeight, 108)}px`;
-                    }}
+                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
                   />
                 </div>
               </div>
@@ -488,6 +487,54 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               Thêm giải thích
             </button>
           )}
+        </div>
+      )}
+
+      {/* Confirmation Modal for Deleting Question / Option */}
+      {deleteConfirmTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-sm">
+          <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
+                {deleteConfirmTarget.type === "question" ? "Xác nhận xóa câu hỏi" : `Xác nhận xóa đáp án ${deleteConfirmTarget.optionLabel}`}
+              </h3>
+              <button
+                onClick={() => setDeleteConfirmTarget(null)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+              {deleteConfirmTarget.type === "question"
+                ? "Bạn có chắc chắn muốn xóa câu hỏi này?"
+                : `Bạn có chắc chắn muốn xóa đáp án ${deleteConfirmTarget.optionLabel}?`}
+            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-500">
+              Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setDeleteConfirmTarget(null)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => {
+                  if (deleteConfirmTarget.type === "question") {
+                    onDelete();
+                  } else {
+                    handleRemoveAnswer(deleteConfirmTarget.optionId);
+                  }
+                  setDeleteConfirmTarget(null);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
+              >
+                Xóa
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1628,7 +1675,7 @@ export default function QuestionModification({
             {/* Options Sub-Header Bar */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-slate-800 dark:text-slate-200">
+                <span className="text-base font-black text-slate-800 dark:text-slate-200">
                   Tổng cộng: {filteredQuestions.length !== activeFile.questions.length ? `${filteredQuestions.length}/${activeFile.questions.length}` : activeFile.questions.length} câu hỏi
                 </span>
                 {(filterAndSortEnabled || filteredQuestions.length !== activeFile.questions.length) && (
@@ -1656,7 +1703,7 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={() => setIsSupplementModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-extrabold text-[10px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                   title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -1668,7 +1715,7 @@ export default function QuestionModification({
                   type="button"
                   onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl font-extrabold text-[10px] cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
+                    "px-3 py-1.5 rounded-xl font-extrabold text-[9px] cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
                     isFilterSettingsOpen || filterAndSortEnabled
                       ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-black"
                       : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
@@ -1686,7 +1733,7 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={addNewQuestion}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-extrabold text-[10px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                 >
                   <Plus className="w-3.5 h-3.5 text-slate-500" />
                   <span>Thêm câu hỏi</span>
@@ -1966,7 +2013,7 @@ export default function QuestionModification({
 
                 {/* Section 2: Question List (List selector on the right) */}
                 <div className="lg:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1.5 mb-2 shrink-0">Danh sách câu hỏi</h5>
+                  <h5 className="text-[10px] font-black text-slate-400 border-b pb-1.5 mb-2 shrink-0">Danh sách câu hỏi</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map((q, idx) => {

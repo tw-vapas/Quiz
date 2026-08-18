@@ -268,8 +268,8 @@ export default function FileManager() {
 
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center gap-2">
-          Tệp trắc nghiệm
+        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
+          <span>Danh sách tệp</span>
           <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded", creatorFiles.length >= FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
             {creatorFiles.length}/{FILE_LIMIT}
           </span>
