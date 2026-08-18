@@ -377,7 +377,7 @@ export default function SettingExport({
               type="text" 
               value={activeFile.name}
               onChange={(e) => updateCreatorFile(activeFile.id, { name: e.target.value, metadata: { ...activeFile.metadata, file_name: e.target.value } })}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Nhập tên tệp..."
             />
           </div>
@@ -397,12 +397,12 @@ export default function SettingExport({
             </div>
           </div>
 
-          {/* Last Changed Tag */}
+          {/* Last Changed Field */}
           <div className="space-y-1.5 relative">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
               Chỉnh sửa lần cuối
             </label>
-            <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200 font-bold select-none">
+            <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200 font-bold select-none">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
               <span>{activeFile.metadata.last_modified}</span>
             </div>
@@ -410,9 +410,9 @@ export default function SettingExport({
         </div>
 
         {/* SECTION B: NOTES */}
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
+        <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
-            <label className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 block">
+            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
               Ghi chú
             </label>
             <span className={cn(
@@ -425,7 +425,7 @@ export default function SettingExport({
           <textarea
             value={activeFile.note}
             onChange={(e) => handleNoteChange(e.target.value)}
-            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-semibold text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập ghi chú cho tệp tin này..."
           />
         </div>
