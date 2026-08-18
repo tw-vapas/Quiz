@@ -230,7 +230,7 @@ export default function FileManager() {
       <div className="px-5 pb-3 shrink-0 space-y-1.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
         <div className="flex items-center justify-between text-[10px] font-bold">
           <span className="text-slate-600 dark:text-slate-400">
-            Bộ nhớ: <span className="font-mono text-slate-800 dark:text-slate-200 font-extrabold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+            <span className="font-mono text-slate-800 dark:text-slate-200 font-extrabold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
           </span>
           <span className={cn(
             "font-extrabold px-1.5 py-0.5 rounded text-[9px]",

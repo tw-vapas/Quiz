@@ -364,13 +364,9 @@ export default function SettingExport({
         
         {/* SECTION A: GENERAL INFORMATION */}
         <div className="space-y-4">
-          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">
-            Thông tin chung
-          </h4>
-
           {/* Name Input */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
               Tên tệp tin
             </label>
             <input 
@@ -384,7 +380,7 @@ export default function SettingExport({
 
           {/* Status Display */}
           <div className="space-y-1.5 relative">
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
               Trạng thái
             </label>
             <div
@@ -399,7 +395,7 @@ export default function SettingExport({
 
           {/* Last Changed Field */}
           <div className="space-y-1.5 relative">
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
               Chỉnh sửa lần cuối
             </label>
             <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200 font-bold select-none">
@@ -412,7 +408,7 @@ export default function SettingExport({
         {/* SECTION B: NOTES */}
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
               Ghi chú
             </label>
             <span className={cn(
