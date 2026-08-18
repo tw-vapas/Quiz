@@ -2013,7 +2013,7 @@ export default function QuestionModification({
 
                 {/* Section 2: Question List (List selector on the right) */}
                 <div className="lg:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0">
-                  <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b pb-1.5 mb-2 shrink-0">DANH SÁCH CÂU HỎI</h5>
+                  <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">DANH SÁCH CÂU HỎI</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map((q, idx) => {

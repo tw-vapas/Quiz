@@ -371,7 +371,7 @@ export default function SettingExport({
           {/* Name Input */}
           <div className="space-y-1.5">
             <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
-              Tên
+              Tên tệp tin
             </label>
             <input 
               type="text" 
@@ -398,122 +398,26 @@ export default function SettingExport({
           </div>
 
           {/* Last Changed Tag */}
-          <div className="px-3.5 py-2.5 rounded-xl border border-slate-150 dark:border-slate-850 bg-slate-50/50 dark:bg-slate-950/20 flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 font-bold select-none">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Chỉnh sửa lần cuối: {activeFile.metadata.last_modified}</span>
+          <div className="space-y-1.5 relative">
+            <label className="text-xs font-bold text-slate-500 dark:text-slate-400">
+              Chỉnh sửa lần cuối
+            </label>
+            <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-900 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200 font-bold select-none">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>{activeFile.metadata.last_modified}</span>
+            </div>
           </div>
         </div>
 
-        {/* SECTION B: STATISTICS */}
-        <div className="space-y-4 pt-2">
-          <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2">
-            Statistics
-          </h4>
-
-          {/* Question Stats Info Box */}
-          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-indigo-50 dark:bg-indigo-950/30 flex flex-col items-center justify-center shrink-0">
-              <span className="text-2xl font-black text-indigo-650 dark:text-indigo-400">{totalQuestions}</span>
-            </div>
-
-            {/* Checkboxes indicator */}
-            <div className="flex-1 space-y-1.5">
-              <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                Tổng số câu hỏi
-              </h5>
-              <div className="space-y-1">
-                <label className="flex items-center gap-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                  <input 
-                    type="checkbox" 
-                    checked={hasAnswers}
-                    onChange={(e) => setHasAnswers(e.target.checked)}
-                    className="w-3 h-3 text-indigo-600 rounded" 
-                  />
-                  <span>Có đáp án</span>
-                </label>
-                <label className="flex items-center gap-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                  <input 
-                    type="checkbox" 
-                    checked={hasExplanations}
-                    onChange={(e) => setHasExplanations(e.target.checked)}
-                    className="w-3 h-3 text-indigo-600 rounded" 
-                  />
-                  <span>Có giải thích</span>
-                </label>
-                <label className="flex items-center gap-2 text-[10px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                  <input 
-                    type="checkbox" 
-                    checked={hasTags}
-                    onChange={(e) => setHasTags(e.target.checked)}
-                    className="w-3 h-3 text-indigo-600 rounded" 
-                  />
-                  <span>Có tag</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Solid Pie Chart: Tỉ Trọng Tag */}
-          <div className="p-4 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm space-y-4 flex flex-col items-center justify-center">
-            <h5 className="text-xs font-black text-slate-750 dark:text-slate-300 uppercase tracking-wider text-center">
-              Tỉ Trọng Tag
-            </h5>
-
-            {/* SVG solid circle sectors representation */}
-            <div className="relative w-32 h-32">
-              {tagsData.length > 0 ? (
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  {tagsData.map((tag, idx) => (
-                    <path 
-                      key={idx}
-                      d={describeSlice(tag.startAngle, tag.endAngle)}
-                      fill={tag.color}
-                    >
-                      <title>{`${tag.name}: ${tag.count}`}</title>
-                    </path>
-                  ))}
-                </svg>
-              ) : (
-                <svg className="w-full h-full" viewBox="0 0 100 100">
-                  <circle cx="50" cy="50" r="40" fill="#E2E8F0" className="dark:fill-slate-800" />
-                </svg>
-              )}
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-base font-black text-slate-800 dark:text-slate-100 leading-none">
-                  {tagsData.length}
-                </span>
-                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-1">
-                  Tags
-                </span>
-              </div>
-            </div>
-
-            {/* Custom Legend */}
-            {tagsData.length > 0 ? (
-              <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 w-full text-[10px] font-bold text-slate-500 dark:text-slate-450">
-                {tagsData.map((tag, idx) => (
-                  <div key={idx} className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: tag.color }} />
-                    <span className="truncate">{tag.name} ({tag.count})</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-[10px] text-slate-400 italic">Không có tag nào.</div>
-            )}
-          </div>
-        </div>
-
-        {/* SECTION C: NOTES */}
-        <div className="space-y-3 pt-2">
-          <div className="flex justify-between items-center">
-            <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-              Notes
-            </h4>
+        {/* SECTION B: NOTES */}
+        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
+          <div className="flex items-center justify-between">
+            <label className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-200 block">
+              Ghi chú
+            </label>
             <span className={cn(
-              "text-[9px] font-extrabold px-1.5 py-0.5 rounded",
-              noteWordCount > 180 ? "bg-red-500/10 text-red-500" : "bg-slate-100 text-slate-400 dark:bg-slate-800"
+              "text-[9px] font-mono font-bold",
+              noteWordCount > 180 ? "text-red-500 font-extrabold" : "text-slate-400"
             )}>
               {noteWordCount}/200 từ
             </span>
@@ -521,7 +425,7 @@ export default function SettingExport({
           <textarea
             value={activeFile.note}
             onChange={(e) => handleNoteChange(e.target.value)}
-            className="w-full min-h-[90px] p-3 border border-slate-200 dark:border-slate-850 rounded-xl bg-white dark:bg-slate-900 text-xs font-semibold text-slate-700 dark:text-slate-350 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-y"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-semibold text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập ghi chú cho tệp tin này..."
           />
         </div>
