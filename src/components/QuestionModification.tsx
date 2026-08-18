@@ -215,17 +215,10 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
     <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
-        <span className="text-lg md:text-xl font-extrabold text-indigo-650 dark:text-indigo-400">
+        <span className="text-base md:text-lg font-extrabold text-indigo-650 dark:text-indigo-400">
           Câu hỏi {index + 1}
         </span>
         <div className="flex items-center gap-2">
-          <button 
-            onClick={onDelete}
-            className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors cursor-pointer"
-            title="Xóa câu hỏi"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
           <div 
             className={cn(
               "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 select-none",
@@ -237,13 +230,20 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           >
             {isValid ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
           </div>
+          <button 
+            onClick={onDelete}
+            className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors cursor-pointer"
+            title="Xóa câu hỏi"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
       {/* Question Text Area */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <h5 className="text-sm md:text-base font-bold text-white">Câu hỏi</h5>
+          <h5 className="text-sm md:text-base font-bold text-white">Nội dung</h5>
           <span className={cn("text-[9px] font-mono font-bold", question.text.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
             {question.text.length}/1000
           </span>
@@ -422,11 +422,17 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     </span>
                   </div>
                   <textarea
+                    rows={1}
                     maxLength={1000}
                     placeholder={db.type === "code" ? "Khai báo hàm / Code snippet..." : "Đường dẫn ảnh/URL..."}
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-28 p-2.5 text-xs font-mono border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+                    className="w-full h-[32px] min-h-[32px] max-h-[108px] px-2.5 py-1.5 text-xs font-mono border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-normal resize-none overflow-y-auto custom-scrollbar"
+                    onInput={(e) => {
+                      const target = e.currentTarget;
+                      target.style.height = "32px";
+                      target.style.height = `${Math.min(target.scrollHeight, 108)}px`;
+                    }}
                   />
                 </div>
               </div>
@@ -1525,23 +1531,47 @@ export default function QuestionModification({
           </span>
         </div>
 
-        {/* Tab Selection */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl shrink-0 self-start sm:self-auto">
-          {(["DOCUMENT", "QUESTION_VIEW"] as const).map((tab) => (
+        {/* Undo/Redo & Tab Selection */}
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+          {/* Undo & Redo Quick Action Buttons */}
+          <div className="flex items-center gap-0.5">
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer",
-                activeTab === tab 
-                  ? "bg-white dark:bg-slate-700 text-indigo-650 dark:text-indigo-350 shadow-sm"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
-              )}
+              type="button"
+              onClick={() => undo()}
+              disabled={!canUndo}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
+              title="Hoàn tác (Ctrl+Z)"
             >
-              {tab === "DOCUMENT" && "Tài Liệu"}
-              {tab === "QUESTION_VIEW" && "Câu Hỏi"}
+              <Undo2 className="w-4 h-4" />
             </button>
-          ))}
+            <button
+              type="button"
+              onClick={() => redo()}
+              disabled={!canRedo}
+              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
+              title="Làm lại (Ctrl+Y)"
+            >
+              <Redo2 className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+            {(["DOCUMENT", "QUESTION_VIEW"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer",
+                  activeTab === tab 
+                    ? "bg-white dark:bg-slate-700 text-indigo-650 dark:text-indigo-350 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+                )}
+              >
+                {tab === "DOCUMENT" && "Tài Liệu"}
+                {tab === "QUESTION_VIEW" && "Câu Hỏi"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1622,32 +1652,10 @@ export default function QuestionModification({
               </div>
 
               <div className="flex items-center gap-2 relative">
-                {/* Undo & Redo Quick Action Buttons */}
-                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-750">
-                  <button
-                    type="button"
-                    onClick={() => undo()}
-                    disabled={!canUndo}
-                    className="p-1 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
-                    title="Hoàn tác (Ctrl+Z)"
-                  >
-                    <Undo2 className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => redo()}
-                    disabled={!canRedo}
-                    className="p-1 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
-                    title="Làm lại (Ctrl+Y)"
-                  >
-                    <Redo2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
                 {/* Add New Question */}
                 <button
                   onClick={addNewQuestion}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 font-extrabold text-[11px] text-slate-750 dark:text-slate-200 hover:shadow-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1"
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-650 font-extrabold text-[10px] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                 >
                   <Plus className="w-3.5 h-3.5 text-slate-500" />
                   <span>Thêm câu hỏi</span>
@@ -1657,10 +1665,10 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={() => setIsSupplementModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border border-indigo-200 dark:border-indigo-800 font-extrabold text-[11px] text-indigo-700 dark:text-indigo-300 hover:shadow-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+                  className="px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-650 font-extrabold text-[10px] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                   title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
                   <span>Bổ sung thành phần</span>
                 </button>
 
@@ -1669,10 +1677,8 @@ export default function QuestionModification({
                   type="button"
                   onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl border text-[11px] font-extrabold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm relative select-none",
-                    isFilterSettingsOpen || filterAndSortEnabled
-                      ? "border-indigo-500 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 ring-2 ring-indigo-500/20"
-                      : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300"
+                    "px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/80 hover:border-slate-300 dark:hover:border-slate-650 font-extrabold text-[10px] shadow-2xs cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 relative select-none",
+                    (isFilterSettingsOpen || filterAndSortEnabled) && "border-indigo-500/80 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-650 dark:text-indigo-400 ring-2 ring-indigo-500/20"
                   )}
                   title="Filter & Sort settings"
                 >
