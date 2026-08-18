@@ -19,14 +19,14 @@ export default function CreateQuizSection() {
   const [selectedTagsFilter, setSelectedTagsFilter] = useState<Record<string, boolean>>({});
 
   return (
-    <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-3 md:gap-4 p-3 md:p-4 h-[calc(100vh-4rem)] min-h-0 overflow-y-auto lg:overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
-      {/* Left Column: File Manager (1/4 width on desktop) */}
-      <div className="lg:col-span-1 h-[400px] lg:h-full min-h-0">
+    <div className="flex-1 grid grid-cols-1 lg:grid-cols-[minmax(220px,1fr)_minmax(0,3fr)_minmax(220px,1fr)] gap-3 md:gap-4 p-3 md:p-4 h-[calc(100vh-4rem)] min-h-0 overflow-y-auto lg:overflow-hidden bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+      {/* Left Column: File Manager */}
+      <div className="h-[400px] lg:h-full min-h-0">
         <FileManager />
       </div>
 
-      {/* Middle Column: Question Modification (2/4 width on desktop) */}
-      <div className="lg:col-span-2 h-[600px] lg:h-full min-h-0">
+      {/* Middle Column: Question Modification (Expanded) */}
+      <div className="h-[600px] lg:h-full min-h-0">
         <QuestionModification 
           filterType={filterType}
           setFilterType={setFilterType}
@@ -37,8 +37,8 @@ export default function CreateQuizSection() {
         />
       </div>
 
-      {/* Right Column: Setting & Export (1/4 width on desktop) */}
-      <div className="lg:col-span-1 h-[450px] lg:h-full min-h-0">
+      {/* Right Column: Setting & Export */}
+      <div className="h-[450px] lg:h-full min-h-0">
         <SettingExport 
           filterType={filterType}
           filterOthers={filterOthers}

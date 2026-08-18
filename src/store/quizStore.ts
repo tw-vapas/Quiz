@@ -69,11 +69,15 @@ export interface QuizStore {
 
   // Creator State
   creatorFiles: CreatorFile[];
+  pastCreatorFiles: CreatorFile[][];
+  futureCreatorFiles: CreatorFile[][];
   activeFileId: string | null;
   setActiveFileId: (id: string | null) => void;
   createCreatorFile: (name: string, initialData?: Partial<CreatorFile>) => string;
   deleteCreatorFile: (id: string) => void;
   updateCreatorFile: (id: string, updates: Partial<CreatorFile>) => void;
+  undo: () => void;
+  redo: () => void;
 
   // Quiz execution
   state: QuizState;
@@ -341,6 +345,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
 
   // Creator State
   creatorFiles: initialCreatorFiles,
+  pastCreatorFiles: [],
+  futureCreatorFiles: [],
   activeFileId: "qf1",
   setActiveFileId: (id) => set({ activeFileId: id }),
   createCreatorFile: (name, initialData) => {
@@ -371,8 +377,12 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     };
     
     set((state) => {
+      const currentSnapshot = JSON.parse(JSON.stringify(state.creatorFiles));
+      const past = state.pastCreatorFiles || [];
       const updatedFiles = [...state.creatorFiles, newFile];
       return {
+        pastCreatorFiles: [...past.slice(-29), currentSnapshot],
+        futureCreatorFiles: [],
         creatorFiles: updatedFiles,
         activeFileId: id,
         sources: updatedFiles.map(f => ({
@@ -391,9 +401,13 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     return id;
   },
   deleteCreatorFile: (id) => set((state) => {
+    const currentSnapshot = JSON.parse(JSON.stringify(state.creatorFiles));
+    const past = state.pastCreatorFiles || [];
     const newActiveId = state.activeFileId === id ? null : state.activeFileId;
     const updatedFiles = state.creatorFiles.filter((f) => f.id !== id);
     return {
+      pastCreatorFiles: [...past.slice(-29), currentSnapshot],
+      futureCreatorFiles: [],
       creatorFiles: updatedFiles,
       activeFileId: newActiveId,
       sources: updatedFiles.map(f => ({
@@ -419,6 +433,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       year: "numeric"
     }).replace(",", "");
 
+    const currentSnapshot = JSON.parse(JSON.stringify(state.creatorFiles));
+    const past = state.pastCreatorFiles || [];
+
     const updatedFiles = state.creatorFiles.map((f) => {
       if (f.id === id) {
         const questions = updates.questions !== undefined ? updates.questions : f.questions;
@@ -442,6 +459,8 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     });
 
     return {
+      pastCreatorFiles: [...past.slice(-29), currentSnapshot],
+      futureCreatorFiles: [],
       creatorFiles: updatedFiles,
       sources: updatedFiles.map(f => ({
         id: f.id,
@@ -456,6 +475,62 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       }))
     };
   }),
+
+  undo: () => {
+    const { pastCreatorFiles, creatorFiles, futureCreatorFiles } = get();
+    if (!pastCreatorFiles || pastCreatorFiles.length === 0) return;
+
+    const previousFiles = pastCreatorFiles[pastCreatorFiles.length - 1];
+    const newPast = pastCreatorFiles.slice(0, pastCreatorFiles.length - 1);
+    const currentSnapshot = JSON.parse(JSON.stringify(creatorFiles));
+    const newFuture = [currentSnapshot, ...(futureCreatorFiles || [])];
+
+    set({
+      creatorFiles: previousFiles,
+      pastCreatorFiles: newPast,
+      futureCreatorFiles: newFuture,
+      sources: previousFiles.map(f => ({
+        id: f.id,
+        name: f.name,
+        customName: f.customName,
+        questionsCount: f.questions.length,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
+        questions: f.questions,
+        document: f.document,
+        note: f.note
+      }))
+    });
+    get().showNotification("Đã hoàn tác (Undo)", "info");
+  },
+
+  redo: () => {
+    const { pastCreatorFiles, creatorFiles, futureCreatorFiles } = get();
+    if (!futureCreatorFiles || futureCreatorFiles.length === 0) return;
+
+    const nextFiles = futureCreatorFiles[0];
+    const newFuture = futureCreatorFiles.slice(1);
+    const currentSnapshot = JSON.parse(JSON.stringify(creatorFiles));
+    const newPast = [...(pastCreatorFiles || []), currentSnapshot];
+
+    set({
+      creatorFiles: nextFiles,
+      pastCreatorFiles: newPast,
+      futureCreatorFiles: newFuture,
+      sources: nextFiles.map(f => ({
+        id: f.id,
+        name: f.name,
+        customName: f.customName,
+        questionsCount: f.questions.length,
+        active: f.active !== false && checkFileValidity(f),
+        isValid: checkFileValidity(f),
+        questions: f.questions,
+        document: f.document,
+        note: f.note
+      }))
+    });
+    get().showNotification("Đã làm lại (Redo)", "info");
+  },
 
   state: 'NOT_STARTED',
   questions: [],

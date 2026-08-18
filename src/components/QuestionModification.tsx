@@ -30,7 +30,9 @@ import {
   Copy,
   Upload,
   AlertTriangle,
-  CheckCircle2
+  CheckCircle2,
+  Undo2,
+  Redo2
 } from "lucide-react";
 
 export function isQuestionValid(q: Question): boolean {
@@ -269,7 +271,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 <div 
                   key={ans.id}
                   className={cn(
-                    "flex items-start gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-[#22325a]",
+                    "flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-[#22325a]",
                     isCorrect 
                       ? "border-green-500/35 bg-green-500/5 dark:bg-green-950/30" 
                       : "border-slate-200 dark:border-slate-600"
@@ -279,7 +281,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   <button
                     onClick={() => handleToggleAnswerCorrect(ans.id)}
                     className={cn(
-                      "w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer mt-1",
+                      "w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer",
                       isCorrect 
                         ? "bg-green-500 border-green-500 text-white" 
                         : "border-slate-300 dark:border-slate-500 text-transparent hover:border-green-500/55"
@@ -288,7 +290,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     <Check className="w-3 h-3" />
                   </button>
 
-                  <span className="text-xs font-black text-slate-400 dark:text-slate-300 shrink-0 mt-0.5">
+                  <span className="text-xs font-black text-slate-400 dark:text-slate-300 shrink-0">
                     {String.fromCharCode(65 + idx)}
                   </span>
 
@@ -315,7 +317,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                   <button
                     onClick={() => handleRemoveAnswer(ans.id)}
-                    className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors cursor-pointer shrink-0 mt-0.5"
+                    className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors cursor-pointer shrink-0"
                     title="Xóa đáp án"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -1213,6 +1215,31 @@ export default function QuestionModification({
   const creatorFiles = useQuizStore(state => state.creatorFiles);
   const updateCreatorFile = useQuizStore(state => state.updateCreatorFile);
   const storeSources = useQuizStore(state => state.sources);
+  const undo = useQuizStore(state => state.undo);
+  const redo = useQuizStore(state => state.redo);
+  const pastCreatorFiles = useQuizStore(state => state.pastCreatorFiles);
+  const futureCreatorFiles = useQuizStore(state => state.futureCreatorFiles);
+  const canUndo = (pastCreatorFiles?.length || 0) > 0;
+  const canRedo = (futureCreatorFiles?.length || 0) > 0;
+
+  // Keyboard shortcuts for Undo (Ctrl+Z) and Redo (Ctrl+Y or Ctrl+Shift+Z)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
+      if (!isCtrlOrCmd) return;
+      const key = e.key.toLowerCase();
+      
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        useQuizStore.getState().undo();
+      } else if (key === "y" || (key === "z" && e.shiftKey)) {
+        e.preventDefault();
+        useQuizStore.getState().redo();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const activeFile = useMemo(() => creatorFiles.find(f => f.id === activeFileId), [creatorFiles, activeFileId]);
   const lastFileIdRef = React.useRef<string | null>(null);
@@ -1734,6 +1761,28 @@ export default function QuestionModification({
               </div>
 
               <div className="flex items-center gap-2 relative">
+                {/* Undo & Redo Quick Action Buttons */}
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl border border-slate-200 dark:border-slate-750">
+                  <button
+                    type="button"
+                    onClick={() => undo()}
+                    disabled={!canUndo}
+                    className="p-1 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
+                    title="Hoàn tác (Ctrl+Z)"
+                  >
+                    <Undo2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => redo()}
+                    disabled={!canRedo}
+                    className="p-1 rounded-lg text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
+                    title="Làm lại (Ctrl+Y)"
+                  >
+                    <Redo2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
                 {/* Add New Question */}
                 <button
                   onClick={addNewQuestion}
@@ -2059,26 +2108,29 @@ export default function QuestionModification({
                             ref={(el) => { questionItemRefs.current[q.id] = el; }}
                             onClick={() => setSelectedPanelQuestionId(q.id)}
                             className={cn(
-                              "p-3 rounded-xl border-2 cursor-pointer transition-all duration-200 select-none text-left relative",
+                              "p-3 rounded-2xl border shadow-sm transition-all group relative cursor-pointer select-none text-left",
                               qValid
                                 ? (isSelected 
-                                    ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 shadow-sm"
+                                    ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 shadow-emerald-500/10 ring-1 ring-emerald-500/30" 
                                     : "border-emerald-500/70 dark:border-emerald-500/50 bg-white dark:bg-slate-900 hover:border-emerald-500")
                                 : (isSelected
-                                    ? "border-red-500 bg-red-50/20 dark:bg-red-950/30 shadow-sm ring-2 ring-red-500/20"
+                                    ? "border-red-500 bg-red-50/20 dark:bg-red-950/30 shadow-red-500/10 ring-2 ring-red-500/20" 
                                     : "border-red-500/80 dark:border-red-500/60 bg-red-50/10 dark:bg-red-950/10 hover:border-red-500")
                             )}
                           >
                             <div className="flex justify-between items-center mb-1">
                               <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
-                              <span className={cn(
-                                "text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shrink-0 leading-none",
-                                qValid 
-                                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30" 
-                                  : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30"
-                              )} title={qValid ? "Câu hỏi hợp lệ" : "Câu hỏi chưa hợp lệ (thiếu đáp án hoặc thông tin)"}>
-                                {qValid ? "✓" : "✕"}
-                              </span>
+                              <div 
+                                className={cn(
+                                  "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 transition-transform hover:scale-110",
+                                  qValid 
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
+                                    : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+                                )}
+                                title={qValid ? "Câu hỏi hợp lệ (Đủ đáp án và thông tin)" : "Câu hỏi chưa hợp lệ (Thiếu nội dung hoặc đáp án đúng)"}
+                              >
+                                {qValid ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
+                              </div>
                             </div>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
