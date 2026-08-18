@@ -6,7 +6,7 @@ import { useQuizStore, SourceFile } from "@/store/quizStore";
 import { parseFile } from "@/lib/parser";
 import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
-import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen, Sun, Moon } from "lucide-react";
+import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
 import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept, getQuizStorageUsedBytesByKey, getItemBytes, formatBytes } from "@/lib/utils";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
@@ -343,14 +343,87 @@ const SidebarControls = React.memo(({
   return (
     <div className="flex flex-col shrink-0 bg-white dark:bg-slate-900">
       {/* Sticky Header for Tùy chỉnh chung */}
-      <div className="sticky top-0 z-10 px-5 md:px-6 py-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-        <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Tùy chỉnh chung</h2>
+      <div className="sticky top-0 z-10 px-5 md:px-6 py-3.5 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
+        <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">Tùy chỉnh chung</h2>
       </div>
 
       <div className="p-5 md:p-6 space-y-6">
-        {/* Số lượng câu hỏi */}
+        {/* 1. Giao diện */}
         <div>
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
+          <div className="space-y-3">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="themeMode"
+                value="light"
+                checked={localTheme === 'light'}
+                onChange={() => setLocalTheme('light')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sáng</span>
+            </label>
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="radio"
+                name="themeMode"
+                value="dark"
+                checked={localTheme === 'dark'}
+                onChange={() => setLocalTheme('dark')}
+                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
+              />
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tối</span>
+            </label>
+          </div>
+        </div>
+
+        {/* 2. Tương tác */}
+        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Tương tác</h3>
+          <div className="space-y-3">
+            <label className="flex items-start space-x-3 cursor-pointer group">
+              <div className="relative flex items-center pt-0.5">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={localShowResult}
+                  onChange={(e) => setLocalShowResult(e.target.checked)}
+                />
+                <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+                  {localShowResult && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Hiển thị kết quả sau mỗi câu</span>
+            </label>
+
+            <label className="flex items-start space-x-3 cursor-pointer group">
+              <div className="relative flex items-center pt-0.5">
+                <input
+                  type="checkbox"
+                  className="peer sr-only"
+                  checked={localAutoNext}
+                  onChange={(e) => setLocalAutoNext(e.target.checked)}
+                />
+                <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+                  {localAutoNext && (
+                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  )}
+                </div>
+              </div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
+            </label>
+          </div>
+        </div>
+
+        {/* 3. Số lượng câu hỏi */}
+        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
           <div className="space-y-3">
             <label className="flex items-center space-x-3 cursor-pointer">
               <input
@@ -413,86 +486,9 @@ const SidebarControls = React.memo(({
           </div>
         </div>
 
-        {/* Tương tác */}
+        {/* 4. Thời gian */}
         <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Tương tác</h3>
-          <div className="space-y-3">
-            <label className="flex items-start space-x-3 cursor-pointer group">
-              <div className="relative flex items-center pt-0.5">
-                <input
-                  type="checkbox"
-                  className="peer sr-only"
-                  checked={localShowResult}
-                  onChange={(e) => setLocalShowResult(e.target.checked)}
-                />
-                <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
-                  {localShowResult && (
-                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Hiển thị kết quả sau mỗi câu</span>
-            </label>
-
-            <label className="flex items-start space-x-3 cursor-pointer group">
-              <div className="relative flex items-center pt-0.5">
-                <input
-                  type="checkbox"
-                  className="peer sr-only"
-                  checked={localAutoNext}
-                  onChange={(e) => setLocalAutoNext(e.target.checked)}
-                />
-                <div className="w-5 h-5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
-                  {localAutoNext && (
-                    <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                  )}
-                </div>
-              </div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
-            </label>
-          </div>
-        </div>
-
-        {/* Giao diện */}
-        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="themeMode"
-                value="light"
-                checked={localTheme === 'light'}
-                onChange={() => setLocalTheme('light')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Sun className="w-4 h-4 text-amber-500" /> Sáng
-              </span>
-            </label>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="themeMode"
-                value="dark"
-                checked={localTheme === 'dark'}
-                onChange={() => setLocalTheme('dark')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                <Moon className="w-4 h-4 text-indigo-400" /> Tối
-              </span>
-            </label>
-          </div>
-        </div>
-
-        {/* Thời gian */}
-        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
-          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
           <div className="space-y-3">
             <label className="flex items-center space-x-3 cursor-pointer">
               <input
@@ -605,10 +601,10 @@ const SidebarList = React.memo(({
   const confirmSource = confirmDeleteId ? localSources.find(s => s.id === confirmDeleteId) : null;
 
   return (
-    <div className="flex-1 flex flex-col relative bg-slate-50/50 dark:bg-slate-900/50 min-h-0">
+    <div className="flex flex-col shrink-0 relative bg-slate-50/50 dark:bg-slate-900/50">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 px-5 md:px-6 py-4 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-        <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
+      <div className="sticky top-0 z-10 px-5 md:px-6 py-3.5 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
+        <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading || isStorageFull}
@@ -890,7 +886,7 @@ export default function Sidebar() {
       {/* Fixed Modal Header */}
       <div className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-900 z-20">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100">Cài đặt</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">Cài đặt</h2>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setSettingsOpen(false)} 
