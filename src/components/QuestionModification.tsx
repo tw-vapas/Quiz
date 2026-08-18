@@ -1291,6 +1291,11 @@ export default function QuestionModification({
   const [filterAndSortEnabled, setFilterAndSortEnabled] = useState(false);
 
   // Extract tags from active file questions
+  const tagsKey = useMemo(() => {
+    if (!activeFile) return "";
+    return activeFile.questions.map(q => (q.tags || []).join(",")).join("|");
+  }, [activeFile]);
+
   const allUniqueTags = useMemo(() => {
     if (!activeFile) return [];
     const tags = new Set<string>();
@@ -1298,7 +1303,7 @@ export default function QuestionModification({
       q.tags?.forEach(t => tags.add(t));
     });
     return Array.from(tags);
-  }, [activeFile]);
+  }, [tagsKey]);
 
   useEffect(() => {
     if (!activeFile) return;
@@ -1311,8 +1316,8 @@ export default function QuestionModification({
       setSelectedTagsFilter(initial);
     } else {
       setSelectedTagsFilter(prev => {
-        const updated = { ...prev };
         let changed = false;
+        const updated = { ...prev };
         allUniqueTags.forEach(t => {
           if (updated[t] === undefined) {
             updated[t] = true;
@@ -1322,7 +1327,7 @@ export default function QuestionModification({
         return changed ? updated : prev;
       });
     }
-  }, [allUniqueTags, activeFile, setSelectedTagsFilter]);
+  }, [tagsKey, activeFile?.id, setSelectedTagsFilter]);
 
   // Sorting priorities state
   const [typeOrder, setTypeOrder] = useState<string[]>(["single_choice", "multiple_choice"]);
@@ -1336,7 +1341,7 @@ export default function QuestionModification({
       const isSame = prev.length === next.length && prev.every((t, i) => t === next[i]);
       return isSame ? prev : next;
     });
-  }, [allUniqueTags]);
+  }, [tagsKey]);
 
   const moveTypeOrder = (idx: number, dir: "UP" | "DOWN") => {
     const newOrder = [...typeOrder];

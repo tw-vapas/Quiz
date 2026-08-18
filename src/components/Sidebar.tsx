@@ -27,7 +27,7 @@ interface VirtualSourceCardProps {
   localSources: SourceFile[];
 }
 
-const ITEM_HEIGHT = 96;
+const ITEM_HEIGHT = 72;
 
 const VirtualSourceCard = React.memo(({
   source,
@@ -113,7 +113,7 @@ const VirtualSourceCard = React.memo(({
       onDrop={handleDrop}
       style={{ minHeight: `${ITEM_HEIGHT - 12}px` }}
       className={cn(
-        "p-4 rounded-xl border flex items-center gap-3 transition-all duration-150 group/card relative select-none",
+        "py-2.5 px-3.5 rounded-xl border flex items-center gap-3 transition-all duration-150 group/card relative select-none",
         source.isValid 
           ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700/80" 
           : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-900/50",
@@ -122,12 +122,12 @@ const VirtualSourceCard = React.memo(({
     >
       {/* Drag Handle Icon in front */}
       <div
-        className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg cursor-grab active:cursor-grabbing opacity-65 hover:opacity-100 transition-all duration-150 flex items-center justify-center touch-none select-none w-11 h-11 md:w-8 md:h-8 md:-ml-2 shrink-0"
+        className="text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 rounded-lg cursor-grab active:cursor-grabbing opacity-65 hover:opacity-100 transition-all duration-150 flex items-center justify-center touch-none select-none w-8 h-8 md:-ml-1 shrink-0"
         onMouseEnter={() => setIsDraggable(true)}
         onMouseLeave={() => setIsDraggable(false)}
         title="Kéo để sắp xếp"
       >
-        <GripVertical className="w-5 h-5 shrink-0" />
+        <GripVertical className="w-4 h-4 shrink-0" />
       </div>
 
       <div className="flex items-center shrink-0">
@@ -136,12 +136,12 @@ const VirtualSourceCard = React.memo(({
           checked={source.active}
           disabled={!source.isValid}
           onChange={() => toggleLocalSource(source.id)}
-          className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 disabled:opacity-50"
+          className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 disabled:opacity-50 cursor-pointer"
         />
       </div>
       
       <div className="flex-1 min-w-0">
-        <div className="flex justify-between items-start gap-2 mb-1">
+        <div className="flex justify-between items-center gap-2">
           <div className="flex-1 min-w-0">
             {editingSourceIds[source.id] ? (
               <input
@@ -157,31 +157,31 @@ const VirtualSourceCard = React.memo(({
                     setEditingSourceIds(prev => ({ ...prev, [source.id]: false }));
                   }
                 }}
-                className="w-full px-2 py-1 text-sm font-bold border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 mb-1"
+                className="w-full px-2 py-0.5 text-sm font-bold border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 autoFocus
               />
             ) : (
-              <>
-                <h3 className="font-semibold text-sm truncate text-slate-800 dark:text-slate-200" title={getSourceDisplayName(source)}>
-                  {getSourceDisplayName(source)}
-                </h3>
-                {getSourceDisplayName(source) !== source.name && (
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate" title={source.name}>
-                    {source.name}
-                  </p>
+              <h3 className="font-semibold text-sm truncate text-slate-800 dark:text-slate-200" title={source.customName ? `${source.customName} - (${source.name})` : source.name}>
+                {source.customName ? (
+                  <>
+                    <span className="font-bold text-slate-900 dark:text-slate-100">{source.customName}</span>
+                    <span className="text-slate-400 dark:text-slate-500 font-normal ml-1"> - ({source.name})</span>
+                  </>
+                ) : (
+                  <span>{source.name}</span>
                 )}
-              </>
+              </h3>
             )}
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
             {hasDocument && (
               <button
                 onClick={() => {
                   useQuizStore.getState().setSelectedDocumentSourceId(source.id);
                   router.push("/document");
                 }}
-                className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 select-none shrink-0 cursor-pointer"
+                className="min-w-7 min-h-7 flex items-center justify-center text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 select-none shrink-0 cursor-pointer"
                 title="Xem tài liệu"
               >
                 <BookOpen className="w-4 h-4" />
@@ -189,13 +189,13 @@ const VirtualSourceCard = React.memo(({
             )}
             <button
               onClick={() => toggleEditing(source.id)}
-              className="min-h-11 md:min-h-0 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none cursor-pointer"
+              className="min-h-7 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none cursor-pointer"
             >
               Đặt tên
             </button>
             <button
               onClick={() => onDeleteRequest(source.id)}
-              className="min-w-11 min-h-11 md:min-w-0 md:min-h-0 flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0 cursor-pointer"
+              className="min-w-7 min-h-7 flex items-center justify-center text-slate-400 hover:text-red-500 dark:hover:text-red-400 select-none shrink-0 cursor-pointer"
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -203,7 +203,7 @@ const VirtualSourceCard = React.memo(({
         </div>
         
         {source.isValid ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
             <span>{source.questionsCount} câu hỏi</span>
             <span className="text-slate-400 dark:text-slate-500">•</span>
             <span className="font-mono">{sourceSizeText}</span>
@@ -215,7 +215,7 @@ const VirtualSourceCard = React.memo(({
               useQuizStore.getState().setSettingsOpen(false);
               useQuizStore.getState().setActiveSection("create");
             }}
-            className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline mt-1 flex items-center gap-1 cursor-pointer select-none text-left"
+            className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline mt-0.5 flex items-center gap-1 cursor-pointer select-none text-left"
             title={source.error || "Nhấp để chuyển tới File Manager chỉnh sửa"}
           >
             <FileWarning className="w-4 h-4 shrink-0" />
