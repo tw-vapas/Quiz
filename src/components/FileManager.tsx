@@ -309,24 +309,16 @@ export default function FileManager() {
                       <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate block">
                         {f.name}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 block">
-                        {formatBytes(getItemBytes(f))} • {f.questions?.length || 0} câu hỏi
+                      <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 block">
+                        {f.questions?.length || 0} câu hỏi
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <div 
-                      className={cn(
-                        "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 transition-transform hover:scale-110",
-                        isFileValidStatus 
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
-                          : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
-                      )}
-                      title={isFileValidStatus ? "Tệp hợp lệ (Đủ câu hỏi và đáp án)" : "Tệp chưa hợp lệ (Thiếu câu hỏi hoặc đáp án)"}
-                    >
-                      {isFileValidStatus ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
-                    </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+                      {formatBytes(getItemBytes(f))}
+                    </span>
 
                     <button 
                       onClick={() => setConfirmDeleteId(f.id)}

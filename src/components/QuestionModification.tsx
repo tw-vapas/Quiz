@@ -215,30 +215,35 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
     <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
+        <span className="text-lg md:text-xl font-extrabold text-indigo-650 dark:text-indigo-400">
+          Câu hỏi {index + 1}
+        </span>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-indigo-650 dark:text-indigo-400">Câu hỏi {index + 1}</span>
-          <span className={cn(
-            "text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider flex items-center gap-1",
-            isValid
-              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-              : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30"
-          )}>
-            {isValid ? "✓ Hợp lệ" : "✕ Chưa hợp lệ"}
-          </span>
+          <button 
+            onClick={onDelete}
+            className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors cursor-pointer"
+            title="Xóa câu hỏi"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+          <div 
+            className={cn(
+              "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 select-none",
+              isValid 
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
+                : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+            )}
+            title={isValid ? "Câu hỏi hợp lệ (Đủ nội dung và đáp án)" : "Câu hỏi chưa hợp lệ (Thiếu nội dung hoặc đáp án đúng)"}
+          >
+            {isValid ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
+          </div>
         </div>
-        <button 
-          onClick={onDelete}
-          className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors cursor-pointer"
-          title="Xóa câu hỏi"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-        </button>
       </div>
 
       {/* Question Text Area */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <h5 className="text-[10px] font-bold text-slate-400 dark:text-slate-300">Câu hỏi</h5>
+          <h5 className="text-sm md:text-base font-bold text-white">Câu hỏi</h5>
           <span className={cn("text-[9px] font-mono font-bold", question.text.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
             {question.text.length}/1000
           </span>
@@ -255,7 +260,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Answers Options Area */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
-          <h5 className="text-[10px] font-bold text-slate-400 dark:text-slate-300">Đáp án</h5>
+          <h5 className="text-sm md:text-base font-bold text-white">Đáp án</h5>
             <button
               onClick={handleAddNewAnswer}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-[10px] text-indigo-750 dark:text-indigo-400 font-extrabold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all cursor-pointer"
@@ -294,14 +299,14 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     {String.fromCharCode(65 + idx)}
                   </span>
 
-                  <div className="flex-1 flex flex-col gap-1 min-w-0">
+                  <div className="flex-1 flex flex-col justify-center min-w-0 my-auto">
                     <textarea 
                       maxLength={150}
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
                       placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
                       rows={1}
-                      className="w-full bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed min-h-[26px]"
+                      className="w-full bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto"
                       onInput={(e) => {
                         const target = e.currentTarget;
                         target.style.height = "auto";
@@ -331,7 +336,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Type and Tags inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5 relative">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-300 block">Loại câu hỏi</span>
+          <span className="text-sm md:text-base font-bold text-white block">Loại câu hỏi</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
               className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
@@ -359,7 +364,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           </div>
 
         <div className="space-y-1.5">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-300 block">Thẻ phân loại</span>
+          <span className="text-sm md:text-base font-bold text-white block">Thẻ phân loại</span>
           <input
             type="text"
             value={tagsInput}
@@ -384,7 +389,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             <div key={blockIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-2.5 relative group/block">
               {/* Top Header Bar with Block Label and Delete Button */}
               <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-1.5">
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                <span className="text-sm md:text-base font-bold text-white">
                   Khối hiển thị #{blockIdx + 1}
                 </span>
                 <button
@@ -398,7 +403,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="space-y-1.5 shrink-0 w-32">
-                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-300 block">Loại khối</span>
+                  <span className="text-xs md:text-sm font-bold text-white block">Loại khối</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
@@ -411,7 +416,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-300 block">Nội dung</span>
+                    <span className="text-xs md:text-sm font-bold text-white block">Nội dung</span>
                     <span className={cn("text-[9px] font-mono font-bold", db.content.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
@@ -434,7 +439,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {question.explanation !== undefined && question.explanation !== null && (
         <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
           <div className="flex items-center justify-between">
-            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-300 block">Giải thích</label>
+            <label className="text-sm md:text-base font-bold text-white block">Giải thích</label>
             <div className="flex items-center gap-3">
               <span className={cn("text-[9px] font-mono font-bold", (question.explanation || "").length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
                 {(question.explanation || "").length}/1000
@@ -1594,7 +1599,7 @@ export default function QuestionModification({
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-xs font-black text-slate-800 dark:text-slate-200">
-                  Tổng cộng {filteredQuestions.length !== activeFile.questions.length ? `${filteredQuestions.length}/${activeFile.questions.length}` : activeFile.questions.length} câu hỏi
+                  Tổng cộng: {filteredQuestions.length !== activeFile.questions.length ? `${filteredQuestions.length}/${activeFile.questions.length}` : activeFile.questions.length} câu hỏi
                 </span>
                 {(filterAndSortEnabled || filteredQuestions.length !== activeFile.questions.length) && (
                   <button
@@ -1976,17 +1981,6 @@ export default function QuestionModification({
                           >
                             <div className="flex justify-between items-center mb-1">
                               <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
-                              <div 
-                                className={cn(
-                                  "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 transition-transform hover:scale-110",
-                                  qValid 
-                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
-                                    : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
-                                )}
-                                title={qValid ? "Câu hỏi hợp lệ (Đủ đáp án và thông tin)" : "Câu hỏi chưa hợp lệ (Thiếu nội dung hoặc đáp án đúng)"}
-                              >
-                                {qValid ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
-                              </div>
                             </div>
                             <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
