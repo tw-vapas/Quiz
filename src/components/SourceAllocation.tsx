@@ -266,7 +266,6 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
 
     onChange(newAlloc);
   };
-
   if (activeSources.length === 0 || totalQuestions <= 0) return null;
 
   return (
@@ -351,7 +350,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
         })}
       </div>
 
-      <div className="flex justify-between mt-2 text-[10px] text-slate-500 font-medium">
+      <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium">
         <span>0</span>
         <span>{totalQuestions} câu hỏi</span>
       </div>
@@ -370,7 +369,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
                 <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={source.customName || source.name}>
                   {source.customName || source.name}
                 </div>
-                <div className="text-[10px] text-slate-500">Tối đa {source.questionsCount} câu</div>
+                <div className="text-xs text-slate-500 font-medium">Tối đa {source.questionsCount} câu</div>
               </div>
               
               <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
@@ -382,7 +381,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
                   value={alloc === 0 ? "" : alloc}
                   placeholder="0"
                   onChange={(e) => handleInputChange(source.id, e.target.value)}
-                  className="min-h-11 w-full sm:w-16 px-2 py-1.5 text-sm font-bold text-center border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="min-h-11 w-full sm:w-16 px-2 py-1.5 text-sm font-semibold text-center border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>

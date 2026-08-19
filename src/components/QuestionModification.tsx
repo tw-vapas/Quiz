@@ -286,13 +286,13 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
     <div className="p-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
-        <span className="text-sm md:text-base font-extrabold text-indigo-650 dark:text-indigo-400">
+        <span className="text-lg font-semibold text-indigo-650 dark:text-indigo-400">
           Câu hỏi {index + 1}
         </span>
         <div className="flex items-center gap-2">
           <div 
             className={cn(
-              "w-5 h-5 rounded-full flex items-center justify-center border text-[10px] font-black shrink-0 select-none",
+              "w-5 h-5 rounded-full flex items-center justify-center border text-xs font-semibold shrink-0 select-none",
               isValid 
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
                 : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
@@ -314,8 +314,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Question Text Area */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <h5 className="text-xs md:text-sm font-bold text-white">Nội dung</h5>
-          <span className={cn("text-[9px] font-mono font-bold", question.text.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
+          <h5 className="text-sm font-semibold text-white">Nội dung</h5>
+          <span className={cn("text-xs font-mono font-medium", question.text.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
             {question.text.length}/1000
           </span>
         </div>
@@ -323,7 +323,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           maxLength={1000}
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value.slice(0, 1000) })}
-          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50/30 dark:bg-[#22325a] text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50/30 dark:bg-[#22325a] text-base font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
           placeholder="Nhập nội dung câu hỏi (tối đa 1000 ký tự)..."
         />
       </div>
@@ -331,10 +331,10 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Answers Options Area */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
-          <h5 className="text-xs md:text-sm font-bold text-white">Đáp án</h5>
+          <h5 className="text-sm font-semibold text-white">Đáp án</h5>
             <button
               onClick={handleAddNewAnswer}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-[10px] text-indigo-750 dark:text-indigo-400 font-extrabold rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-sm text-indigo-750 dark:text-indigo-400 font-medium rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all cursor-pointer"
             >
               <Plus className="w-3 h-3" /> Thêm đáp án
             </button>
@@ -366,7 +366,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     <Check className="w-3 h-3" />
                   </button>
 
-                  <span className="text-xs font-black text-slate-400 dark:text-slate-300 shrink-0">
+                  <span className="text-xs font-semibold text-slate-400 dark:text-slate-300 shrink-0">
                     {String.fromCharCode(65 + idx)}
                   </span>
 
@@ -376,10 +376,10 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
                       placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
-                      className="w-full bg-transparent text-xs font-bold text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto custom-scrollbar"
+                      className="w-full bg-transparent text-base font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto custom-scrollbar"
                     />
                     {ans.text.length >= 100 && (
-                      <span className={cn("text-[9px] font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-bold" : "text-slate-400")}>
+                      <span className={cn("text-xs font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-semibold" : "text-slate-400")}>
                         {ans.text.length}/150
                       </span>
                     )}
@@ -904,11 +904,11 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 Tạo Quiz Nhanh
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Thao tác tệp <span className="font-bold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu hiện có)
+              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Thao tác tệp <span className="font-semibold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu hiện có)
               </p>
             </div>
           </div>
@@ -927,7 +927,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             type="button"
             onClick={() => setMainMode("ANSWERS_EXPLANATION")}
             className={cn(
-              "py-2.5 text-xs font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
+              "py-2.5 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
               mainMode === "ANSWERS_EXPLANATION"
                 ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-400"
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -939,7 +939,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             type="button"
             onClick={() => setMainMode("RAW_TEXT_QUESTIONS")}
             className={cn(
-              "py-2.5 text-xs font-extrabold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
+              "py-2.5 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
               mainMode === "RAW_TEXT_QUESTIONS"
                 ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-400"
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -955,7 +955,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
           {mainMode === "ANSWERS_EXPLANATION" ? (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Nội dung
                 </label>
                 <textarea
@@ -965,7 +965,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
   { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
 ]`}
-                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-base font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
 
@@ -1012,7 +1012,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             <div className="space-y-4">
               {/* Import Strategy selector (Compact Segmented UI) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-750">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">
                   Chế độ áp dụng câu hỏi:
                 </label>
                 <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-md">
@@ -1020,7 +1020,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("APPEND")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
+                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
                       importStrategy === "APPEND"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1033,7 +1033,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("OVERWRITE")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
+                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
                       importStrategy === "OVERWRITE"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1046,7 +1046,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("REPLACE_ALL")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
+                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
                       importStrategy === "REPLACE_ALL"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1060,7 +1060,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
 
               {/* Raw Textarea */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                   Nội dung
                 </label>
                 <textarea
@@ -1077,7 +1077,7 @@ A. Vôn (V)
 B. Ampe (A) /
 C. Ôm (Ω)
 D. Oát (W)`}
-                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-base font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
 
@@ -1128,7 +1128,7 @@ D. Oát (W)`}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+            className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
           >
             Hủy
           </button>
@@ -1140,7 +1140,7 @@ D. Oát (W)`}
                 ? !analysis || Boolean(analysis.error) || analysis.matchedCount === 0
                 : !rawTextAnalysis || Boolean(rawTextAnalysis.error && rawTextAnalysis.totalCount === 0) || rawTextAnalysis.totalCount === 0
             }
-            className="px-5 py-2 rounded-lg bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+            className="px-5 py-2 rounded-lg bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
           >
             <span>Xác nhận</span>
           </button>
@@ -1523,7 +1523,7 @@ export default function QuestionModification({
       <div className="p-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
+          <span className="text-lg font-semibold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
         </div>
@@ -1653,7 +1653,7 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={() => setIsSupplementModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-medium text-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                   title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -1665,9 +1665,9 @@ export default function QuestionModification({
                   type="button"
                   onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg font-extrabold text-[9px] cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
+                    "px-3 py-1.5 rounded-lg font-medium text-sm cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
                     isFilterSettingsOpen || filterAndSortEnabled
-                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-black"
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-semibold"
                       : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
                   )}
                   title="Bộ lọc & Sắp xếp"
@@ -1683,7 +1683,7 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={addNewQuestion}
-                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-medium text-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                 >
                   <Plus className="w-3.5 h-3.5 text-slate-500" />
                   <span>Thêm câu hỏi</span>
@@ -1962,7 +1962,7 @@ export default function QuestionModification({
 
                 {/* Section 2: Question List (List selector on the right) */}
                 <div className="md:col-span-4 xl:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0 min-w-0">
-                  <h5 className="text-[9px] font-black text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">Danh Sách Câu Hỏi</h5>
+                  <h5 className="text-xs font-semibold text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">Danh Sách Câu Hỏi</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map((q, idx) => {
@@ -1985,7 +1985,7 @@ export default function QuestionModification({
                             )}
                           >
                             <div className="flex justify-between items-center mb-1">
-                              <span className="font-extrabold text-[10px] text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                              <span className="font-semibold text-xs text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -1998,14 +1998,14 @@ export default function QuestionModification({
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                            <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
+                            <p className="text-sm font-normal text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1.5">
                                 {q.tags.filter(Boolean).map((t, tagIdx) => {
                                   const colors = getTagColor(t);
                                   return (
                                     <span key={`${t}_${tagIdx}`} className={cn(
-                                      "inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold border shadow-sm",
+                                      "inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border shadow-sm",
                                       colors.bg,
                                       colors.text,
                                       colors.border
@@ -2018,7 +2018,7 @@ export default function QuestionModification({
                         );
                       })
                     ) : (
-                      <div className="text-center py-6 text-xs text-slate-400 font-bold select-none">Danh sách trống.</div>
+                      <div className="text-center py-6 text-xs text-slate-400 font-medium select-none">Danh sách trống.</div>
                     )}
                   </div>
                 </div>

@@ -247,12 +247,12 @@ export default function FileManager() {
 
       {/* Storage Bar (Unified Quiz File Storage) */}
       <div className="px-5 pb-3 shrink-0 space-y-1.5 border-b border-slate-100 dark:border-slate-800/60 pb-3">
-        <div className="flex items-center justify-between text-[10px] font-bold">
+        <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-slate-600 dark:text-slate-400">
-            <span className="font-mono text-slate-800 dark:text-slate-200 font-extrabold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+            <span className="font-mono text-slate-800 dark:text-slate-200 font-semibold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
           </span>
           <span className={cn(
-            "font-extrabold px-1.5 py-0.5 rounded text-[9px]",
+            "font-semibold px-1.5 py-0.5 rounded text-xs",
             storagePercent >= 90 
               ? "bg-red-500/10 text-red-500" 
               : storagePercent >= 70 
@@ -279,7 +279,7 @@ export default function FileManager() {
         </div>
 
         {isStorageFull && (
-          <div className="text-[10px] text-red-500 font-bold mt-1">
+          <div className="text-xs text-red-500 font-medium mt-1">
             Đã đạt giới hạn dung lượng. Vui lòng xóa bớt file để tạo mới.
           </div>
         )}
@@ -287,9 +287,9 @@ export default function FileManager() {
 
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
+        <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
           <span>Danh Sách Tệp</span>
-          <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded", creatorFiles.length >= FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
+          <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded", creatorFiles.length >= FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
             {creatorFiles.length}/{FILE_LIMIT}
           </span>
         </h4>
@@ -325,17 +325,17 @@ export default function FileManager() {
                       <FileCode className="w-4.5 h-4.5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <span className="text-xs font-black text-slate-800 dark:text-slate-200 truncate block">
+                      <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate block">
                         {f.name}
                       </span>
-                      <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 block">
+                      <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">
                         {f.questions?.length || 0} câu hỏi
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+                    <span className="text-xs font-mono text-slate-400 dark:text-slate-500 shrink-0">
                       {formatBytes(getItemBytes(f))}
                     </span>
 
@@ -369,10 +369,10 @@ export default function FileManager() {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-850 dark:text-slate-100">
+                  <h3 className="text-xl font-bold text-slate-850 dark:text-slate-100">
                     Tạo tệp câu hỏi mới
                   </h3>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium">
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium">
                     Khởi tạo tệp trắc nghiệm trống hoặc nhập từ nhiều nguồn dữ liệu
                   </p>
                 </div>
@@ -391,7 +391,7 @@ export default function FileManager() {
               
               {/* File Name Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
                   Tên tệp tin <span className="text-red-500">*</span>
                 </label>
                 <input 
@@ -399,13 +399,13 @@ export default function FileManager() {
                   value={newFileNameInput}
                   onChange={(e) => setNewFileNameInput(e.target.value)}
                   placeholder="Nhập tên tệp trắc nghiệm (vd: Đề thi Toán Học Phần 1)..."
-                  className="w-full px-3.5 py-2.5 text-xs font-bold border border-slate-200 dark:border-slate-750 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-3.5 py-2.5 text-base font-normal border border-slate-200 dark:border-slate-750 rounded-2xl bg-slate-50/50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
                 />
               </div>
 
               {/* Data Mode Selection (Visual Card Selector Tiles) */}
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
                   Phương thức khởi tạo dữ liệu
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -430,8 +430,8 @@ export default function FileManager() {
                       )}
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">Dữ liệu trống</h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Dữ liệu trống</h4>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
                         Tạo tệp rỗng và biên soạn câu hỏi từ đầu
                       </p>
                     </div>
@@ -458,8 +458,8 @@ export default function FileManager() {
                       )}
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">Nhập & Gộp dữ liệu</h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Nhập & Gộp dữ liệu</h4>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight mt-0.5 font-medium">
                         Nhập từ tệp tin hoặc gộp các Quiz File có sẵn
                       </p>
                     </div>
@@ -471,7 +471,7 @@ export default function FileManager() {
               {newFileDataOption === "IMPORT" && (
                 <div className="space-y-3 p-4 rounded-2xl border border-indigo-150 dark:border-indigo-900/60 bg-indigo-50/15 dark:bg-indigo-950/15">
                   <div className="flex items-center justify-between">
-                    <label className="text-[11px] font-extrabold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider block">
+                    <label className="text-xs font-semibold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider block">
                       Nguồn câu hỏi nạp vào:
                     </label>
                   </div>
@@ -510,7 +510,7 @@ export default function FileManager() {
                   {newFileImportSource === "SOURCE" && (
                     <div className="space-y-2 pt-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                        <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
                           Chọn các tệp để gộp câu hỏi:
                         </span>
                         {creatorFiles.length > 0 && (
@@ -524,7 +524,7 @@ export default function FileManager() {
                               }
                               setSelectedSourceIds(nextState);
                             }}
-                            className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                            className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                           >
                             {creatorFiles.every(f => selectedSourceIds[f.id]) ? "Bỏ chọn tất cả" : "Chọn tất cả"}
                           </button>
@@ -556,13 +556,13 @@ export default function FileManager() {
                                   />
                                   <div className="min-w-0">
                                     <div className="truncate text-xs font-bold">{file.name}</div>
-                                    <div className="text-[9px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
+                                    <div className="text-xs font-mono text-slate-400 dark:text-slate-500 mt-0.5">
                                       {formatBytes(getItemBytes(file))} • {file.questions?.length || 0} câu hỏi
                                     </div>
                                   </div>
                                 </div>
                                 <span className={cn(
-                                  "text-[8px] font-black px-1.5 py-0.5 rounded-full shrink-0 ml-2 border",
+                                  "text-xs font-black px-1.5 py-0.5 rounded-full shrink-0 ml-2 border",
                                   fileValid
                                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                                     : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
@@ -615,7 +615,7 @@ export default function FileManager() {
                           <span className="text-xs font-black text-slate-800 dark:text-slate-200">
                             {importedData ? `Đã nạp: ${newFileNameInput}` : "Kéo thả hoặc Nhấp để chọn tệp"}
                           </span>
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">
+                          <span className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">
                             {importedData ? `${importedData.questions.length} câu hỏi trắc nghiệm tìm thấy` : "Hỗ trợ định dạng .TXT, .DOCX, .PDF, .JSON và Hình ảnh"}
                           </span>
                         </>

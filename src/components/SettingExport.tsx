@@ -353,7 +353,7 @@ export default function SettingExport({
       <div className="p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <Settings2 className="w-5 h-5 text-indigo-650 dark:text-indigo-400" />
-          <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tracking-wider">
+          <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-200 tracking-wider">
             Cài Đặt & Xuất Bản
           </h3>
         </div>
@@ -366,21 +366,21 @@ export default function SettingExport({
         <div className="space-y-4">
           {/* Name Input */}
           <div className="space-y-1.5">
-            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               Tên tệp tin
             </label>
             <input 
               type="text" 
               value={activeFile.name}
               onChange={(e) => updateCreatorFile(activeFile.id, { name: e.target.value, metadata: { ...activeFile.metadata, file_name: e.target.value } })}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-base font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Nhập tên tệp..."
             />
           </div>
 
           {/* Status Display */}
           <div className="space-y-1.5 relative">
-            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               Trạng thái
             </label>
             <div
@@ -395,7 +395,7 @@ export default function SettingExport({
 
           {/* Last Changed Field */}
           <div className="space-y-1.5 relative">
-            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               Chỉnh sửa lần cuối
             </label>
             <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200 font-bold select-none">
@@ -408,12 +408,12 @@ export default function SettingExport({
         {/* SECTION B: NOTES */}
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
-            <label className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400">
+            <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               Ghi chú
             </label>
             <span className={cn(
-              "text-[9px] font-mono font-bold",
-              noteWordCount > 180 ? "text-red-500 font-extrabold" : "text-slate-400"
+              "text-xs font-mono font-medium",
+              noteWordCount > 180 ? "text-red-500 font-semibold" : "text-slate-400"
             )}>
               {noteWordCount}/200 từ
             </span>
@@ -421,7 +421,7 @@ export default function SettingExport({
           <textarea
             value={activeFile.note}
             onChange={(e) => handleNoteChange(e.target.value)}
-            className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-base font-normal text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập ghi chú cho tệp tin này..."
           />
         </div>
@@ -432,7 +432,7 @@ export default function SettingExport({
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/10 shrink-0">
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="w-full min-h-11 bg-indigo-650 hover:bg-indigo-755 text-white font-extrabold text-xs rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-full min-h-11 bg-indigo-650 hover:bg-indigo-755 text-white font-medium text-base rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <Download className="w-4 h-4" />
           Xuất bản
@@ -454,7 +454,7 @@ export default function SettingExport({
                   <h3 className="text-base font-black text-slate-850 dark:text-slate-100 truncate">
                     Xuất bản tệp đề thi
                   </h3>
-                  <p className="text-[11px] text-slate-400 dark:text-slate-500 font-medium truncate" title={activeFile.name}>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium truncate" title={activeFile.name}>
                     {activeFile.name} ({activeFile.questions.length} câu hỏi)
                   </p>
                 </div>
@@ -498,8 +498,8 @@ export default function SettingExport({
                       )}
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">Gói dữ liệu JSON</h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Gói dữ liệu JSON</h4>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
                         Đầy đủ cấu trúc, giải thích, display blocks và metadata
                       </p>
                     </div>
@@ -516,7 +516,7 @@ export default function SettingExport({
                   >
                     <div className="flex items-center justify-between">
                       <div className={cn(
-                        "w-8 h-8 rounded-xl flex items-center justify-center font-extrabold text-xs",
+                        "w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs",
                         fileFormat === "DOCX" ? "bg-indigo-600 text-white" : "bg-slate-100 dark:bg-slate-800 text-slate-500"
                       )}>
                         DOCX
@@ -526,8 +526,8 @@ export default function SettingExport({
                       )}
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-slate-800 dark:text-slate-200">Văn bản Word DOCX</h4>
-                      <p className="text-[10px] text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
+                      <h4 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Văn bản Word DOCX</h4>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 leading-tight mt-0.5">
                         Định dạng văn bản thô hỗ trợ in ấn hoặc chỉnh sửa Word
                       </p>
                     </div>
@@ -559,8 +559,8 @@ export default function SettingExport({
                       )}
                     >
                       <div>
-                        <div className="text-xs font-black">{mode.label}</div>
-                        <div className="text-[9px] text-slate-400 dark:text-slate-500 mt-0.5">{mode.desc}</div>
+                        <div className="text-xs font-semibold">{mode.label}</div>
+                        <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{mode.desc}</div>
                       </div>
                       {quantityMode === mode.id && (
                         <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0 ml-1" />
@@ -651,10 +651,10 @@ export default function SettingExport({
                       <Filter className="w-4 h-4" />
                     </div>
                     <div>
-                      <span className="block text-xs font-black text-slate-800 dark:text-slate-200">
+                      <span className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
                         Áp dụng bộ lọc câu hỏi hiện tại
                       </span>
-                      <span className="block text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                      <span className="block text-xs text-slate-400 dark:text-slate-500 font-medium">
                         Chỉ xuất các câu hỏi thỏa mãn bộ lọc loại câu hỏi/thẻ nhãn đang kích hoạt
                       </span>
                     </div>

@@ -246,25 +246,25 @@ const ResultScreen = memo(function ResultScreen() {
                 </div>
               </div>
 
-              <div className="text-center mt-2 md:mt-4 text-[9px] md:text-[10px] font-medium text-slate-400 uppercase tracking-widest">
+              <div className="text-center mt-2 md:mt-4 text-xs font-medium text-slate-400 uppercase tracking-widest">
                 Các câu hỏi (sắp xếp theo thời gian tăng dần)
               </div>
 
               {/* Statistics Summary */}
               <div className="grid grid-cols-3 gap-2 md:gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700/50">
                 <div className="text-center">
-                  <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Thời gian</div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Thời gian</div>
                   <div className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100">{formatTime(Math.floor(sourceTotalTimeMs / 1000))}</div>
                 </div>
                 <div className="text-center border-l border-r border-slate-100 dark:border-slate-700/50">
-                  <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Số câu đúng</div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Số câu đúng</div>
                   <div className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100">
                     <span className="text-green-500 dark:text-green-400">{sourceCorrectCount}</span>
                     <span className="text-slate-400 dark:text-slate-500">/{sourceTotalQuestions}</span>
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tỷ lệ đúng</div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tỷ lệ đúng</div>
                   <div className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100">{sourceAccuracy}%</div>
                 </div>
               </div>
@@ -309,7 +309,7 @@ const ResultScreen = memo(function ResultScreen() {
                         <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/50">
                           <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-red-500 mb-1">Bạn chọn</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-1">Bạn chọn</div>
                             <div className="space-y-1">
                               {selectedOptions.map(opt => {
                                 const optIdx = q.options.findIndex(o => o.id === opt.id);
@@ -327,7 +327,7 @@ const ResultScreen = memo(function ResultScreen() {
                         <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-600/50">
                           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-slate-500 dark:text-slate-400" />
                           <div>
-                            <div className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Trạng thái</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Trạng thái</div>
                             <div className="text-sm md:text-base">Chưa trả lời</div>
                           </div>
                         </div>
@@ -337,7 +337,7 @@ const ResultScreen = memo(function ResultScreen() {
                         <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400 rounded-xl border border-green-100 dark:border-green-900/50">
                           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-green-600 dark:text-green-500 mb-1">Đáp án đúng</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-green-600 dark:text-green-500 mb-1">Đáp án đúng</div>
                             <div className="space-y-1">
                               {correctOptions.map(opt => {
                                 const optIdx = q.options.findIndex(o => o.id === opt.id);

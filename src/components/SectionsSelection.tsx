@@ -22,13 +22,13 @@ export default function SectionsSelection({
           <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
         </div>
         <div>
-          <h2 className="text-base font-extrabold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             Trình kiến tạo câu hỏi
-            <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-extrabold uppercase tracking-wider">
+            <span className="text-xs px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 font-semibold uppercase tracking-wider">
               BETA
             </span>
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
             Tải lên, biên soạn và cấu hình xuất bản bộ đề ôn tập của bạn
           </p>
         </div>

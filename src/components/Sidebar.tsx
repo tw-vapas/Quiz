@@ -632,12 +632,12 @@ const SidebarList = React.memo(({
 
       {/* Storage Bar (Unified Quiz File Storage) */}
       <div className="px-5 md:px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 space-y-1.5">
-        <div className="flex items-center justify-between text-[10px] font-bold">
+        <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-slate-600 dark:text-slate-400">
-            Dung lượng lưu trữ: <span className="font-mono text-slate-800 dark:text-slate-200 font-extrabold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+            Dung lượng lưu trữ: <span className="font-mono text-slate-800 dark:text-slate-200 font-semibold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
           </span>
           <span className={cn(
-            "font-extrabold px-1.5 py-0.5 rounded text-[9px]",
+            "font-semibold px-1.5 py-0.5 rounded text-xs",
             storagePercent >= 90 
               ? "bg-red-500/10 text-red-500" 
               : storagePercent >= 70 
@@ -663,10 +663,10 @@ const SidebarList = React.memo(({
           />
         </div>
 
-        <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+        <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 font-medium">
           <span>{localSources.length} / 10 Quiz Files</span>
           {isStorageFull && (
-            <span className="text-red-500 font-bold">
+            <span className="text-red-500 font-medium">
               Đã đạt giới hạn dung lượng bộ nhớ.
             </span>
           )}

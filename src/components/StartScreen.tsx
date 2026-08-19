@@ -38,27 +38,27 @@ const StartScreen = memo(function StartScreen() {
           <Play className="w-8 h-8 md:w-10 md:h-10 text-indigo-600 dark:text-indigo-400 ml-1" />
         </div>
         
-        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-3 md:mb-4 tracking-tight">Chuẩn bị làm bài</h1>
+        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 md:mb-4 tracking-tight">Chuẩn bị làm bài</h1>
         
-        <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+        <p className="text-base font-normal text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
           Vui lòng chọn các nguồn dữ liệu ở phần cài đặt. Hệ thống sẽ trộn các câu hỏi và lựa chọn để bắt đầu.
         </p>
 
         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 md:p-5 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-0 sm:divide-x divide-slate-200 dark:divide-slate-700">
           <div>
-            <div className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">{activeSources.length}</div>
-            <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Tệp chọn</div>
+            <div className="text-xl font-bold text-slate-800 dark:text-slate-200">{activeSources.length}</div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Tệp chọn</div>
           </div>
           <div>
-            <div className="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400">{displayedTotalQuestions}</div>
-            <div className="text-[10px] md:text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Câu hỏi</div>
+            <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{displayedTotalQuestions}</div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Câu hỏi</div>
           </div>
         </div>
 
         <button
           onClick={startQuiz}
           disabled={totalAvailable === 0 || displayedTotalQuestions === 0}
-          className="w-full min-h-11 bg-indigo-600 dark:bg-indigo-500 text-white font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98] cursor-pointer"
+          className="w-full min-h-11 bg-indigo-600 dark:bg-indigo-500 text-white font-medium text-base py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98] cursor-pointer"
         >
           Bắt đầu
         </button>
@@ -66,7 +66,7 @@ const StartScreen = memo(function StartScreen() {
         <Link
           href="/document"
           onClick={() => useQuizStore.getState().setSelectedDocumentSourceId(null)}
-          className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold text-base md:text-lg py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+          className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-medium text-base py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
           <BookOpen className="w-5 h-5" />
           Xem tài liệu
