@@ -903,9 +903,6 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center text-indigo-650 dark:text-indigo-400 shrink-0">
-              <Sparkles className="w-5 h-5" />
-            </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
                 Tạo Quiz Nhanh
@@ -968,7 +965,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
   { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
 ]`}
-                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar"
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
 
@@ -1023,7 +1020,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("APPEND")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
                       importStrategy === "APPEND"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1036,7 +1033,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("OVERWRITE")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
                       importStrategy === "OVERWRITE"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1049,7 +1046,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("REPLACE_ALL")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
                       importStrategy === "REPLACE_ALL"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1080,7 +1077,7 @@ A. Vôn (V)
 B. Ampe (A) /
 C. Ôm (Ω)
 D. Oát (W)`}
-                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar"
+                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
 
@@ -1345,8 +1342,21 @@ export default function QuestionModification({
 
   const deleteQuestion = (qId: string) => {
     if (!activeFile) return;
-    const updatedQs = activeFile.questions.filter(q => q.id !== qId);
+    const currentQuestions = activeFile.questions;
+    const deletedIdx = currentQuestions.findIndex(q => q.id === qId);
+    const updatedQs = currentQuestions.filter(q => q.id !== qId);
+
     updateCreatorFile(activeFile.id, { questions: updatedQs });
+
+    if (selectedPanelQuestionId === qId) {
+      if (updatedQs.length === 0) {
+        setSelectedPanelQuestionId(null);
+      } else if (deletedIdx > 0) {
+        setSelectedPanelQuestionId(currentQuestions[deletedIdx - 1].id);
+      } else {
+        setSelectedPanelQuestionId(updatedQs[0].id);
+      }
+    }
   };
 
   const addNewQuestion = () => {
@@ -1941,7 +1951,6 @@ export default function QuestionModification({
                       onUpdate={(updates) => updateQuestion(panelQuestion.id, updates)}
                       onDelete={() => {
                         deleteQuestion(panelQuestion.id);
-                        setSelectedPanelQuestionId(null);
                       }}
                     />
                   ) : (
