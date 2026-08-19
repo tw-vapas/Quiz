@@ -373,7 +373,7 @@ export default function SettingExport({
               type="text" 
               value={activeFile.name}
               onChange={(e) => updateCreatorFile(activeFile.id, { name: e.target.value, metadata: { ...activeFile.metadata, file_name: e.target.value } })}
-              className="w-full px-3 py-2 text-base font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Nhập tên tệp..."
             />
           </div>
@@ -385,7 +385,7 @@ export default function SettingExport({
             </label>
             <div
               className={cn(
-                "w-full px-3 py-2 text-xs font-bold border rounded-xl flex items-center justify-between select-none",
+                "w-full px-3 py-2 text-sm font-medium border rounded-xl flex items-center justify-between select-none",
                 getStatusColor(fileStatus)
               )}
             >
@@ -398,7 +398,7 @@ export default function SettingExport({
             <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
               Chỉnh sửa lần cuối
             </label>
-            <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 text-xs text-slate-800 dark:text-slate-200 font-bold select-none">
+            <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 select-none">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
               <span>{activeFile.metadata.last_modified}</span>
             </div>
@@ -421,7 +421,7 @@ export default function SettingExport({
           <textarea
             value={activeFile.note}
             onChange={(e) => handleNoteChange(e.target.value)}
-            className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-base font-normal text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-sm font-normal text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập ghi chú cho tệp tin này..."
           />
         </div>

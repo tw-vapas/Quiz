@@ -314,7 +314,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Question Text Area */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <h5 className="text-sm font-semibold text-white">Nội dung</h5>
+          <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nội dung</h5>
           <span className={cn("text-xs font-mono font-medium", question.text.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
             {question.text.length}/1000
           </span>
@@ -323,15 +323,15 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           maxLength={1000}
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value.slice(0, 1000) })}
-          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50/30 dark:bg-[#22325a] text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
           placeholder="Nhập nội dung câu hỏi (tối đa 1000 ký tự)..."
         />
       </div>
 
       {/* Answers Options Area */}
       <div className="space-y-3">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-1">
-          <h5 className="text-sm font-semibold text-white">Đáp án</h5>
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1">
+          <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Đáp án</h5>
             <button
               onClick={handleAddNewAnswer}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-sm text-indigo-750 dark:text-indigo-400 font-medium rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all cursor-pointer"
@@ -347,10 +347,10 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 <div 
                   key={ans.id}
                   className={cn(
-                    "flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200 bg-white dark:bg-[#22325a]",
+                    "flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200",
                     isCorrect 
-                      ? "border-green-500/35 bg-green-500/5 dark:bg-green-950/30" 
-                      : "border-slate-200 dark:border-slate-600"
+                      ? "border-emerald-500/40 bg-emerald-500/10 dark:bg-emerald-950/30 dark:border-emerald-800/60" 
+                      : "border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/30"
                   )}
                 >
                   {/* Correct Toggle Indicator */}
@@ -359,8 +359,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     className={cn(
                       "w-4 h-4 rounded-full flex items-center justify-center border transition-all shrink-0 cursor-pointer",
                       isCorrect 
-                        ? "bg-green-500 border-green-500 text-white" 
-                        : "border-slate-300 dark:border-slate-500 text-transparent hover:border-green-500/55"
+                        ? "bg-emerald-500 border-emerald-500 text-white" 
+                        : "border-slate-300 dark:border-slate-600 text-transparent hover:border-emerald-500/55"
                     )}
                   >
                     <Check className="w-3 h-3" />
@@ -401,17 +401,17 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Type and Tags inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5 relative">
-          <span className="text-sm font-semibold text-white block">Loại câu hỏi</span>
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Loại câu hỏi</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+              className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
             >
               <span>{typeLabel}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300" />
             </button>
 
             {isTypeDropdownOpen && (
-              <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-[#1e2d5a] border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg p-1.5 space-y-1">
+              <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-lg p-1.5 space-y-1">
                 <button
                   onClick={() => { handleTypeChange("single_choice"); setIsTypeDropdownOpen(false); }}
                   className={cn("w-full p-2 text-left text-sm font-normal rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
@@ -429,7 +429,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           </div>
 
         <div className="space-y-1.5">
-          <span className="text-sm font-semibold text-white block">Thẻ phân loại</span>
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Thẻ phân loại</span>
           <input
             type="text"
             value={tagsInput}
@@ -441,7 +441,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 e.currentTarget.blur();
               }
             }}
-            className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="tag1, tag2..."
           />
         </div>
@@ -449,12 +449,12 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
       {/* Display Blocks list */}
       {(question.display_blocks || []).length > 0 && (
-        <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-white/10">
+        <div className="space-y-3 pt-1 border-t border-slate-100 dark:border-slate-800">
           {(question.display_blocks || []).map((db, blockIdx) => (
-            <div key={blockIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-2.5 relative group/block">
+            <div key={blockIdx} className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/30 space-y-2.5 relative group/block">
               {/* Top Header Bar with Block Label and Delete Button */}
-              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-1.5">
-                <span className="text-xs md:text-sm font-bold text-white">
+              <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-1.5">
+                <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300">
                   Khối hiển thị #{blockIdx + 1}
                 </span>
                 <button
@@ -468,11 +468,11 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="space-y-1.5 shrink-0 w-32">
-                  <span className="text-xs font-semibold text-white block">Loại khối</span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Loại khối</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
-                    className="w-full px-2 py-1.5 text-sm font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 cursor-pointer"
+                    className="w-full px-2 py-1.5 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 cursor-pointer"
                   >
                     <option value="code">Code</option>
                     <option value="image">Image</option>
@@ -481,7 +481,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white block">Nội dung</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Nội dung</span>
                     <span className={cn("text-xs font-mono font-medium", db.content.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
@@ -491,7 +491,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     placeholder="Nhập nội dung của khối hiển thị (tối đa 1000 kí tự)..."
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
                   />
                 </div>
               </div>
@@ -502,9 +502,9 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
       {/* Explanation Area */}
       {question.explanation !== undefined && question.explanation !== null && (
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
+        <div className="p-4 rounded-xl border border-amber-500/20 dark:border-amber-900/30 bg-amber-500/5 dark:bg-amber-950/20 space-y-1.5 relative">
           <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-white block">Giải thích</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Giải thích</label>
             <div className="flex items-center gap-3">
               <span className={cn("text-xs font-mono font-medium", (question.explanation || "").length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                 {(question.explanation || "").length}/1000
@@ -522,7 +522,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             maxLength={1000}
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value.slice(0, 1000))}
-            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-sm font-normal text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-white/70 dark:bg-slate-950/40 text-sm font-normal text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập nội dung giải thích (tối đa 1000 ký tự)..."
           />
         </div>
@@ -1574,7 +1574,7 @@ export default function QuestionModification({
             {/* Document Editor / Viewer */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {docSubTab === "PREVIEW" ? (
-                <div className="prose dark:prose-invert max-w-none text-xs">
+                <div className="prose dark:prose-invert max-w-none text-sm">
                   {activeFile.document ? (
                     <MarkdownRenderer content={activeFile.document} />
                   ) : (
@@ -1586,7 +1586,7 @@ export default function QuestionModification({
                   value={activeFile.document}
                   onChange={(e) => updateCreatorFile(activeFile.id, { document: e.target.value })}
                   placeholder="Nhập nội dung tài liệu học tập bằng định dạng Markdown (.md)..."
-                  className="w-full h-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-xs font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none custom-scrollbar"
+                  className="w-full h-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-sm font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none custom-scrollbar"
                 />
               )}
             </div>
