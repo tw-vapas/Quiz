@@ -1,28 +1,22 @@
-# MCQ GENERATION REQUIREMENTS 
- 
+MCQ GENERATION REQUIREMENTS 
 - Tạo chính xác 50 câu hỏi. 
- 
 - Bao quát hợp lý các knowledge points quan trọng trong tài liệu, phân bổ theo mức độ quan trọng và tránh tập trung vào một phần nhỏ. 
 - Mỗi câu phải kiểm tra một kiến thức hoặc khả năng suy luận cụ thể và không phụ thuộc không cần thiết vào kiến thức ngoài tài liệu. 
- 
 - Đảm bảo đa dạng độ khó: nhận biết/lý thuyết → thông hiểu → vận dụng → vận dụng cao. 
 - Câu khó phải khó do reasoning/application, không phải do wording mơ hồ. 
 - Đa dạng dạng câu hỏi: definition, comparison, cause-effect, scenario, application, analysis, decision-making... 
 - Tránh lặp lại cùng một knowledge point theo cùng một cách. 
- 
 - Mỗi câu chỉ có một đáp án đúng. 
 - Distractors phải hợp lý, dựa trên những hiểu lầm hoặc suy luận sai phổ biến. 
 - Các đáp án tương đối đồng đều về độ dài, cấu trúc và mức độ cụ thể; không để đáp án đúng lộ liễu bởi wording, độ dài hoặc pattern. 
 - Không sử dụng distractor vô lý hoặc nhiều đáp án có thể cùng đúng. 
 - Mỗi đáp án A, B, C, D phải có độ dài tối đa 150 ký tự. Đây là giới hạn cứng vì phần nội dung vượt quá 150 ký tự sẽ bị cắt. 
 - Ưu tiên wording ngắn gọn, trực tiếp và đủ ý; không thêm thông tin dư thừa chỉ để làm đáp án dài hơn. 
-- Trước khi output, phải tự kiểm tra độ dài của từng đáp án và đảm bảo không đáp án nào vượt quá 150 ký tự. 
- 
+- Trước khi output, phải tự kiểm tra độ dài của từng đáp án và đảm bảo không đáp án nào vượt quá 150 ký tự.
 - Trước khi output, tự kiểm tra số lượng, coverage, difficulty, diversity, clarity, uniqueness of correct answer, distractor quality và giới hạn 150 ký tự của tất cả đáp án. 
 - Chỉ output kết quả cuối cùng. 
- 
-## Output 
- 
+
+Yêu cầu về output:
 - Chỉ gồm câu hỏi và đáp án A, B, C, D. 
 - Không explanation, đáp án đúng, difficulty, topic/tag, heading hoặc text thừa. 
 - Không divider; giữa các câu chỉ có một blank line. 

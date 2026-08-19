@@ -689,43 +689,36 @@ function IdeEditor({ value, onChange, jsonError }: IdeEditorProps) {
   );
 }
 
-const QUIZ_QUESTION_PROMPT = `# MCQ GENERATION REQUIREMENTS 
- 
+const QUIZ_QUESTION_PROMPT = `MCQ GENERATION REQUIREMENTS 
 - Tạo chính xác 50 câu hỏi. 
- 
 - Bao quát hợp lý các knowledge points quan trọng trong tài liệu, phân bổ theo mức độ quan trọng và tránh tập trung vào một phần nhỏ. 
 - Mỗi câu phải kiểm tra một kiến thức hoặc khả năng suy luận cụ thể và không phụ thuộc không cần thiết vào kiến thức ngoài tài liệu. 
- 
 - Đảm bảo đa dạng độ khó: nhận biết/lý thuyết → thông hiểu → vận dụng → vận dụng cao. 
 - Câu khó phải khó do reasoning/application, không phải do wording mơ hồ. 
 - Đa dạng dạng câu hỏi: definition, comparison, cause-effect, scenario, application, analysis, decision-making... 
 - Tránh lặp lại cùng một knowledge point theo cùng một cách. 
- 
 - Mỗi câu chỉ có một đáp án đúng. 
 - Distractors phải hợp lý, dựa trên những hiểu lầm hoặc suy luận sai phổ biến. 
 - Các đáp án tương đối đồng đều về độ dài, cấu trúc và mức độ cụ thể; không để đáp án đúng lộ liễu bởi wording, độ dài hoặc pattern. 
 - Không sử dụng distractor vô lý hoặc nhiều đáp án có thể cùng đúng. 
 - Mỗi đáp án A, B, C, D phải có độ dài tối đa 150 ký tự. Đây là giới hạn cứng vì phần nội dung vượt quá 150 ký tự sẽ bị cắt. 
 - Ưu tiên wording ngắn gọn, trực tiếp và đủ ý; không thêm thông tin dư thừa chỉ để làm đáp án dài hơn. 
-- Trước khi output, phải tự kiểm tra độ dài của từng đáp án và đảm bảo không đáp án nào vượt quá 150 ký tự. 
- 
+- Trước khi output, phải tự kiểm tra độ dài của từng đáp án và đảm bảo không đáp án nào vượt quá 150 ký tự.
 - Trước khi output, tự kiểm tra số lượng, coverage, difficulty, diversity, clarity, uniqueness of correct answer, distractor quality và giới hạn 150 ký tự của tất cả đáp án. 
 - Chỉ output kết quả cuối cùng. 
- 
-## Output 
- 
+
+Yêu cầu về output:
 - Chỉ gồm câu hỏi và đáp án A, B, C, D. 
 - Không explanation, đáp án đúng, difficulty, topic/tag, heading hoặc text thừa. 
 - Không divider; giữa các câu chỉ có một blank line. 
 - Phải có chính xác 50 câu.`;
 
 const SUBCOMPONENTS_PROMPT = `Hãy dựa trên danh sách các câu hỏi trắc nghiệm vừa được tạo từ bước trước. Hãy đọc kỹ từng câu hỏi và các đáp án A, B, C, D để:
-
 1. Xác định chính xác đáp án đúng cho từng câu.
 2. Viết lời giải thích ngắn gọn nhưng đủ rõ để giải thích tại sao đáp án đúng.
 3. Xác định các Tags phù hợp với nội dung kiến thức được kiểm tra.
 
-## Yêu cầu
+Yêu cầu:
 
 - Giữ nguyên thứ tự các câu hỏi.
 - Mỗi câu hỏi đầu vào phải tương ứng với đúng một object trong output.
@@ -735,12 +728,10 @@ const SUBCOMPONENTS_PROMPT = `Hãy dựa trên danh sách các câu hỏi trắc
 - "Explanation" phải dựa trên nội dung câu hỏi và kiến thức liên quan, không suy đoán hoặc bịa đặt.
 - "Tags" là mảng tùy chọn dùng để phân loại chủ đề/knowledge point; nếu không xác định được thì dùng [].
 
-## Output Format
-
-Chỉ trả về một JSON array hợp lệ.
-
-Không sử dụng Markdown code block.
-Không thêm heading, commentary hoặc bất kỳ text nào bên ngoài JSON.
+Output Format
+- Chỉ trả về một JSON array hợp lệ.
+- Không sử dụng Markdown code block.
+- Không thêm heading, commentary hoặc bất kỳ text nào bên ngoài JSON.
 
 [
   {
@@ -750,6 +741,36 @@ Không thêm heading, commentary hoặc bất kỳ text nào bên ngoài JSON.
     "Tags": ["Môn Toán"]
   }
 ]`;
+
+const DOCUMENT_PROMPT = `Bạn là chuyên gia xây dựng tài liệu học tập.
+
+Dựa trên TOÀN BỘ các file được cung cấp, hãy tổng hợp thành một tài liệu học tập hoàn chỉnh dưới định dạng Markdown (.md).
+
+Yêu cầu nội dung:
+- Tổng hợp kiến thức từ tất cả các file, không chỉ tóm tắt từng file riêng lẻ.
+- Bao quát đầy đủ các chủ đề, khái niệm và knowledge points quan trọng.
+- Ưu tiên nội dung có tính nền tảng, quan trọng và có giá trị học tập.
+- Giải thích rõ định nghĩa, bản chất, nguyên lý, công thức, quy tắc và cách áp dụng khi có.
+- Làm rõ mối quan hệ, sự khác biệt và nguyên nhân–kết quả giữa các khái niệm.
+- Đưa ra ví dụ hoặc tình huống minh họa khi cần thiết.
+- Loại bỏ nội dung trùng lặp và thông tin không cần thiết.
+- Không tự ý thêm thông tin không được hỗ trợ bởi tài liệu.
+- Nội dung quan trọng/phức tạp cần được trình bày chi tiết hơn nội dung phụ.
+
+Cấu trúc:
+Tổ chức theo flow tổng quát → nền tảng → nội dung chính → chi tiết → ứng dụng → tổng kết.
+Sử dụng đầy đủ:
+- \`#\`, \`##\`, \`###\` để phân cấp.
+- Bullet/numbered list.
+- **Bold** cho các ý hoặc thuật ngữ quan trọng.
+- Table khi cần so sánh.
+- Blockquote \`>\` cho lưu ý quan trọng.
+Có thể tự điều chỉnh cấu trúc section/subsection để phù hợp với nội dung thực tế.
+
+Output:
+- Chỉ trả về nội dung Markdown.
+- Không thêm lời mở đầu, nhận xét hoặc text bên ngoài tài liệu.
+- Mục tiêu cuối cùng là tạo một master study document có cấu trúc rõ ràng, đầy đủ, chi tiết và có thể dùng trực tiếp để học, ôn tập và tạo câu hỏi trắc nghiệm.`;
 
 interface SupplementComponentModalProps {
   isOpen: boolean;
@@ -1609,18 +1630,33 @@ export default function QuestionModification({
         {activeTab === "DOCUMENT" && (
           <div className="h-full flex flex-col gap-4">
             {/* Sub tab toggles */}
-            <div className="flex gap-2 border-b border-slate-100 dark:border-slate-800 pb-2">
-              <button 
-                onClick={() => setDocSubTab("PREVIEW")}
-                className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold", docSubTab === "PREVIEW" ? "bg-indigo-500/10 text-indigo-600" : "text-slate-400 hover:bg-slate-50")}
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => setDocSubTab("PREVIEW")}
+                  className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors", docSubTab === "PREVIEW" ? "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
+                >
+                  Xem trước
+                </button>
+                <button 
+                  onClick={() => setDocSubTab("EDIT")}
+                  className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors", docSubTab === "EDIT" ? "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
+                >
+                  Chỉnh sửa
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(DOCUMENT_PROMPT);
+                  useQuizStore.getState().showNotification("Đã sao chép prompt thành công!", "success");
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
+                title="Sao chép prompt mẫu để yêu cầu AI tạo tài liệu học tập chuẩn định dạng Markdown"
               >
-                Xem trước
-              </button>
-              <button 
-                onClick={() => setDocSubTab("EDIT")}
-                className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold", docSubTab === "EDIT" ? "bg-indigo-500/10 text-indigo-600" : "text-slate-400 hover:bg-slate-50")}
-              >
-                Chỉnh sửa
+                <Copy className="w-3.5 h-3.5" />
+                <span>Prompt</span>
               </button>
             </div>
 
