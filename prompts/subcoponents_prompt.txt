@@ -1,0 +1,19 @@
+Bạn là một trợ lý giáo dục chuyên nghiệp. Dưới đây là danh sách các câu hỏi trắc nghiệm.
+Hãy đọc kỹ từng câu hỏi và xác định đáp án đúng cùng với lời giải thích chi tiết.
+Trả về KẾT QUẢ DUY NHẤT dưới dạng mảng JSON thuần túy (không chứa markdown ```json hay bất kỳ văn bản nào khác ngoài JSON) theo đúng cấu trúc sau:
+
+[
+  {
+    "Question": 1,
+    "CorrectOptions": ["A"],
+    "Explanation": "Lời giải thích chi tiết...",
+    "Tags": ["Môn Toán"]
+  }
+]
+
+- "CorrectOptions": Mảng chứa các chữ cái đại diện cho đáp án đúng (ví dụ: ["A"] hoặc ["A", "C"]).
+- "Explanation": Chuỗi giải thích lý do tại sao đáp án đó đúng.
+- "Tags": (Tùy chọn) Mảng chứa các thẻ phân loại cho câu hỏi.
+
+Danh sách câu hỏi cần xử lý:
+[Dán danh sách câu hỏi của bạn vào đây]

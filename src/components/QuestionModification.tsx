@@ -689,7 +689,31 @@ function IdeEditor({ value, onChange, jsonError }: IdeEditorProps) {
   );
 }
 
-const SYSTEM_PROMPT_TEMPLATE = `Bạn là một trợ lý giáo dục chuyên nghiệp. Dưới đây là danh sách các câu hỏi trắc nghiệm.
+const QUIZ_QUESTION_PROMPT = `- Tạo chính xác [int] câu hỏi.
+
+- Bao quát hợp lý các knowledge points quan trọng trong tài liệu, phân bổ theo mức độ quan trọng và tránh tập trung vào một phần nhỏ.
+- Mỗi câu phải kiểm tra một kiến thức hoặc khả năng suy luận cụ thể và không phụ thuộc không cần thiết vào kiến thức ngoài tài liệu.
+
+- Đảm bảo đa dạng độ khó: nhận biết/lý thuyết → thông hiểu → vận dụng → vận dụng cao.
+- Câu khó phải khó do reasoning/application, không phải do wording mơ hồ.
+- Đa dạng dạng câu hỏi: definition, comparison, cause-effect, scenario, application, analysis, decision-making...
+- Tránh lặp lại cùng một knowledge point theo cùng một cách.
+
+- Mỗi câu chỉ có một đáp án đúng.
+- Distractors phải hợp lý, dựa trên những hiểu lầm hoặc suy luận sai phổ biến.
+- Các đáp án tương đối đồng đều về độ dài, cấu trúc và mức độ cụ thể; không để đáp án đúng lộ liễu bởi wording, độ dài hoặc pattern.
+- Không sử dụng distractor vô lý hoặc nhiều đáp án có thể cùng đúng.
+
+- Trước khi output, tự kiểm tra số lượng, coverage, difficulty, diversity, clarity, uniqueness of correct answer và distractor quality.
+- Chỉ output kết quả cuối cùng.
+
+## Output
+- Chỉ gồm câu hỏi và đáp án A, B, C, D.
+- Không explanation, đáp án đúng, difficulty, topic/tag, heading hoặc text thừa.
+- Không divider; giữa các câu chỉ có một blank line.
+- Phải có chính xác [int] câu.`;
+
+const SUBCOMPONENTS_PROMPT = `Bạn là một trợ lý giáo dục chuyên nghiệp. Dưới đây là danh sách các câu hỏi trắc nghiệm.
 Hãy đọc kỹ từng câu hỏi và xác định đáp án đúng cùng với lời giải thích chi tiết.
 Trả về KẾT QUẢ DUY NHẤT dưới dạng mảng JSON thuần túy (không chứa markdown \`\`\`json hay bất kỳ văn bản nào khác ngoài JSON) theo đúng cấu trúc sau:
 
@@ -697,12 +721,14 @@ Trả về KẾT QUẢ DUY NHẤT dưới dạng mảng JSON thuần túy (khôn
   {
     "Question": 1,
     "CorrectOptions": ["A"],
-    "Explanation": "Lời giải thích chi tiết..."
+    "Explanation": "Lời giải thích chi tiết...",
+    "Tags": ["Môn Toán"]
   }
 ]
 
 - "CorrectOptions": Mảng chứa các chữ cái đại diện cho đáp án đúng (ví dụ: ["A"] hoặc ["A", "C"]).
 - "Explanation": Chuỗi giải thích lý do tại sao đáp án đó đúng.
+- "Tags": (Tùy chọn) Mảng chứa các thẻ phân loại cho câu hỏi.
 
 Danh sách câu hỏi cần xử lý:
 [Dán danh sách câu hỏi của bạn vào đây]`;
@@ -715,21 +741,26 @@ interface SupplementComponentModalProps {
 }
 
 function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: SupplementComponentModalProps) {
-  const [mainMode, setMainMode] = useState<"ANSWERS_EXPLANATION" | "RAW_TEXT_QUESTIONS">("ANSWERS_EXPLANATION");
+  const [mainMode, setMainMode] = useState<"RAW_TEXT_QUESTIONS" | "ANSWERS_EXPLANATION">("RAW_TEXT_QUESTIONS");
   const [jsonText, setJsonText] = useState("");
 
-  // Tab 2 Raw text questions state
+  // Tab Raw text questions state
   const [rawText, setRawText] = useState("");
   const [importStrategy, setImportStrategy] = useState<"APPEND" | "REPLACE_ALL">("APPEND");
 
   useEffect(() => {
     if (isOpen) {
-      setMainMode("ANSWERS_EXPLANATION");
+      setMainMode("RAW_TEXT_QUESTIONS");
       setJsonText("");
       setRawText("");
       setImportStrategy("APPEND");
     }
   }, [isOpen]);
+
+  const handleCopyPrompt = (promptText: string, label: string) => {
+    navigator.clipboard.writeText(promptText);
+    useQuizStore.getState().showNotification(`Đã sao chép prompt ${label} thành công!`, "success");
+  };
 
   const analysis = useMemo(() => {
     if (!isOpen || !activeFile || mainMode !== "ANSWERS_EXPLANATION" || !jsonText.trim()) return null;
@@ -925,18 +956,6 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         <div className="flex items-center gap-2 px-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30">
           <button
             type="button"
-            onClick={() => setMainMode("ANSWERS_EXPLANATION")}
-            className={cn(
-              "py-2.5 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
-              mainMode === "ANSWERS_EXPLANATION"
-                ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-400"
-                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-            )}
-          >
-            <span>Các thành phần phụ</span>
-          </button>
-          <button
-            type="button"
             onClick={() => setMainMode("RAW_TEXT_QUESTIONS")}
             className={cn(
               "py-2.5 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
@@ -947,69 +966,47 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
           >
             <span>Câu hỏi trắc nghiệm</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setMainMode("ANSWERS_EXPLANATION")}
+            className={cn(
+              "py-2.5 text-sm font-semibold border-b-2 transition-all cursor-pointer flex items-center gap-1.5",
+              mainMode === "ANSWERS_EXPLANATION"
+                ? "border-indigo-600 text-indigo-650 dark:text-indigo-400 dark:border-indigo-400"
+                : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            )}
+          >
+            <span>Các thành phần phụ</span>
+          </button>
         </div>
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-5 flex-1 style-scrollbar">
           
-          {mainMode === "ANSWERS_EXPLANATION" ? (
+          {mainMode === "RAW_TEXT_QUESTIONS" ? (
             <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Nội dung (Đáp án, Giải thích &amp; Tags)
-                </label>
-                <textarea
-                  value={jsonText}
-                  onChange={(e) => setJsonText(e.target.value)}
-                  placeholder={`[
-  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "...", "Tags": ["Môn Toán"] },
-  { "Question": 2, "CorrectOptions": ["B"], "Explanation": "...", "Tags": ["Học Phần 1"] }
-]`}
-                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
-                />
+              {/* Functional Explanation Block */}
+              <div className="p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/30 space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold text-sm">
+                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Hướng dẫn nhập câu hỏi trắc nghiệm</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyPrompt(QUIZ_QUESTION_PROMPT, "tạo câu hỏi")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
+                    title="Sao chép prompt mẫu để yêu cầu AI tạo câu hỏi trắc nghiệm chuẩn định dạng"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Prompt</span>
+                  </button>
+                </div>
+                <p className="text-sm font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+                  Hãy nhập các file tài liệu liên quan cho các AI chatbots như NotebookLM, Gemini, ChatGPT... và sử dụng prompt để tạo ra các câu hỏi trắc nghiệm sau đó dán vào mục nội dung bên dưới
+                </p>
               </div>
 
-              {/* Analysis & Validation Results */}
-              {analysis && (
-                <div className="space-y-3 pt-1">
-                  {analysis.error ? (
-                    <div className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
-                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
-                      <span>{analysis.error}</span>
-                    </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {/* Summary badge */}
-                      <div className="p-3.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                          <span>
-                            Đã tìm thấy <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.totalItems}</strong> mục JSON. Đủ điều kiện bổ sung cho <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.matchedCount} / {activeFile.questions.length}</strong> câu hỏi.
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Warnings list if any */}
-                      {Boolean(analysis.warnings && analysis.warnings.length > 0) && (
-                        <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
-                          <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                            <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
-                          </div>
-                          <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
-                            {analysis.warnings?.map((w, idx) => (
-                              <li key={idx}>{w}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
               {/* Import Strategy selector (Compact Segmented UI) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">
@@ -1091,11 +1088,89 @@ D. Oát (W)`}
                       {Boolean(rawTextAnalysis.warnings && rawTextAnalysis.warnings.length > 0) && (
                         <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 style-scrollbar">
                           <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
-                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                             <span>Thông tin STT văn bản gốc:</span>
                           </div>
                           <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
                             {rawTextAnalysis.warnings?.map((w: string, idx: number) => (
+                              <li key={idx}>{w}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Functional Explanation Block */}
+              <div className="p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/40 dark:bg-indigo-950/30 space-y-2.5">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold text-sm">
+                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                    <span>Hướng dẫn bổ sung thành phần phụ</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyPrompt(SUBCOMPONENTS_PROMPT, "bổ sung thành phần")}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
+                    title="Sao chép prompt mẫu để yêu cầu AI tạo dữ liệu đáp án & giải thích chuẩn JSON"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Prompt</span>
+                  </button>
+                </div>
+                <p className="text-sm font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+                  Hãy nhập các file tài liệu liên quan cho các AI chatbots như NotebookLM, Gemini, ChatGPT... và sử dụng prompt để bổ sung các thành phần phụ vào các câu hỏi trắc nghiệm có sẵn sau đó dán vào mục nội dung bên dưới
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Nội dung (Đáp án, Giải thích &amp; Tags)
+                </label>
+                <textarea
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder={`[
+  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "...", "Tags": ["Môn Toán"] },
+  { "Question": 2, "CorrectOptions": ["B"], "Explanation": "...", "Tags": ["Học Phần 1"] }
+]`}
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                />
+              </div>
+
+              {/* Analysis & Validation Results */}
+              {analysis && (
+                <div className="space-y-3 pt-1">
+                  {analysis.error ? (
+                    <div className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+                      <span>{analysis.error}</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {/* Summary badge */}
+                      <div className="p-3.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>
+                            Đã tìm thấy <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.totalItems}</strong> mục JSON. Đủ điều kiện bổ sung cho <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.matchedCount} / {activeFile.questions.length}</strong> câu hỏi.
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Warnings list if any */}
+                      {Boolean(analysis.warnings && analysis.warnings.length > 0) && (
+                        <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
+                          <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                            <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
+                          </div>
+                          <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
+                            {analysis.warnings?.map((w, idx) => (
                               <li key={idx}>{w}</li>
                             ))}
                           </ul>
