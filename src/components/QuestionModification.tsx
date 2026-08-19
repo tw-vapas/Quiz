@@ -1705,7 +1705,7 @@ export default function QuestionModification({
       </div>
 
       {/* 2. BODY CONTENT */}
-      <div className="flex-1 overflow-y-auto lg:overflow-hidden p-5 relative min-h-0 flex flex-col">
+      <div className="flex-1 overflow-y-auto md:overflow-hidden p-5 relative min-h-0 flex flex-col">
         
         {/* --- TAB A: DOCUMENT VIEW --- */}
         {activeTab === "DOCUMENT" && (
@@ -2072,9 +2072,9 @@ export default function QuestionModification({
 
             {/* Chế độ Panel split view */}
             {displayMode === "Panel" && (
-              <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-10 gap-4 overflow-y-auto lg:overflow-hidden">
+              <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-10 gap-4 overflow-y-auto md:overflow-hidden">
                 {/* Section 1: Question Setting (Editor on the left) */}
-                <div className="lg:col-span-7 h-full overflow-y-auto custom-scrollbar pr-2 space-y-4">
+                <div className="md:col-span-6 xl:col-span-7 h-full overflow-y-auto custom-scrollbar pr-2 space-y-4 min-w-0">
                   {panelQuestion ? (
                     <QuestionCard 
                       key={panelQuestion.id}
@@ -2094,7 +2094,7 @@ export default function QuestionModification({
                 </div>
 
                 {/* Section 2: Question List (List selector on the right) */}
-                <div className="lg:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0">
+                <div className="md:col-span-4 xl:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0 min-w-0">
                   <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">DANH SÁCH CÂU HỎI</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
