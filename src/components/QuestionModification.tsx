@@ -502,9 +502,9 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
       {/* Explanation Area */}
       {question.explanation !== undefined && question.explanation !== null && (
-        <div className="p-4 rounded-xl border border-amber-500/20 dark:border-amber-900/30 bg-amber-500/5 dark:bg-amber-950/20 space-y-1.5 relative">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Giải thích</label>
+        <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/30 space-y-2.5 relative">
+          <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-1.5">
+            <label className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 block">Giải thích</label>
             <div className="flex items-center gap-3">
               <span className={cn("text-xs font-mono font-medium", (question.explanation || "").length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                 {(question.explanation || "").length}/1000
@@ -522,7 +522,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             maxLength={1000}
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value.slice(0, 1000))}
-            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-white/70 dark:bg-slate-950/40 text-sm font-normal text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập nội dung giải thích (tối đa 1000 ký tự)..."
           />
         </div>
