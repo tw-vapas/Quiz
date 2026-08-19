@@ -39,11 +39,11 @@ interface SettingExportProps {
 }
 
 type FileStatusType = 
-  | "Valid File" 
-  | "Missing Answer Option" 
-  | "Missing Correct Answer" 
-  | "Syntax Error" 
-  | "Empty File";
+  | "Tệp hợp lệ" 
+  | "Thiếu lựa chọn đáp án" 
+  | "Thiếu đáp án đúng" 
+  | "Lỗi cú pháp" 
+  | "Tệp rỗng";
 
 export default function SettingExport({ 
   className,
@@ -102,23 +102,23 @@ export default function SettingExport({
   // --- AUTO EVALUATE STATUS ---
   const fileStatus = (() => {
     if (activeFile.questions.length === 0 && !activeFile.document && !activeFile.note) {
-      return "Empty File";
+      return "Tệp rỗng";
     }
     const jsonStr = getFileJson(activeFile);
     const parsed = parseQuizJson(jsonStr);
     if (!parsed.isValid) {
       if (parsed.error?.includes("thiếu trường 'question'") || parsed.error?.includes("thiếu trường 'text'")) {
-        return "Syntax Error";
+        return "Lỗi cú pháp";
       }
       if (parsed.error?.includes("thiếu hoặc rỗng danh sách 'options'")) {
-        return "Missing Answer Option";
+        return "Thiếu lựa chọn đáp án";
       }
       if (parsed.error?.includes("thiếu đáp án đúng")) {
-        return "Missing Correct Answer";
+        return "Thiếu đáp án đúng";
       }
-      return "Syntax Error";
+      return "Lỗi cú pháp";
     }
-    return "Valid File";
+    return "Tệp hợp lệ";
   })();
 
   // --- NOTES WITH STRICT 200 WORDS LIMIT ---
@@ -325,14 +325,14 @@ export default function SettingExport({
 
   const getStatusColor = (status: FileStatusType) => {
     switch (status) {
-      case "Valid File":
+      case "Tệp hợp lệ":
         return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-200/50 dark:border-green-900/30";
-      case "Missing Answer Option":
-      case "Missing Correct Answer":
+      case "Thiếu lựa chọn đáp án":
+      case "Thiếu đáp án đúng":
         return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-900/30";
-      case "Syntax Error":
+      case "Lỗi cú pháp":
         return "bg-red-500/10 text-red-650 dark:text-red-400 border-red-200/50 dark:border-red-900/30";
-      case "Empty File":
+      case "Tệp rỗng":
         return "bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-200/50 dark:border-slate-800/30";
     }
   };

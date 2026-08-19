@@ -323,7 +323,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           maxLength={1000}
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value.slice(0, 1000) })}
-          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50/30 dark:bg-[#22325a] text-base font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50/30 dark:bg-[#22325a] text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
           placeholder="Nhập nội dung câu hỏi (tối đa 1000 ký tự)..."
         />
       </div>
@@ -376,7 +376,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
                       placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
-                      className="w-full bg-transparent text-base font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto custom-scrollbar"
+                      className="w-full bg-transparent text-sm font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto custom-scrollbar"
                     />
                     {ans.text.length >= 100 && (
                       <span className={cn("text-xs font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-semibold" : "text-slate-400")}>
@@ -404,7 +404,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           <span className="text-sm font-semibold text-white block">Loại câu hỏi</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-base font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+              className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
             >
               <span>{typeLabel}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300" />
@@ -414,13 +414,13 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-[#1e2d5a] border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg p-1.5 space-y-1">
                 <button
                   onClick={() => { handleTypeChange("single_choice"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-base font-normal rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
+                  className={cn("w-full p-2 text-left text-sm font-normal rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
                   1 đáp án
                 </button>
                 <button
                   onClick={() => { handleTypeChange("multiple_choice"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-base font-normal rounded-lg cursor-pointer", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
+                  className={cn("w-full p-2 text-left text-sm font-normal rounded-lg cursor-pointer", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
                   Nhiều đáp án
                 </button>
@@ -441,7 +441,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 e.currentTarget.blur();
               }
             }}
-            className="w-full px-3 py-2 text-base font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="tag1, tag2..."
           />
         </div>
@@ -472,7 +472,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
-                    className="w-full px-2 py-1.5 text-base font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 cursor-pointer"
+                    className="w-full px-2 py-1.5 text-sm font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 cursor-pointer"
                   >
                     <option value="code">Code</option>
                     <option value="image">Image</option>
@@ -491,7 +491,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     placeholder="Nhập nội dung của khối hiển thị (tối đa 1000 kí tự)..."
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-base font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
                   />
                 </div>
               </div>
@@ -522,7 +522,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             maxLength={1000}
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value.slice(0, 1000))}
-            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-base font-normal text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-sm font-normal text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập nội dung giải thích (tối đa 1000 ký tự)..."
           />
         </div>
@@ -720,7 +720,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
 
   // Tab 2 Raw text questions state
   const [rawText, setRawText] = useState("");
-  const [importStrategy, setImportStrategy] = useState<"APPEND" | "OVERWRITE" | "REPLACE_ALL">("APPEND");
+  const [importStrategy, setImportStrategy] = useState<"APPEND" | "REPLACE_ALL">("APPEND");
 
   useEffect(() => {
     if (isOpen) {
@@ -877,16 +877,6 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         finalQuestions = [...activeFile.questions, ...newParsed];
       } else if (importStrategy === "REPLACE_ALL") {
         finalQuestions = newParsed;
-      } else if (importStrategy === "OVERWRITE") {
-        const merged = [...activeFile.questions];
-        newParsed.forEach((q: Question, idx: number) => {
-          if (idx < merged.length) {
-            merged[idx] = q;
-          } else {
-            merged.push(q);
-          }
-        });
-        finalQuestions = merged;
       }
 
       onApply(finalQuestions, newParsed.length);
@@ -1028,19 +1018,6 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     title="Nối vào cuối tệp hiện tại"
                   >
                     Thêm nối tiếp
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setImportStrategy("OVERWRITE")}
-                    className={cn(
-                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none",
-                      importStrategy === "OVERWRITE"
-                        ? "bg-indigo-600 text-white shadow-xs"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                    )}
-                    title="Ghi đè từ câu số 1"
-                  >
-                    Ghi đè từ đầu
                   </button>
                   <button
                     type="button"
@@ -1653,10 +1630,15 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={() => setIsSupplementModalOpen(true)}
-                  className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-medium text-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg font-medium text-sm cursor-pointer transition-all flex items-center gap-1.5 select-none",
+                    isSupplementModalOpen
+                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-semibold"
+                      : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
+                  )}
                   title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   <span>Tạo Quiz Nhanh</span>
                 </button>
 
