@@ -757,7 +757,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
     const totalQuestions = activeFile.questions.length;
     let matchedCount = 0;
     const warnings: string[] = [];
-    const updatesMap = new Map<number, { correctOptionIds: string[]; type: "single_choice" | "multiple_choice"; explanation?: string }>();
+    const updatesMap = new Map<number, { correctOptionIds: string[]; type: "single_choice" | "multiple_choice"; explanation?: string; tags?: string[] }>();
 
     parsed.forEach((item: any, index: number) => {
       const itemStt = item.Question ?? item.question ?? (index + 1);
@@ -804,12 +804,21 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
 
       const explanation = typeof item.Explanation === "string" ? item.Explanation.trim() : typeof item.explanation === "string" ? item.explanation.trim() : undefined;
 
-      if (correctOptionIds.length > 0 || explanation) {
+      const rawTags = item.Tags ?? item.tags;
+      let tags: string[] | undefined = undefined;
+      if (Array.isArray(rawTags)) {
+        tags = rawTags.map(t => String(t).trim()).filter(Boolean);
+      } else if (typeof rawTags === "string") {
+        tags = rawTags.split(/[,;\s]+/).filter(Boolean);
+      }
+
+      if (correctOptionIds.length > 0 || explanation !== undefined || tags !== undefined) {
         matchedCount++;
         updatesMap.set(qIndex, {
           correctOptionIds: correctOptionIds.length > 0 ? correctOptionIds : targetQuestion.correctOptionIds,
           type: correctOptionIds.length > 1 ? "multiple_choice" : "single_choice",
-          explanation: explanation !== undefined ? explanation : targetQuestion.explanation
+          explanation: explanation !== undefined ? explanation : targetQuestion.explanation,
+          tags: tags !== undefined ? tags : targetQuestion.tags
         });
       }
     });
@@ -861,7 +870,8 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
           ...q,
           correctOptionIds: update.correctOptionIds.length > 0 ? update.correctOptionIds : q.correctOptionIds,
           type: update.correctOptionIds.length > 1 ? "multiple_choice" : q.type,
-          explanation: update.explanation !== undefined ? update.explanation : q.explanation
+          explanation: update.explanation !== undefined ? update.explanation : q.explanation,
+          tags: update.tags !== undefined ? update.tags : q.tags
         };
       });
 
@@ -923,7 +933,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            <span>Đáp Án &amp; Giải Thích</span>
+            <span>Các thành phần phụ</span>
           </button>
           <button
             type="button"
@@ -935,7 +945,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            <span>Danh sách câu hỏi</span>
+            <span>Câu hỏi trắc nghiệm</span>
           </button>
         </div>
 
@@ -946,14 +956,14 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Nội dung
+                  Nội dung (Đáp án, Giải thích &amp; Tags)
                 </label>
                 <textarea
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
                   placeholder={`[
-  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
-  { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
+  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "...", "Tags": ["Môn Toán"] },
+  { "Question": 2, "CorrectOptions": ["B"], "Explanation": "...", "Tags": ["Học Phần 1"] }
 ]`}
                   className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
@@ -1385,60 +1395,10 @@ export default function QuestionModification({
     setSelectedPanelQuestionId(newQ.id);
   };
 
-  // Multi-level sort function
-  const getSortedQuestions = (qs: Question[]) => {
-    if (!activeFile) return qs;
-    return [...qs].sort((a, b) => {
-      // 1. Sort by Type priority
-      const typeIndexA = typeOrder.indexOf(a.type);
-      const typeIndexB = typeOrder.indexOf(b.type);
-      if (typeIndexA !== typeIndexB) return typeIndexA - typeIndexB;
-
-      // 2. Sort by Tag priority
-      const getHighestTagPriority = (q: Question) => {
-        if (!q.tags || q.tags.length === 0) return tagOrder.length;
-        const priorities = q.tags.map(t => {
-          const idx = tagOrder.indexOf(t);
-          return idx === -1 ? tagOrder.length : idx;
-        });
-        return Math.min(...priorities);
-      };
-      const tagPriorityA = getHighestTagPriority(a);
-      const tagPriorityB = getHighestTagPriority(b);
-      if (tagPriorityA !== tagPriorityB) return tagPriorityA - tagPriorityB;
-
-      // 3. Fallback: stable order based on original index in file
-      const indexA = activeFile.questions.findIndex(q => q.id === a.id);
-      const indexB = activeFile.questions.findIndex(q => q.id === b.id);
-      return indexA - indexB;
-    });
-  };
-
   // Compute final filtered & sorted questions
   const filteredQuestions = useMemo(() => {
-    if (!activeFile) return [];
-    
-    let list = activeFile.questions.filter(q => {
-      const matchType = (q.type === "single_choice" && filterType.singleChoice) || 
-                        (q.type === "multiple_choice" && filterType.multipleChoice);
-                        
-      const matchTags = !q.tags || q.tags.length === 0 || q.tags.some(t => selectedTagsFilter[t]);
-      
-      const matchCorrect = !filterOthers.haveCorrectAnswer || q.correctOptionIds.length > 0;
-      const matchExp = !filterOthers.haveExplanation || !!q.explanation;
-      const matchBlock = !filterOthers.haveDisplayBlock || (q.display_blocks && q.display_blocks.length > 0);
-      
-      return matchType && matchTags && matchCorrect && matchExp && matchBlock;
-    });
-
-    if (filterAndSortEnabled) {
-      list = getSortedQuestions(list);
-    }
-    
-    return list;
-  }, [activeFile?.questions, filterType, selectedTagsFilter, filterOthers, filterAndSortEnabled, typeOrder, tagOrder]);
-
-
+    return activeFile?.questions || [];
+  }, [activeFile?.questions]);
 
   // Panel view selected item state
   const questionItemRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
@@ -1603,26 +1563,8 @@ export default function QuestionModification({
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-black text-slate-800 dark:text-slate-200">
-                  Tổng cộng: {filteredQuestions.length !== activeFile.questions.length ? `${filteredQuestions.length}/${activeFile.questions.length}` : activeFile.questions.length} câu hỏi
+                  Tổng cộng: {activeFile.questions.length} câu hỏi
                 </span>
-                {(filterAndSortEnabled || filteredQuestions.length !== activeFile.questions.length) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFilterAndSortEnabled(false);
-                      setFilterType({ singleChoice: true, multipleChoice: true });
-                      setFilterOthers({ haveCorrectAnswer: false, haveExplanation: false, haveDisplayBlock: false });
-                      const resetTags: Record<string, boolean> = {};
-                      allUniqueTags.forEach(t => { resetTags[t] = true; });
-                      setSelectedTagsFilter(resetTags);
-                    }}
-                    className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800 flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition-colors cursor-pointer"
-                    title="Khôi phục trạng thái xem mặc định"
-                  >
-                    <span>Lọc đang mở</span>
-                    <RotateCcw className="w-2.5 h-2.5" />
-                  </button>
-                )}
               </div>
 
               <div className="flex items-center gap-2 relative">
@@ -1636,32 +1578,13 @@ export default function QuestionModification({
                       ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-semibold"
                       : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
                   )}
-                  title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
+                  title="Bổ sung đáp án đúng, lời giải thích và thẻ nhãn từ AI (JSON)"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   <span>Tạo Quiz Nhanh</span>
                 </button>
 
-                {/* 2. Bộ lọc & Sắp xếp (Filter & Sort) */}
-                <button
-                  type="button"
-                  onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
-                  className={cn(
-                    "px-3 py-1.5 rounded-lg font-medium text-sm cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
-                    isFilterSettingsOpen || filterAndSortEnabled
-                      ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-semibold"
-                      : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
-                  )}
-                  title="Bộ lọc & Sắp xếp"
-                >
-                  <SlidersHorizontal className="w-3.5 h-3.5" />
-                  <span>Bộ lọc & Sắp xếp</span>
-                  {filterAndSortEnabled && (
-                    <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
-                  )}
-                </button>
-
-                {/* 3. Thêm câu hỏi (Add New Question) */}
+                {/* 2. Thêm câu hỏi (Add New Question) */}
                 <button
                   type="button"
                   onClick={addNewQuestion}
@@ -1670,251 +1593,6 @@ export default function QuestionModification({
                   <Plus className="w-3.5 h-3.5 text-slate-500" />
                   <span>Thêm câu hỏi</span>
                 </button>
-
-                {/* --- REDESIGNED POPOVER: FILTER & SORT --- */}
-                {isFilterSettingsOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 z-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl p-5 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-                    {/* Header */}
-                    <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                          <Filter className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h5 className="text-xs font-black text-slate-850 dark:text-slate-100">
-                            Bộ lọc & Sắp xếp
-                          </h5>
-                          <p className="text-[10px] text-slate-400 font-medium">
-                            Tùy chỉnh hiển thị và thứ tự ưu tiên câu hỏi
-                          </p>
-                        </div>
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={() => setIsFilterSettingsOpen(false)}
-                        className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {/* Master Switch */}
-                    <div 
-                      onClick={() => setFilterAndSortEnabled(!filterAndSortEnabled)}
-                      className={cn(
-                        "p-3 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between select-none",
-                        filterAndSortEnabled
-                          ? "border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 shadow-sm"
-                          : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20"
-                      )}
-                    >
-                      <div>
-                        <span className="block text-xs font-black text-slate-800 dark:text-slate-200">
-                          Kích hoạt lọc & sắp xếp
-                        </span>
-                        <span className="block text-[10px] text-slate-400 font-medium">
-                          Áp dụng các tiêu chí lọc bên dưới cho danh sách
-                        </span>
-                      </div>
-                      <input 
-                        type="checkbox"
-                        checked={filterAndSortEnabled}
-                        onChange={(e) => setFilterAndSortEnabled(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 rounded cursor-pointer shrink-0 ml-2"
-                      />
-                    </div>
-
-                    {/* Scrollable Form Sections */}
-                    <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-1">
-                      
-                      {/* Section 1: Question Types */}
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                          1. Loại câu hỏi
-                        </span>
-                        <div className="grid grid-cols-2 gap-2">
-                          <label className={cn(
-                            "p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
-                            filterType.singleChoice
-                              ? "border-indigo-500 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300"
-                              : "border-slate-200 dark:border-slate-800 text-slate-500"
-                          )}>
-                            <span>1 đáp án</span>
-                            <input 
-                              type="checkbox"
-                              checked={filterType.singleChoice}
-                              onChange={() => setFilterType(prev => ({ ...prev, singleChoice: !prev.singleChoice }))}
-                              className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
-                            />
-                          </label>
-
-                          <label className={cn(
-                            "p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
-                            filterType.multipleChoice
-                              ? "border-indigo-500 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300"
-                              : "border-slate-200 dark:border-slate-800 text-slate-500"
-                          )}>
-                            <span>Nhiều đáp án</span>
-                            <input 
-                              type="checkbox"
-                              checked={filterType.multipleChoice}
-                              onChange={() => setFilterType(prev => ({ ...prev, multipleChoice: !prev.multipleChoice }))}
-                              className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
-                            />
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Section 2: Tags Filter */}
-                      {allUniqueTags.length > 0 && (
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                              2. Lọc theo Thẻ Nhãn (Tags)
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const allSelected = allUniqueTags.every(t => selectedTagsFilter[t]);
-                                const nextState: Record<string, boolean> = {};
-                                allUniqueTags.forEach(t => { nextState[t] = !allSelected; });
-                                setSelectedTagsFilter(nextState);
-                              }}
-                              className="text-[10px] font-extrabold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
-                            >
-                              {allUniqueTags.every(t => selectedTagsFilter[t]) ? "Bỏ chọn tất cả" : "Chọn tất cả"}
-                            </button>
-                          </div>
-                          <div className="grid grid-cols-2 gap-1.5 max-h-[110px] overflow-y-auto custom-scrollbar p-1">
-                            {allUniqueTags.map(tag => {
-                              const isChecked = !!selectedTagsFilter[tag];
-                              return (
-                                <label 
-                                  key={tag} 
-                                  className={cn(
-                                    "p-2 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
-                                    isChecked 
-                                      ? "border-indigo-500/60 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300" 
-                                      : "border-slate-200 dark:border-slate-800 text-slate-400"
-                                  )}
-                                >
-                                  <span className="truncate max-w-[100px]">{tag}</span>
-                                  <input 
-                                    type="checkbox"
-                                    checked={isChecked}
-                                    onChange={() => setSelectedTagsFilter(prev => ({ ...prev, [tag]: !prev[tag] }))}
-                                    className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer shrink-0"
-                                  />
-                                </label>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Section 3: Others Filter */}
-                      <div className="space-y-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                          3. Tiêu chí phụ
-                        </span>
-                        <div className="space-y-1.5">
-                          {[
-                            { key: "haveCorrectAnswer", label: "Chỉ hiện câu CÓ đáp án đúng" },
-                            { key: "haveExplanation", label: "Chỉ hiện câu CÓ lời giải thích" },
-                            { key: "haveDisplayBlock", label: "Chỉ hiện câu CÓ Display Block" }
-                          ].map(item => {
-                            const isChecked = (filterOthers as any)[item.key];
-                            return (
-                              <label
-                                key={item.key}
-                                className={cn(
-                                  "p-2.5 rounded-xl border text-xs font-bold flex items-center justify-between cursor-pointer transition-all select-none",
-                                  isChecked
-                                    ? "border-indigo-500 bg-indigo-50/20 text-indigo-900 dark:text-indigo-300"
-                                    : "border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400"
-                                )}
-                              >
-                                <span>{item.label}</span>
-                                <input 
-                                  type="checkbox"
-                                  checked={isChecked}
-                                  onChange={() => setFilterOthers(prev => ({ ...prev, [item.key]: !(prev as any)[item.key] }))}
-                                  className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer"
-                                />
-                              </label>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      {/* Section 4: Sort Priorities */}
-                      <div className="space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                          4. Thứ tự ưu tiên sắp xếp
-                        </span>
-                        
-                        {/* Type Order */}
-                        <div className="space-y-1.5">
-                          <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">Ưu tiên theo Loại câu hỏi:</span>
-                          {typeOrder.map((t, idx) => (
-                            <div key={t} className="flex items-center justify-between text-xs font-extrabold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200 dark:border-slate-750">
-                              <span>{idx + 1}. {t === "single_choice" ? "1 đáp án" : "Nhiều đáp án"}</span>
-                              <div className="flex gap-1">
-                                <button type="button" onClick={() => moveTypeOrder(idx, "UP")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowUp className="w-3.5 h-3.5 text-slate-500" /></button>
-                                <button type="button" onClick={() => moveTypeOrder(idx, "DOWN")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowDown className="w-3.5 h-3.5 text-slate-500" /></button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Tag Order */}
-                        {tagOrder.length > 0 && (
-                          <div className="space-y-1.5 pt-1">
-                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 block">Ưu tiên theo Thẻ nhãn:</span>
-                            <div className="space-y-1.5 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
-                              {tagOrder.map((tag, idx) => (
-                                <div key={tag} className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 p-2 rounded-xl border border-slate-200 dark:border-slate-750">
-                                  <span className="truncate max-w-[120px]">{idx + 1}. {tag}</span>
-                                  <div className="flex gap-1">
-                                    <button type="button" onClick={() => moveTagOrder(idx, "UP")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowUp className="w-3.5 h-3.5 text-slate-500" /></button>
-                                    <button type="button" onClick={() => moveTagOrder(idx, "DOWN")} className="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer"><ArrowDown className="w-3.5 h-3.5 text-slate-500" /></button>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                    </div>
-
-                    {/* Footer Action Buttons */}
-                    <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-                      <button 
-                        type="button"
-                        onClick={() => {
-                          setFilterAndSortEnabled(false);
-                          setFilterType({ singleChoice: true, multipleChoice: true });
-                          setFilterOthers({ haveCorrectAnswer: false, haveExplanation: false, haveDisplayBlock: false });
-                          const resetTags: Record<string, boolean> = {};
-                          allUniqueTags.forEach(t => { resetTags[t] = true; });
-                          setSelectedTagsFilter(resetTags);
-                        }} 
-                        className="flex-1 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <RotateCcw className="w-3 h-3" />
-                        <span>Mặc định</span>
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => setIsFilterSettingsOpen(false)} 
-                        className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-500/20 active:scale-98 transition-all cursor-pointer"
-                      >
-                        Áp dụng
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
 

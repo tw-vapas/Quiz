@@ -551,17 +551,17 @@ export default function FileManager() {
                               </div>
 
                               <div className="min-w-0 flex-1">
-                                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                                <span className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate block">
                                   {file.name}
                                 </span>
-                                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 block">
+                                <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">
                                   {file.questions?.length || 0} câu hỏi
                                 </span>
                               </div>
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+                              <span className="text-xs font-mono text-slate-400 dark:text-slate-500 shrink-0">
                                 {formatBytes(getItemBytes(file))}
                               </span>
                             </div>
