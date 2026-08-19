@@ -945,14 +945,14 @@ export default function Sidebar() {
       <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shrink-0 flex gap-3 z-20">
         <button
           onClick={() => setSettingsOpen(false)}
-          className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm cursor-pointer"
+          className="flex-1 min-h-11 py-3 px-4 rounded-2xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm cursor-pointer"
         >
           Hủy
         </button>
         <button
           onClick={handleSave}
           className={cn(
-            "flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white transition-all shadow-md active:scale-[0.98] text-sm cursor-pointer",
+            "flex-1 min-h-11 py-3 px-4 rounded-2xl font-bold text-white transition-all shadow-md active:scale-[0.98] text-sm cursor-pointer",
             isSaved 
               ? "bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600" 
               : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"

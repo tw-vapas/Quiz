@@ -1003,7 +1003,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
               {/* Import Strategy selector (Compact Segmented UI) */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">
-                  Chế độ áp dụng câu hỏi:
+                  Chế độ áp dụng:
                 </label>
                 <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-md">
                   <button

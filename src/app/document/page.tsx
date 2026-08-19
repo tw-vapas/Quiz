@@ -140,7 +140,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
   }, [sources, searchQuery]);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-lg p-4 md:p-8 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col overflow-hidden">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
         <div>
           <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
@@ -189,10 +189,10 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
                 <button
                   key={src.id}
                   onClick={() => onSelect(src.id)}
-                  className="w-full min-h-11 text-left p-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 hover:border-indigo-300 dark:hover:border-indigo-800 transition-all duration-200 shadow-2xs hover:shadow-sm flex items-start gap-3.5 group cursor-pointer"
+                  className="w-full min-h-11 text-left p-4.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 hover:border-indigo-300 dark:hover:border-indigo-800 transition-all duration-200 shadow-2xs hover:shadow-sm flex items-start gap-3.5 group cursor-pointer"
                 >
                   <div className={cn(
-                    "p-2.5 rounded-lg shrink-0 transition-colors",
+                    "p-2.5 rounded-xl shrink-0 transition-colors",
                     hasDocument 
                       ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400" 
                       : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
@@ -225,14 +225,6 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
                         </>
                       )}
                     </div>
-
-                    {hasDocument && (
-                      <div className="mt-2.5">
-                        <span className="text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-200/50 dark:border-emerald-900/30 inline-flex items-center gap-1">
-                          Có tài liệu ôn tập
-                        </span>
-                      </div>
-                    )}
                   </div>
                 </button>
               );
@@ -277,7 +269,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
       )}
     >
       <div
-        className="w-full max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none md:rounded-lg shadow-2xl relative p-4 md:p-8 flex flex-col overflow-hidden"
+        className="w-full max-w-4xl h-[100dvh] md:h-auto md:max-h-[85vh] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-none md:rounded-3xl shadow-2xl relative p-5 md:p-10 flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
@@ -338,50 +330,42 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
                   <button
                     key={src.id}
                     onClick={() => onSelect(src.id)}
-                    className="w-full min-h-11 text-left p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/10 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/20 hover:border-indigo-300 dark:hover:border-indigo-900 transition-all duration-200 hover:shadow-md flex items-start gap-3 md:gap-4 group cursor-pointer"
+                    className="w-full min-h-11 text-left p-4.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-indigo-50/40 dark:hover:bg-indigo-950/30 hover:border-indigo-300 dark:hover:border-indigo-800 transition-all duration-200 shadow-2xs hover:shadow-sm flex items-start gap-3.5 group cursor-pointer"
                   >
                     <div className={cn(
-                      "p-3 rounded-xl shrink-0 transition-colors",
+                      "p-2.5 rounded-xl shrink-0 transition-colors",
                       hasDocument 
-                        ? "bg-green-50 dark:bg-green-950/30 text-green-600 dark:text-green-400" 
+                        ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400" 
                         : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
                     )}>
-                      {hasDocument ? <FileText className="w-6 h-6" /> : <BookOpen className="w-6 h-6 opacity-60" />}
+                      {hasDocument ? <FileText className="w-5 h-5" /> : <BookOpen className="w-5 h-5 opacity-60" />}
                     </div>
                     
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-slate-800 dark:text-slate-205 group-hover:text-indigo-650 dark:group-hover:text-indigo-400 transition-colors truncate mb-1" title={displayName}>
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate mb-0.5" title={displayName}>
                         {displayName}
                       </h3>
                       {displayName !== src.name && (
-                        <p className="text-xs text-slate-450 dark:text-slate-500 truncate mb-2" title={src.name}>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-1.5" title={src.name}>
                           {src.name}
                         </p>
                       )}
                       
-                      <div className="flex items-center gap-3 text-[11px] text-slate-500 dark:text-slate-400 mt-2">
-                        <span className="flex items-center gap-1">
-                          <Hash className="w-3.5 h-3.5" />
+                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-2">
+                        <span className="flex items-center gap-1 font-medium">
+                          <Hash className="w-3.5 h-3.5 text-slate-400" />
                           {src.questions.length} câu hỏi
                         </span>
                         {src.metadata?.last_modified && (
                           <>
-                            <span className="w-1 h-1 rounded-full bg-slate-350 dark:bg-slate-700" />
-                            <span className="truncate flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-slate-400" />
+                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                            <span className="truncate flex items-center gap-1 font-medium">
+                              <Calendar className="w-3.5 h-3.5 text-slate-400" />
                               {formatDate(src.metadata.last_modified).split(" ")[0]}
                             </span>
                           </>
                         )}
                       </div>
-
-                      {hasDocument && (
-                        <div className="mt-3">
-                          <span className="text-[9px] px-2 py-0.5 rounded bg-green-500/10 text-green-600 dark:text-green-400 font-extrabold uppercase tracking-wide">
-                            Có tài liệu ôn tập
-                          </span>
-                        </div>
-                      )}
                     </div>
                   </button>
                 );
