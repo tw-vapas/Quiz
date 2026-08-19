@@ -363,9 +363,6 @@ export default function FileManager() {
                 <h3 className="text-lg font-bold text-slate-850 dark:text-slate-100">
                   Tạo tệp câu hỏi mới
                 </h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 font-normal mt-0.5">
-                  Khởi tạo tệp trắc nghiệm trống hoặc nạp từ dữ liệu máy / gộp tệp hiện có
-                </p>
               </div>
               <button 
                 type="button"
@@ -381,7 +378,7 @@ export default function FileManager() {
               
               {/* File Name Input */}
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">
                   Tên tệp tin <span className="text-red-500">*</span>
                 </label>
                 <input 
@@ -395,7 +392,7 @@ export default function FileManager() {
 
               {/* Data Mode Selection (3 Clean Option Tabs) */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">
                   Phương thức khởi tạo dữ liệu
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -472,7 +469,7 @@ export default function FileManager() {
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                         {importedData ? `Đã nạp: ${newFileNameInput}` : "Kéo thả hoặc nhấp để chọn tệp từ máy"}
                       </span>
-                      <span className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 font-normal">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-normal">
                         {importedData ? `${importedData.questions.length} câu hỏi trắc nghiệm tìm thấy` : "Hỗ trợ định dạng .TXT, .DOCX, .PDF, .JSON và Hình ảnh"}
                       </span>
                     </>
@@ -484,7 +481,7 @@ export default function FileManager() {
               {newFileDataOption === "MERGE" && (
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                       Chọn các tệp để gộp câu hỏi:
                     </span>
                     {creatorFiles.length > 0 && (
@@ -505,44 +502,69 @@ export default function FileManager() {
                     )}
                   </div>
 
-                  <div className="space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar pr-1">
+                  <div className="space-y-2 max-h-[220px] overflow-y-auto custom-scrollbar pr-1">
                     {creatorFiles.length > 0 ? (
                       creatorFiles.map((file) => {
                         const isChecked = !!selectedSourceIds[file.id];
                         const fileValid = isFileValid(file);
                         return (
-                          <div
+                          <div 
                             key={file.id}
                             onClick={() => toggleSourceSelection(file.id)}
                             className={cn(
-                              "w-full p-2.5 rounded-xl border text-left text-xs font-semibold transition-all cursor-pointer flex items-center justify-between group",
-                              isChecked
-                                ? "border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-300 shadow-xs"
-                                : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 text-slate-700 dark:text-slate-300"
+                              "flex items-center justify-between gap-2 p-3 rounded-lg border shadow-2xs transition-all group relative cursor-pointer",
+                              fileValid 
+                                ? (isChecked 
+                                    ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 shadow-emerald-500/10 ring-1 ring-emerald-500/30" 
+                                    : "border-emerald-500/70 dark:border-emerald-500/50 bg-white dark:bg-slate-900 hover:border-emerald-500")
+                                : (isChecked 
+                                    ? "border-red-500 bg-red-50/20 dark:bg-red-950/30 shadow-red-500/10 ring-2 ring-red-500/20" 
+                                    : "border-red-500/80 dark:border-red-500/60 bg-red-50/10 dark:bg-red-950/10 hover:border-red-500")
                             )}
                           >
-                            <div className="min-w-0 flex-1 flex items-center gap-2">
-                              <input 
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => toggleSourceSelection(file.id)}
-                                className="w-3.5 h-3.5 text-indigo-600 rounded cursor-pointer shrink-0"
-                              />
-                              <div className="min-w-0">
-                                <div className="truncate text-xs font-bold">{file.name}</div>
-                                <div className="text-[11px] font-mono text-slate-400 dark:text-slate-500 mt-0.5">
-                                  {formatBytes(getItemBytes(file))} • {file.questions?.length || 0} câu hỏi
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              {/* Custom Checkbox styled like Quiz Settings */}
+                              <div className="relative flex items-center shrink-0">
+                                <input
+                                  type="checkbox"
+                                  className="peer sr-only"
+                                  checked={isChecked}
+                                  onChange={() => toggleSourceSelection(file.id)}
+                                />
+                                <div className="w-4.5 h-4.5 shrink-0 border-2 border-slate-300 dark:border-slate-600 rounded transition-colors peer-checked:bg-indigo-600 peer-checked:border-indigo-600 dark:peer-checked:bg-indigo-500 dark:peer-checked:border-indigo-500 group-hover:border-indigo-500 flex items-center justify-center">
+                                  {isChecked && (
+                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  )}
                                 </div>
                               </div>
+
+                              {/* File Icon Box */}
+                              <div className={cn(
+                                "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors",
+                                fileValid
+                                  ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400"
+                                  : "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400"
+                              )}>
+                                <FileCode className="w-4 h-4" />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate block">
+                                  {file.name}
+                                </span>
+                                <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 block">
+                                  {file.questions?.length || 0} câu hỏi
+                                </span>
+                              </div>
                             </div>
-                            <span className={cn(
-                              "text-[11px] font-semibold px-1.5 py-0.5 rounded-full shrink-0 ml-2 border",
-                              fileValid
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                                : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
-                            )}>
-                              {fileValid ? "✓ Hợp lệ" : "✕ Chưa hợp lệ"}
-                            </span>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <span className="text-[11px] font-mono text-slate-400 dark:text-slate-500 shrink-0">
+                                {formatBytes(getItemBytes(file))}
+                              </span>
+                            </div>
                           </div>
                         );
                       })
