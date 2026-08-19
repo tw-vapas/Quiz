@@ -59,17 +59,17 @@ Quy trình chuẩn bị tài liệu và cấu hình thông số đề thi trư�
 
 ## 4. Luồng Nghiệp vụ D: Biên soạn Đề thi (Creator Flow)
 
-1. **Khởi động**: Chọn tab **"Tạo Quiz"** trên thanh điều hướng. Màn hình chia làm 3 cột.
+1. **Khởi động**: Chọn tab **"Tạo Quiz"** trên thanh điều hướng. Màn hình duy trì 3 cột linh hoạt trên desktop/laptop (chỉ gộp 1 cột khi màn hình `< 768px`).
 2. **Khởi tạo tệp tin (FileManager - Cột 1)**:
-   - Nhấp nút **"Create File"**, nhập tên tệp và chọn loại tệp (`Quiz File` hoặc `Supported File`).
-   - Chọn dữ liệu nguồn ban đầu: Tạo một tệp trống hoàn toàn, nạp câu hỏi từ một nguồn tệp tin đã nhập trong máy, hoặc tải lên một tệp tin `.docx`/`.txt`/`.json` mới từ máy tính.
-   - Nhấn tạo. Tệp tin xuất hiện trong cây danh mục quản lý tệp tin.
+   - Nhấp nút **"Thêm tệp"** (nằm bên phải dòng `Danh Sách Tệp ({n}/10)`), nhập tên tệp và chọn phương thức nạp dữ liệu (tệp trống hoặc nhập & gộp dữ liệu từ máy/file có sẵn).
+   - Tệp tin mới tạo xuất hiện trong danh sách `Danh Sách Tệp`.
 3. **Biên soạn chi tiết (QuestionModification - Cột 2)**:
-   - Nhấp vào tệp tin vừa tạo để kích hoạt trình soạn thảo.
-   - **Tab Document**: Nhập lý thuyết học tập bằng định dạng Markdown và bấm chuyển đổi qua lại giữa màn hình soạn thảo văn bản và màn hình xem trước (preview) kết cấu của tài liệu học tập.
-   - **Tab Question View**: Click nút **"New Question"** để chèn thêm câu hỏi trống. Người dùng nhập tiêu đề câu hỏi, các đáp án lựa chọn A, B, C, D, tích chọn đáp án đúng, nhập nhãn tag chủ đề, chèn thêm khối hình ảnh/khối code đính kèm hoặc viết phần giải thích đáp án chi tiết.
-   - **Tab Code View**: Nếu muốn can thiệp sâu, người dùng chuyển sang Code View để thay đổi cấu trúc dữ liệu JSON trực tiếp bằng trình soạn thảo IDE tích hợp. Nhấn **"Save"** để hệ thống kiểm thử tự động lỗi chính tả cú pháp và lưu cập nhật.
+   - Nhấp vào tệp tin để kích hoạt trình soạn thảo.
+   - **Tab Tài Liệu**: Soạn thảo tài liệu ôn tập bằng Markdown và chuyển đổi xem trước (preview).
+   - **Tab Câu Hỏi**:
+     - Thao tác trực quan dạng Panel split-view: Chọn câu hỏi bên phải để chỉnh sửa bên trái. Các ô nhập liệu đồng bộ định dạng `text-base font-normal`.
+     - **Tính năng "Tạo Quiz Nhanh"**: Cho phép dán nhanh mảng JSON đáp án & giải thích hoặc dán văn bản câu hỏi thô để bóc tách tự động.
+     - Khi xóa câu hỏi $i$, hệ thống tự động chọn câu hỏi $i - 1$ ngay phía trước nó.
 4. **Thiết lập & Xuất bản (SettingExport - Cột 3)**:
-   - Đổi tên tệp nhanh, thay đổi loại tệp biên soạn, và viết ghi chú đề thi (giới hạn dưới 200 từ).
-   - Xem thống kê tổng số câu hỏi đạt tiêu chuẩn và biểu đồ SVG tỉ trọng phân bố các thẻ nhãn tag của đề.
-   - Nhấn **"Export This File"**, chọn định dạng xuất tệp (`JSON` để nạp lại vào máy sau này, hoặc dạng văn bản `DOCX` để in ấn đề thi ra giấy). Lọc số câu cần xuất (cắt lát đề thi: tất cả, chỉ lấy N câu đầu, N câu cuối hoặc một khoảng câu hỏi tùy chọn). Nhấn Export để tải tệp tin về máy tính cá nhân.
+   - Đổi tên tệp, kiểm thử tự động trạng thái hợp lệ, và viết ghi chú đề thi (tối đa 200 từ).
+   - Nhấn **"Xuất bản"**, chọn định dạng tệp (`JSON` hoặc `DOCX`), chọn phạm vi xuất (Tất cả, N câu đầu/cuối, khoảng tùy chọn, hoặc áp dụng bộ lọc). Tải tệp về máy tính.

@@ -7,8 +7,9 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 ## 1. FileManager (`src/components/FileManager.tsx`)
 - **Mục đích**: Cột bên trái trong giao diện "Tạo Quiz". Quản lý danh sách duy nhất các tệp đề thi **Tệp trắc nghiệm (Quiz File)** (giới hạn tối đa 10 tệp).
 - **Giao diện & Nhãn tiếng Việt**:
-  - `Quản lý tệp` (Header chính), `Thêm tệp` (Nút tạo file mới), `Tệp trắc nghiệm` (Danh sách tệp).
-  - Cấu trúc File Card tối ưu: Dòng 2 bên dưới tên tệp chỉ hiển thị số lượng câu hỏi (ví dụ: `10 câu hỏi`). Dung lượng tệp tin (File size) hiển thị gọn gàng góc phải bên trái nút Thùng rác. Đã gỡ bỏ badge dấu check/X để giao diện tối giản.
+  - `Quản Lý Tệp` (Header chính dạng Title Case, in đậm `font-bold text-lg`).
+  - Dòng danh sách tệp gộp số lượng file trực tiếp: `Danh Sách Tệp ({creatorFiles.length}/10)` (ví dụ: `Danh Sách Tệp (3/10)`). Nút `Thêm tệp` nằm cùng hàng với text này và căn lề phải.
+  - Cấu trúc File Card tối ưu: Dòng 2 bên dưới tên tệp hiển thị số lượng câu hỏi và dung lượng lưu trữ. Loại bỏ hoàn toàn sự kiện lắng nghe phím `Delete` toàn cục để tránh xóa nhầm tệp khi người dùng nhấn Delete trong ô nhập liệu.
 - **Trạng thái cục bộ (State)**:
   * Quản lý mở/đóng hộp thoại tạo tệp mới (`isCreateModalOpen`) hỗ trợ chọn nhiều file nguồn khả dụng để gộp thành file mới.
 - **Logic quan trọng**:
@@ -22,31 +23,36 @@ Tài liệu này cung cấp tài liệu kỹ thuật chi tiết cho các thành 
 
 ## 2. QuestionModification (`src/components/QuestionModification.tsx`)
 - **Mục đích**: Cột trung tâm trong giao diện "Tạo Quiz". Cung cấp giao diện trực quan chuyên nghiệp để biên tập chi tiết câu hỏi trắc nghiệm.
+- **Bố cục Fluid & Breakpoint Desktop**:
+  * Duy trì bố cục 3 cột linh hoạt (`grid-cols-3` với `repeat(3, minmax(0, 1fr))` và `min-w-0`) trên màn hình desktop/laptop ngay cả khi viewport bị thu hẹp (~900px - 1280px). Chỉ chuyển về layout 1 cột khi màn hình nhỏ hơn mức tablet/mobile (`< 768px`).
 - **Các tab chính**:
   * **Tài Liệu**: Nhập tài liệu ôn tập bằng Markdown hoặc xem trước kết quả hiển thị lý thuyết.
   * **Câu Hỏi**: Chỉnh sửa trực quan các câu hỏi dạng Panel split-view (danh sách câu hỏi bên phải, form chỉnh sửa nội dung/đáp án/tags/display block/explanation bên trái).
-  * *(Ghi chú: Tab **Mã nguồn / Code View** đã được loại bỏ hoàn toàn để tinh gọn trải nghiệm; tính năng Xuất bản file độc lập ở cột Setting & Export vẫn đảm bảo xuất đúng chuẩn dữ liệu).*
 - **Quy tắc UI & Tinh chỉnh Giao diện**:
   * **Thanh Header & Nút thao tác**:
-    * Bộ nút **Hoàn tác / Làm lại (Undo / Redo)** nằm sát bên trái nút `Tài Liệu` trên thanh Header chính, thiết kế dạng icon button phẳng mượt mà.
-    * Thống kê tổng số câu hỏi định dạng: `Tổng cộng: X câu hỏi` (hoặc `Tổng cộng: X/Y câu hỏi` khi đang lọc).
-    * Bộ 3 nút thao tác căn thứ tự từ trái sang phải: **`Tạo Quiz Nhanh`** (AI Supplement) -> **`Bộ lọc & Sắp xếp`** -> **`Thêm câu hỏi`**. Thiết kế dạng thẻ phẳng không viền outline trắng, cỡ chữ đồng bộ `10px`.
+    * Tiêu đề tên file active định dạng Title Case: `{activeFile.name}` in đậm `font-bold text-lg`.
+    * Bộ nút **Hoàn tác / Làm lại (Undo / Redo)** nằm sát bên trái nút `Tài Liệu` trên thanh Header chính.
+    * Bộ 3 nút thao tác: **`Tạo Quiz Nhanh`** (AI Supplement) -> **`Bộ lọc & Sắp xếp`** -> **`Thêm câu hỏi`**.
   * **Question Card (Trình biên tập câu hỏi)**:
-    * Tiêu đề `Câu hỏi X` mang cỡ chữ nổi bật (`text-base md:text-lg font-extrabold`). Icon tròn Hợp lệ (Check/X) nằm bên trái nút Thùng rác xóa câu hỏi.
-    * Tất cả các tiêu đề mục (`Nội dung`, `Đáp án`, `Loại câu hỏi`, `Thẻ phân loại`, `Khối hiển thị`, `Loại khối`, `Nội dung khối`, `Giải thích`) chuẩn phong cách **Sentence Case**, font chữ màu **trắng `#FFFFFF`** (`text-sm md:text-base font-bold`).
-    * Ô nhập **Nội dung** câu hỏi có bộ đếm `x/1000` ký tự.
-    * Ô nhập **Đáp án**: Tự động căn giữa nội dung theo chiều dọc (`my-auto`, `leading-normal`) chuẩn hàng với nút chọn và nút xóa.
-    * **Display Block**: Chiều cao ô nhập nội dung ban đầu bằng với ô chọn `Loại khối` (`32px`), tự động mở rộng theo dòng gõ (tối đa 5 dòng / `108px`), tự kích hoạt thanh cuộn mảnh (`custom-scrollbar` / 4px thin) khi vượt quá 5 dòng.
+    * Tiêu đề `Câu hỏi X` mang cỡ chữ `text-lg font-semibold`.
+    * **Đồng bộ hóa Input Fields**: Tất cả các ô nhập liệu/textarea/select/dropdown (`Nội dung`, `Đáp án A/B/C/D`, `Loại câu hỏi`, `Thẻ phân loại`, `Khối hiển thị`, `Giải thích`) đều sử dụng chung 1 định dạng: **`text-base font-normal`**.
+    * Khi xóa câu hỏi $i$, hệ thống tự động chọn lại câu hỏi $i - 1$ ngay phía trước nó (hoặc câu 0 nếu xóa câu 0).
+  * **Dialog "Tạo Quiz Nhanh" (SupplementComponentModal)**:
+    * Tiêu đề dialog: `Tạo Quiz Nhanh` (`text-xl font-bold`), không có icon bên trái.
+    * 2 tab: `Đáp Án & Giải Thích` và `Danh sách câu hỏi` (không có icon tab).
+    * Loại bỏ hoàn toàn khối AI callout box và cơ chế upload file JSON (chỉ dùng paste dữ liệu).
+    * Giảm 1 level text size của các ô Textarea nội dung xuống **`text-sm font-normal`**.
+    * Loại bỏ viền outline/focus ring trắng của các ô nhập liệu và bộ chuyển chế độ áp dụng.
 - **Tối ưu hóa & Logic quan trọng**:
   * Tạo chuỗi băm primitive `tagsKey` cho `allUniqueTags` và `useEffect` giúp triệt tiêu hoàn toàn lỗi re-render lặp vô hạn `Maximum update depth exceeded` khi gõ phím.
-  * Bộ lọc câu hỏi (`filterType`, `filterOthers`) và bộ sắp xếp đa lớp (theo độ ưu tiên của loại câu hỏi hoặc thứ tự của nhãn tag).
+  * Bộ lọc câu hỏi (`filterType`, `filterOthers`) và bộ sắp xếp đa lớp.
 
 ---
 
 ## 3. SettingExport (`src/components/SettingExport.tsx`)
 - **Mục đích**: Cột bên phải trong giao diện "Tạo Quiz". Quản lý siêu dữ liệu (metadata), ghi chú, thống kê và xuất bản đề thi.
 - **Giao diện & Nhãn tiếng Việt**:
-  - `Cài đặt & Xuất bản` (Header chính), `Thông tin chung` (Khu vực thông tin tệp), `Tên`, `Trạng thái`, `Chỉnh sửa lần cuối`, `Xuất bản` (Nút xuất file).
+  - `Cài Đặt & Xuất Bản` (Header chính dạng Title Case, in đậm `font-bold text-lg`), `Tên tệp tin`, `Trạng thái`, `Chỉnh sửa lần cuối`, `Ghi chú`, `Xuất bản` (Nút xuất file).
 - **Logic quan trọng**:
   * Tự động kiểm thử tính hợp lệ (Auto Evaluate Status) của tệp tin: Phát hiện đề trống (`Empty File`), lỗi cấu trúc (`Syntax Error`), thiếu lựa chọn đáp án (`Missing Answer Option`), hoặc chưa chọn đáp án đúng (`Missing Correct Answer`).
   * Giới hạn ghi chú ghi tối đa **200 từ**. Nếu nhập vượt quá, hệ thống sẽ tự động cắt ngắn chuỗi tại từ thứ 200.

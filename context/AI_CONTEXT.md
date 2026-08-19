@@ -26,7 +26,7 @@ Tập tin này là điểm bắt đầu (entrypoint) lý tưởng dành cho các
   * *Ví dụ*: `const theme = useQuizStore(s => s.theme);` (Đúng).
 - **Phím tắt trong React**: Thao tác ghi đè trạng thái store trong hàm callback hoặc sự kiện ngoài React phải gọi trực tiếp qua `useQuizStore.getState()`.
 - **Cơ chế con trỏ chuột**: Lập trình viên phải khai báo class `cursor-pointer` thủ công cho tất cả các phần tử tương tác (như button, link) do Tailwind CSS v4 không tự động áp dụng pointer mặc định.
-- **Đặc tính Cỡ chữ**: Cỡ chữ gốc được đặt là `html { font-size: 75% }` (1rem tương đương **12px**).
+- **Tỉ lệ Giao diện & Typography**: Cỡ chữ gốc được thiết lập `html { font-size: 75% }` (1rem = 12px) để thu nhỏ giao diện tương đương Zoom 75% trên Chrome. Toàn bộ dự án quy chuẩn về **5 level cỡ chữ** (`12px` / `text-xs`, `14px` / `text-sm`, `16px` / `text-base`, `18px` / `text-lg`, `20px` / `text-xl`). Tiêu đề 3 section chính dùng `font-bold text-lg`. All inputs trong Question Editor dùng `text-base font-normal`.
 
 ---
 

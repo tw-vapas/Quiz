@@ -23,8 +23,14 @@ Tài liệu này tổng hợp các quy ước lập trình, cấu trúc đặt t
 
 - **Không có tệp cấu hình**: Tailwind CSS v4 được định cấu hình trực tiếp qua chỉ thị `@import "tailwindcss";` trong tệp `globals.css`.
 - **Bắt buộc thêm con trỏ chuột cho phần tử tương tác**: Tailwind v4 mặc định không tự động gán kiểu `cursor: pointer` lên các thẻ `<button>` hay liên kết `<a>`. Do đó, lập trình viên **phải thêm class `cursor-pointer` một cách thủ công** vào tất cả các phần tử tương tác được.
-- **Quy tắc Font Size**: Cỡ chữ gốc được thiết lập là `html { font-size: 75% }` trong `globals.css`.
-  * *Lưu ý*: 1rem tương đương với **12px** chứ không phải 16px như thông thường. Khi thiết kế layout, cần cân nhắc kỹ để tránh cỡ chữ bị quá to hoặc quá nhỏ.
+- **Quy tắc Font Size & 75% UI Scaling**: Cỡ chữ gốc được thiết lập là `html { font-size: 75% }` trong `globals.css` để thu nhỏ toàn bộ tỉ lệ giao diện, khoảng cách và cỡ chữ tương đương mức Zoom 75% trên trình duyệt Chrome.
+  * *Lưu ý*: 1rem tương đương với **12px** chuẩn.
+- **Chuẩn hóa Hệ thống Typography (5-Level Scale)**: Toàn bộ dự án quy chuẩn về đúng **5 cấp độ kích thước chữ tiêu chuẩn**, tạo sự phân cấp thị giác bằng Font Weight và Màu sắc:
+  1. `12px` (`text-xs`): Caption, Metadata, Badges trạng thái (`Valid File`, `Sắp đầy!`), Bộ đếm ký tự (`0/1000`), Thống kê dung lượng (`0.55 MB`).
+  2. `14px` (`text-sm`): Form Labels (`Nội dung`, `Tên tệp tin`), Controls phụ (`Thêm tệp`, `Thêm đáp án`, `Tạo Quiz Nhanh`, `Bộ lọc & Sắp xếp`), Phụ đề sidebar.
+  3. `16px` (`text-base`): Toàn bộ các ô nhập liệu/Textarea/Select/Dropdown (Nội dung câu hỏi, Đáp án A/B/C/D, Ghi chú, Thẻ phân loại), Nút xác nhận chính (`Xuất bản`, `Bắt đầu`, `Xác nhận`). *(Lưu ý: riêng Textarea dialog "Tạo Quiz Nhanh" giảm 1 cấp xuống `text-sm`)*.
+  4. `18px` (`text-lg`): Tiêu đề 3 main section chính (`Quản Lý Tệp`, `{Tên tệp tin}`, `Cài Đặt & Xuất Bản`) được in đậm `font-bold text-lg`, Tiêu đề card (`Câu hỏi 1`).
+  5. `20px` (`text-xl`): Tiêu đề Popup Modal (`Tạo Quiz Nhanh`, `Tạo tệp câu hỏi mới`, `Cài đặt`) và Logo Topbar (`Vapas Quiz`).
 - **Tránh tràn chiều rộng Flexbox**: Thuộc tính toàn cục `* { min-width: 0 }` và `html, body { overflow-x: hidden }` được cấu hình để tránh hiện tượng vỡ khung hiển thị hoặc xuất hiện thanh cuộn ngang không mong muốn trên thiết bị di động.
 - **Chế độ tối (Dark Mode)**: Kích hoạt bằng cách thêm class `.dark` vào thẻ `<html>`. Sử dụng cấu hình biến thể tùy chỉnh trong CSS:
   * `@custom-variant dark (&:where(.dark, .dark *));`
