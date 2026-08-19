@@ -689,49 +689,67 @@ function IdeEditor({ value, onChange, jsonError }: IdeEditorProps) {
   );
 }
 
-const QUIZ_QUESTION_PROMPT = `- Tạo chính xác [int] câu hỏi.
+const QUIZ_QUESTION_PROMPT = `# MCQ GENERATION REQUIREMENTS 
+ 
+- Tạo chính xác 50 câu hỏi. 
+ 
+- Bao quát hợp lý các knowledge points quan trọng trong tài liệu, phân bổ theo mức độ quan trọng và tránh tập trung vào một phần nhỏ. 
+- Mỗi câu phải kiểm tra một kiến thức hoặc khả năng suy luận cụ thể và không phụ thuộc không cần thiết vào kiến thức ngoài tài liệu. 
+ 
+- Đảm bảo đa dạng độ khó: nhận biết/lý thuyết → thông hiểu → vận dụng → vận dụng cao. 
+- Câu khó phải khó do reasoning/application, không phải do wording mơ hồ. 
+- Đa dạng dạng câu hỏi: definition, comparison, cause-effect, scenario, application, analysis, decision-making... 
+- Tránh lặp lại cùng một knowledge point theo cùng một cách. 
+ 
+- Mỗi câu chỉ có một đáp án đúng. 
+- Distractors phải hợp lý, dựa trên những hiểu lầm hoặc suy luận sai phổ biến. 
+- Các đáp án tương đối đồng đều về độ dài, cấu trúc và mức độ cụ thể; không để đáp án đúng lộ liễu bởi wording, độ dài hoặc pattern. 
+- Không sử dụng distractor vô lý hoặc nhiều đáp án có thể cùng đúng. 
+- Mỗi đáp án A, B, C, D phải có độ dài tối đa 150 ký tự. Đây là giới hạn cứng vì phần nội dung vượt quá 150 ký tự sẽ bị cắt. 
+- Ưu tiên wording ngắn gọn, trực tiếp và đủ ý; không thêm thông tin dư thừa chỉ để làm đáp án dài hơn. 
+- Trước khi output, phải tự kiểm tra độ dài của từng đáp án và đảm bảo không đáp án nào vượt quá 150 ký tự. 
+ 
+- Trước khi output, tự kiểm tra số lượng, coverage, difficulty, diversity, clarity, uniqueness of correct answer, distractor quality và giới hạn 150 ký tự của tất cả đáp án. 
+- Chỉ output kết quả cuối cùng. 
+ 
+## Output 
+ 
+- Chỉ gồm câu hỏi và đáp án A, B, C, D. 
+- Không explanation, đáp án đúng, difficulty, topic/tag, heading hoặc text thừa. 
+- Không divider; giữa các câu chỉ có một blank line. 
+- Phải có chính xác 50 câu.`;
 
-- Bao quát hợp lý các knowledge points quan trọng trong tài liệu, phân bổ theo mức độ quan trọng và tránh tập trung vào một phần nhỏ.
-- Mỗi câu phải kiểm tra một kiến thức hoặc khả năng suy luận cụ thể và không phụ thuộc không cần thiết vào kiến thức ngoài tài liệu.
+const SUBCOMPONENTS_PROMPT = `Hãy dựa trên danh sách các câu hỏi trắc nghiệm vừa được tạo từ bước trước. Hãy đọc kỹ từng câu hỏi và các đáp án A, B, C, D để:
 
-- Đảm bảo đa dạng độ khó: nhận biết/lý thuyết → thông hiểu → vận dụng → vận dụng cao.
-- Câu khó phải khó do reasoning/application, không phải do wording mơ hồ.
-- Đa dạng dạng câu hỏi: definition, comparison, cause-effect, scenario, application, analysis, decision-making...
-- Tránh lặp lại cùng một knowledge point theo cùng một cách.
+1. Xác định chính xác đáp án đúng cho từng câu.
+2. Viết lời giải thích ngắn gọn nhưng đủ rõ để giải thích tại sao đáp án đúng.
+3. Xác định các Tags phù hợp với nội dung kiến thức được kiểm tra.
 
-- Mỗi câu chỉ có một đáp án đúng.
-- Distractors phải hợp lý, dựa trên những hiểu lầm hoặc suy luận sai phổ biến.
-- Các đáp án tương đối đồng đều về độ dài, cấu trúc và mức độ cụ thể; không để đáp án đúng lộ liễu bởi wording, độ dài hoặc pattern.
-- Không sử dụng distractor vô lý hoặc nhiều đáp án có thể cùng đúng.
+## Yêu cầu
 
-- Trước khi output, tự kiểm tra số lượng, coverage, difficulty, diversity, clarity, uniqueness of correct answer và distractor quality.
-- Chỉ output kết quả cuối cùng.
+- Giữ nguyên thứ tự các câu hỏi.
+- Mỗi câu hỏi đầu vào phải tương ứng với đúng một object trong output.
+- Không bỏ sót hoặc thêm câu hỏi.
+- "CorrectOptions" chứa chữ cái của đáp án đúng, ví dụ: ["A"] hoặc ["A", "C"].
+- Nếu câu hỏi chỉ có một đáp án đúng, chỉ trả về một chữ cái.
+- "Explanation" phải dựa trên nội dung câu hỏi và kiến thức liên quan, không suy đoán hoặc bịa đặt.
+- "Tags" là mảng tùy chọn dùng để phân loại chủ đề/knowledge point; nếu không xác định được thì dùng [].
 
-## Output
-- Chỉ gồm câu hỏi và đáp án A, B, C, D.
-- Không explanation, đáp án đúng, difficulty, topic/tag, heading hoặc text thừa.
-- Không divider; giữa các câu chỉ có một blank line.
-- Phải có chính xác [int] câu.`;
+## Output Format
 
-const SUBCOMPONENTS_PROMPT = `Bạn là một trợ lý giáo dục chuyên nghiệp. Dưới đây là danh sách các câu hỏi trắc nghiệm.
-Hãy đọc kỹ từng câu hỏi và xác định đáp án đúng cùng với lời giải thích chi tiết.
-Trả về KẾT QUẢ DUY NHẤT dưới dạng mảng JSON thuần túy (không chứa markdown \`\`\`json hay bất kỳ văn bản nào khác ngoài JSON) theo đúng cấu trúc sau:
+Chỉ trả về một JSON array hợp lệ.
+
+Không sử dụng Markdown code block.
+Không thêm heading, commentary hoặc bất kỳ text nào bên ngoài JSON.
 
 [
   {
     "Question": 1,
     "CorrectOptions": ["A"],
-    "Explanation": "Lời giải thích chi tiết...",
+    "Explanation": "Lời giải thích tại sao đáp án đúng.",
     "Tags": ["Môn Toán"]
   }
-]
-
-- "CorrectOptions": Mảng chứa các chữ cái đại diện cho đáp án đúng (ví dụ: ["A"] hoặc ["A", "C"]).
-- "Explanation": Chuỗi giải thích lý do tại sao đáp án đó đúng.
-- "Tags": (Tùy chọn) Mảng chứa các thẻ phân loại cho câu hỏi.
-
-Danh sách câu hỏi cần xử lý:
-[Dán danh sách câu hỏi của bạn vào đây]`;
+]`;
 
 interface SupplementComponentModalProps {
   isOpen: boolean;
@@ -757,9 +775,9 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
     }
   }, [isOpen]);
 
-  const handleCopyPrompt = (promptText: string, label: string) => {
+  const handleCopyPrompt = (promptText: string) => {
     navigator.clipboard.writeText(promptText);
-    useQuizStore.getState().showNotification(`Đã sao chép prompt ${label} thành công!`, "success");
+    useQuizStore.getState().showNotification("Đã sao chép prompt thành công!", "success");
   };
 
   const analysis = useMemo(() => {
@@ -994,7 +1012,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopyPrompt(QUIZ_QUESTION_PROMPT, "tạo câu hỏi")}
+                    onClick={() => handleCopyPrompt(QUIZ_QUESTION_PROMPT)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
                     title="Sao chép prompt mẫu để yêu cầu AI tạo câu hỏi trắc nghiệm chuẩn định dạng"
                   >
@@ -1003,7 +1021,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                   </button>
                 </div>
                 <p className="text-sm font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Hãy nhập các file tài liệu liên quan cho các AI chatbots như NotebookLM, Gemini, ChatGPT... và sử dụng prompt để tạo ra các câu hỏi trắc nghiệm sau đó dán vào mục nội dung bên dưới
+                  Hãy nhập các file tài liệu cho các AI chatbots như NotebookLM (đề xuất), Gemini, ChatGPT... và sử dụng prompt để tạo ra các câu hỏi trắc nghiệm sau đó dán vào mục nội dung bên dưới
                 </p>
               </div>
 
@@ -1114,7 +1132,7 @@ D. Oát (W)`}
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopyPrompt(SUBCOMPONENTS_PROMPT, "bổ sung thành phần")}
+                    onClick={() => handleCopyPrompt(SUBCOMPONENTS_PROMPT)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
                     title="Sao chép prompt mẫu để yêu cầu AI tạo dữ liệu đáp án & giải thích chuẩn JSON"
                   >
@@ -1123,7 +1141,7 @@ D. Oát (W)`}
                   </button>
                 </div>
                 <p className="text-sm font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Hãy nhập các file tài liệu liên quan cho các AI chatbots như NotebookLM, Gemini, ChatGPT... và sử dụng prompt để bổ sung các thành phần phụ vào các câu hỏi trắc nghiệm có sẵn sau đó dán vào mục nội dung bên dưới
+                  Hãy nhập các file tài liệu cho các AI chatbots như NotebookLM (đề xuất), Gemini, ChatGPT... và sử dụng prompt để bổ sung các thành phần phụ vào các câu hỏi trắc nghiệm có sẵn sau đó dán vào mục nội dung bên dưới
                 </p>
               </div>
 
