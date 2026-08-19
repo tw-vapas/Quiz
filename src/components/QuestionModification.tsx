@@ -401,10 +401,10 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Type and Tags inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5 relative">
-          <span className="text-xs md:text-sm font-bold text-white block">Loại câu hỏi</span>
+          <span className="text-sm font-semibold text-white block">Loại câu hỏi</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+              className="w-full px-3 py-2 text-base font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
             >
               <span>{typeLabel}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300" />
@@ -414,13 +414,13 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-[#1e2d5a] border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg p-1.5 space-y-1">
                 <button
                   onClick={() => { handleTypeChange("single_choice"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
+                  className={cn("w-full p-2 text-left text-base font-normal rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
                   1 đáp án
                 </button>
                 <button
                   onClick={() => { handleTypeChange("multiple_choice"); setIsTypeDropdownOpen(false); }}
-                  className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
+                  className={cn("w-full p-2 text-left text-base font-normal rounded-lg cursor-pointer", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
                   Nhiều đáp án
                 </button>
@@ -429,7 +429,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           </div>
 
         <div className="space-y-1.5">
-          <span className="text-xs md:text-sm font-bold text-white block">Thẻ phân loại</span>
+          <span className="text-sm font-semibold text-white block">Thẻ phân loại</span>
           <input
             type="text"
             value={tagsInput}
@@ -441,7 +441,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 e.currentTarget.blur();
               }
             }}
-            className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 text-base font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="tag1, tag2..."
           />
         </div>
@@ -468,11 +468,11 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-3">
                 <div className="space-y-1.5 shrink-0 w-32">
-                  <span className="text-[10px] md:text-xs font-bold text-white block">Loại khối</span>
+                  <span className="text-xs font-semibold text-white block">Loại khối</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
-                    className="w-full px-2 py-1.5 text-[10px] font-bold border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 cursor-pointer"
+                    className="w-full px-2 py-1.5 text-base font-normal border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 cursor-pointer"
                   >
                     <option value="code">Code</option>
                     <option value="image">Image</option>
@@ -481,8 +481,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] md:text-xs font-bold text-white block">Nội dung</span>
-                    <span className={cn("text-[9px] font-mono font-bold", db.content.length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
+                    <span className="text-xs font-semibold text-white block">Nội dung</span>
+                    <span className={cn("text-xs font-mono font-medium", db.content.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
                   </div>
@@ -491,7 +491,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     placeholder="Nhập nội dung của khối hiển thị (tối đa 1000 kí tự)..."
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-base font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
                   />
                 </div>
               </div>
@@ -504,9 +504,9 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {question.explanation !== undefined && question.explanation !== null && (
         <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50/20 dark:bg-[#1e2d5a] space-y-1.5 relative">
           <div className="flex items-center justify-between">
-            <label className="text-xs md:text-sm font-bold text-white block">Giải thích</label>
+            <label className="text-sm font-semibold text-white block">Giải thích</label>
             <div className="flex items-center gap-3">
-              <span className={cn("text-[9px] font-mono font-bold", (question.explanation || "").length >= 1000 ? "text-red-500 font-extrabold" : "text-slate-400")}>
+              <span className={cn("text-xs font-mono font-medium", (question.explanation || "").length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                 {(question.explanation || "").length}/1000
               </span>
               <button
@@ -522,7 +522,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             maxLength={1000}
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value.slice(0, 1000))}
-            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-xs font-semibold text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-base font-normal text-slate-700 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
             placeholder="Nhập nội dung giải thích (tối đa 1000 ký tự)..."
           />
         </div>
@@ -965,7 +965,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
   { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
 ]`}
-                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-base font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
 
@@ -1011,7 +1011,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
           ) : (
             <div className="space-y-4">
               {/* Import Strategy selector (Compact Segmented UI) */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-750">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">
                   Chế độ áp dụng câu hỏi:
                 </label>
@@ -1020,7 +1020,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("APPEND")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
+                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none",
                       importStrategy === "APPEND"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1033,7 +1033,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("OVERWRITE")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
+                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none",
                       importStrategy === "OVERWRITE"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1046,7 +1046,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("REPLACE_ALL")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none",
+                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none",
                       importStrategy === "REPLACE_ALL"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1077,7 +1077,7 @@ A. Vôn (V)
 B. Ampe (A) /
 C. Ôm (Ω)
 D. Oát (W)`}
-                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-base font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
 
@@ -1523,7 +1523,7 @@ export default function QuestionModification({
       <div className="p-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span className="text-lg font-semibold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
+          <span className="text-lg font-bold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
         </div>
