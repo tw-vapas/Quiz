@@ -719,10 +719,7 @@ interface SupplementComponentModalProps {
 
 function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: SupplementComponentModalProps) {
   const [mainMode, setMainMode] = useState<"ANSWERS_EXPLANATION" | "RAW_TEXT_QUESTIONS">("ANSWERS_EXPLANATION");
-  const [activeTab, setActiveTab] = useState<"FILE" | "PASTE">("FILE");
   const [jsonText, setJsonText] = useState("");
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [isCopied, setIsCopied] = useState(false);
 
   // Tab 2 Raw text questions state
   const [rawText, setRawText] = useState("");
@@ -731,38 +728,11 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   useEffect(() => {
     if (isOpen) {
       setMainMode("ANSWERS_EXPLANATION");
-      setActiveTab("FILE");
       setJsonText("");
-      setFileName(null);
-      setIsCopied(false);
       setRawText("");
       setImportStrategy("APPEND");
     }
   }, [isOpen]);
-
-  const handleCopyPrompt = async () => {
-    try {
-      await navigator.clipboard.writeText(SYSTEM_PROMPT_TEMPLATE);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2500);
-      useQuizStore.getState().showNotification("Đã sao chép Prompt mẫu cho AI!", "success");
-    } catch {
-      useQuizStore.getState().showNotification("Không thể sao chép tự động, hãy chọn văn bản và sao chép thủ công.", "error");
-    }
-  };
-
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      setJsonText(content || "");
-    };
-    reader.readAsText(file, "UTF-8");
-  };
 
   const analysis = useMemo(() => {
     if (!isOpen || !activeFile || mainMode !== "ANSWERS_EXPLANATION" || !jsonText.trim()) return null;
@@ -931,17 +901,17 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-800 dark:text-slate-100">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden text-slate-800 dark:text-slate-100">
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center text-indigo-650 dark:text-indigo-400 shrink-0">
+            <div className="w-9 h-9 rounded-lg bg-indigo-100 dark:bg-indigo-950/70 border border-indigo-200 dark:border-indigo-800/80 flex items-center justify-center text-indigo-650 dark:text-indigo-400 shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
-                Bổ sung Thành phần &amp; Câu hỏi
+                Tạo Quiz Nhanh
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Thao tác tệp <span className="font-bold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu hiện có)
@@ -969,8 +939,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Bổ sung Đáp án &amp; Giải thích (JSON)</span>
+            <span>Đáp Án &amp; Giải Thích</span>
           </button>
           <button
             type="button"
@@ -982,8 +951,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Nhập nhanh Câu hỏi (Text thô)</span>
+            <span>Danh sách câu hỏi</span>
           </button>
         </div>
 
@@ -991,130 +959,34 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         <div className="p-6 overflow-y-auto space-y-5 flex-1 style-scrollbar">
           
           {mainMode === "ANSWERS_EXPLANATION" ? (
-            <>
-              {/* Copy Prompt Section */}
-              <div className="p-4 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                <div className="space-y-0.5">
-                  <div className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-                    <FileCode className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    <span>Bạn chưa có file đáp án JSON từ AI?</span>
-                  </div>
-                  <p className="text-[11px] text-indigo-700 dark:text-indigo-300">
-                    Sao chép Prompt mẫu bên dưới dán vào ChatGPT / Gemini để nhận lại file JSON đúng chuẩn.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleCopyPrompt}
-                  className={cn(
-                    "px-3.5 py-2 rounded-xl text-xs font-bold shrink-0 flex items-center gap-1.5 cursor-pointer transition-all shadow-xs",
-                    isCopied 
-                      ? "bg-emerald-600 text-white" 
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95"
-                  )}
-                >
-                  {isCopied ? (
-                    <>
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Đã sao chép!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-3.5 h-3.5" />
-                      <span>Sao chép Prompt AI</span>
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Import Modes Switcher */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Phương thức nhập dữ liệu JSON:
-                  </label>
-                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-750">
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("FILE")}
-                      className={cn(
-                        "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                        activeTab === "FILE"
-                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                      )}
-                    >
-                      Tải tệp JSON
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab("PASTE")}
-                      className={cn(
-                        "px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer",
-                        activeTab === "PASTE"
-                          ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-                      )}
-                    >
-                      Dán đoạn JSON
-                    </button>
-                  </div>
-                </div>
-
-                {/* Input Area */}
-                {activeTab === "FILE" ? (
-                  <div className="relative border-2 border-dashed border-slate-200 dark:border-slate-750 hover:border-indigo-400 dark:hover:border-indigo-600 rounded-2xl p-6 text-center transition-colors bg-slate-50/50 dark:bg-slate-900/30">
-                    <input
-                      type="file"
-                      accept=".json"
-                      onChange={handleFileUpload}
-                      className="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10"
-                    />
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <div className="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                        <Upload className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          {fileName ? (
-                            <span className="text-indigo-600 dark:text-indigo-400 font-extrabold">{fileName}</span>
-                          ) : (
-                            "Nhấp để chọn tệp .json hoặc kéo thả vào đây"
-                          )}
-                        </p>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
-                          Chỉ chấp nhận tệp có định dạng .json
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="relative">
-                    <textarea
-                      value={jsonText}
-                      onChange={(e) => setJsonText(e.target.value)}
-                      placeholder={`[
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Nội dung dữ liệu JSON đáp án &amp; giải thích:
+                </label>
+                <textarea
+                  value={jsonText}
+                  onChange={(e) => setJsonText(e.target.value)}
+                  placeholder={`[
   { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
   { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
 ]`}
-                      className="w-full h-40 p-3 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
-                    />
-                  </div>
-                )}
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
+                />
               </div>
 
               {/* Analysis & Validation Results */}
               {analysis && (
-                <div className="space-y-3 pt-2">
+                <div className="space-y-3 pt-1">
                   {analysis.error ? (
-                    <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
+                    <div className="p-3.5 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 text-red-700 dark:text-red-300 text-xs font-bold flex items-start gap-2.5">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
                       <span>{analysis.error}</span>
                     </div>
                   ) : (
                     <div className="space-y-2.5">
                       {/* Summary badge */}
-                      <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                      <div className="p-3.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>
@@ -1125,7 +997,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
 
                       {/* Warnings list if any */}
                       {Boolean(analysis.warnings && analysis.warnings.length > 0) && (
-                        <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
+                        <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
                           <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                             <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
@@ -1141,59 +1013,53 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                   )}
                 </div>
               )}
-            </>
+            </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-750 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                Dán danh sách câu hỏi dạng văn bản thô (ví dụ: <code className="bg-slate-200/80 dark:bg-slate-700 px-1 py-0.5 rounded font-mono text-[11px]">Câu 1: ... A. ... B. ...</code>). Hệ thống sẽ tự động quét và bóc tách câu hỏi.
-              </div>
-
-              {/* Import Strategy selector */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              {/* Import Strategy selector (Compact Segmented UI) */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-750">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 shrink-0">
                   Chế độ áp dụng câu hỏi:
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-md">
                   <button
                     type="button"
                     onClick={() => setImportStrategy("APPEND")}
                     className={cn(
-                      "p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between select-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none",
                       importStrategy === "APPEND"
-                        ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20 font-bold"
-                        : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                     )}
+                    title="Nối vào cuối tệp hiện tại"
                   >
-                    <span className="text-xs font-bold">Thêm nối tiếp</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Nối vào cuối tệp hiện tại</span>
+                    Thêm nối tiếp
                   </button>
-
                   <button
                     type="button"
                     onClick={() => setImportStrategy("OVERWRITE")}
                     className={cn(
-                      "p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between select-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none",
                       importStrategy === "OVERWRITE"
-                        ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20 font-bold"
-                        : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                     )}
+                    title="Ghi đè từ câu số 1"
                   >
-                    <span className="text-xs font-bold">Ghi đè từ đầu</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Thay thế từ câu số 1</span>
+                    Ghi đè từ đầu
                   </button>
-
                   <button
                     type="button"
                     onClick={() => setImportStrategy("REPLACE_ALL")}
                     className={cn(
-                      "p-2.5 rounded-xl border text-left cursor-pointer transition-all flex flex-col justify-between select-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none",
                       importStrategy === "REPLACE_ALL"
-                        ? "border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/20 font-bold"
-                        : "border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        ? "bg-indigo-600 text-white shadow-xs"
+                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                     )}
+                    title="Xóa bộ cũ & thay bằng bộ mới"
                   >
-                    <span className="text-xs font-bold">Thay thế toàn bộ</span>
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Xóa bộ cũ &amp; thay bằng bộ mới</span>
+                    Thay thế toàn bộ
                   </button>
                 </div>
               </div>
@@ -1217,7 +1083,7 @@ A. Vôn (V)
 B. Ampe (A) /
 C. Ôm (Ω)
 D. Oát (W)`}
-                  className="w-full h-40 p-3 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
+                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
                 />
               </div>
 
@@ -1225,13 +1091,13 @@ D. Oát (W)`}
               {rawTextAnalysis && (
                 <div className="space-y-2 pt-1">
                   {rawTextAnalysis.error && rawTextAnalysis.totalCount === 0 ? (
-                    <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center gap-2">
+                    <div className="p-3.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
                       <span>{rawTextAnalysis.error}</span>
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      <div className="p-3.5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
+                      <div className="p-3.5 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>
@@ -1242,7 +1108,7 @@ D. Oát (W)`}
 
                       {/* Render warnings if STT gaps are detected */}
                       {Boolean(rawTextAnalysis.warnings && rawTextAnalysis.warnings.length > 0) && (
-                        <div className="p-3.5 rounded-xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 style-scrollbar">
+                        <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 style-scrollbar">
                           <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
                             <span>Thông tin STT văn bản gốc:</span>
@@ -1268,7 +1134,7 @@ D. Oát (W)`}
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
+            className="px-4 py-2 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
           >
             Hủy
           </button>
@@ -1280,14 +1146,9 @@ D. Oát (W)`}
                 ? !analysis || Boolean(analysis.error) || analysis.matchedCount === 0
                 : !rawTextAnalysis || Boolean(rawTextAnalysis.error && rawTextAnalysis.totalCount === 0) || rawTextAnalysis.totalCount === 0
             }
-            className="px-5 py-2 rounded-xl bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
+            className="px-5 py-2 rounded-lg bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
           >
-            <Sparkles className="w-4 h-4" />
-            <span>
-              {mainMode === "ANSWERS_EXPLANATION"
-                ? `Xác nhận bổ sung (${analysis?.matchedCount || 0} câu)`
-                : `Xác nhận nhập (${rawTextAnalysis?.totalCount || 0} câu)`}
-            </span>
+            <span>Xác nhận</span>
           </button>
         </div>
 
