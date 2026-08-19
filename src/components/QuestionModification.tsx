@@ -283,7 +283,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   const canAddExplanation = question.explanation === null || question.explanation === undefined;
 
   return (
-    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
+    <div className="p-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
         <span className="text-sm md:text-base font-extrabold text-indigo-650 dark:text-indigo-400">
@@ -323,7 +323,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           maxLength={1000}
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value.slice(0, 1000) })}
-          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-xl bg-slate-50/30 dark:bg-[#22325a] text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-slate-50/30 dark:bg-[#22325a] text-xs font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
           placeholder="Nhập nội dung câu hỏi (tối đa 1000 ký tự)..."
         />
       </div>
@@ -347,7 +347,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 <div 
                   key={ans.id}
                   className={cn(
-                    "flex items-center gap-3 p-2.5 rounded-xl border transition-all duration-200 bg-white dark:bg-[#22325a]",
+                    "flex items-center gap-3 p-2.5 rounded-lg border transition-all duration-200 bg-white dark:bg-[#22325a]",
                     isCorrect 
                       ? "border-green-500/35 bg-green-500/5 dark:bg-green-950/30" 
                       : "border-slate-200 dark:border-slate-600"
@@ -404,14 +404,14 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           <span className="text-xs md:text-sm font-bold text-white block">Loại câu hỏi</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
-              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
+              className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
             >
               <span>{typeLabel}</span>
               <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300" />
             </button>
 
             {isTypeDropdownOpen && (
-              <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-[#1e2d5a] border border-slate-200 dark:border-slate-600 rounded-xl shadow-lg p-1.5 space-y-1">
+              <div className="absolute left-0 right-0 bottom-full mb-1.5 z-20 bg-white dark:bg-[#1e2d5a] border border-slate-200 dark:border-slate-600 rounded-lg shadow-lg p-1.5 space-y-1">
                 <button
                   onClick={() => { handleTypeChange("single_choice"); setIsTypeDropdownOpen(false); }}
                   className={cn("w-full p-2 text-left text-xs font-bold rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
@@ -441,7 +441,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 e.currentTarget.blur();
               }
             }}
-            className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-xl bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-3 py-2 text-xs font-bold border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-[#22325a] text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="tag1, tag2..."
           />
         </div>
@@ -1785,7 +1785,7 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={() => setIsSupplementModalOpen(true)}
-                  className="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/80 text-indigo-650 dark:text-indigo-350 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                   title="Bổ sung đáp án đúng và lời giải thích từ AI (JSON)"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
@@ -1797,7 +1797,7 @@ export default function QuestionModification({
                   type="button"
                   onClick={() => setIsFilterSettingsOpen(!isFilterSettingsOpen)}
                   className={cn(
-                    "px-3 py-1.5 rounded-xl font-extrabold text-[9px] cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
+                    "px-3 py-1.5 rounded-lg font-extrabold text-[9px] cursor-pointer transition-all flex items-center gap-1.5 relative select-none",
                     isFilterSettingsOpen || filterAndSortEnabled
                       ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-black"
                       : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
@@ -1815,7 +1815,7 @@ export default function QuestionModification({
                 <button
                   type="button"
                   onClick={addNewQuestion}
-                  className="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
+                  className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-extrabold text-[9px] cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                 >
                   <Plus className="w-3.5 h-3.5 text-slate-500" />
                   <span>Thêm câu hỏi</span>
@@ -2087,14 +2087,14 @@ export default function QuestionModification({
                       }}
                     />
                   ) : (
-                    <div className="text-center py-12 border border-dashed rounded-2xl text-slate-400">
+                    <div className="text-center py-12 border border-dashed rounded-lg text-slate-400">
                       Chọn câu hỏi bên bảng danh sách để bắt đầu chỉnh sửa.
                     </div>
                   )}
                 </div>
 
                 {/* Section 2: Question List (List selector on the right) */}
-                <div className="lg:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0">
+                <div className="lg:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0">
                   <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">DANH SÁCH CÂU HỎI</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
@@ -2107,7 +2107,7 @@ export default function QuestionModification({
                             ref={(el) => { questionItemRefs.current[q.id] = el; }}
                             onClick={() => setSelectedPanelQuestionId(q.id)}
                             className={cn(
-                              "p-3 rounded-2xl border shadow-sm transition-all group relative cursor-pointer select-none text-left",
+                              "p-3 rounded-lg border shadow-sm transition-all group relative cursor-pointer select-none text-left",
                               qValid
                                 ? (isSelected 
                                     ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 shadow-emerald-500/10 ring-1 ring-emerald-500/30" 

@@ -244,7 +244,7 @@ export default function FileManager() {
           onClick={() => setIsCreateModalOpen(true)}
           disabled={creatorFiles.length >= FILE_LIMIT || isStorageFull}
           className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-extrabold text-xs transition-all",
+            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-extrabold text-xs transition-all",
             creatorFiles.length >= FILE_LIMIT || isStorageFull
               ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
               : "border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:shadow-sm active:scale-95 cursor-pointer"
@@ -312,7 +312,7 @@ export default function FileManager() {
                 <div 
                   key={f.id}
                   className={cn(
-                    "flex items-center justify-between gap-2 p-3 rounded-2xl border shadow-sm transition-all group relative",
+                    "flex items-center justify-between gap-2 p-3 rounded-lg border shadow-sm transition-all group relative",
                     isFileValidStatus 
                       ? (activeFileId === f.id 
                           ? "border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/30 shadow-emerald-500/10 ring-1 ring-emerald-500/30" 
