@@ -58,12 +58,9 @@ export default function FileManager() {
   // Delete confirmation state
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  // Keyboard Hotkey: Delete key opens confirmation modal, Enter key confirms deletion
+  // Keyboard Hotkey: Enter key confirms deletion modal, Escape cancels
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      const isInput = target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable;
-
       if (confirmDeleteId) {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -73,19 +70,12 @@ export default function FileManager() {
           e.preventDefault();
           setConfirmDeleteId(null);
         }
-      } else if (!isInput) {
-        if (e.key === "Delete" || e.key === "Del") {
-          if (activeFileId) {
-            e.preventDefault();
-            setConfirmDeleteId(activeFileId);
-          }
-        }
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeFileId, confirmDeleteId, deleteCreatorFile]);
+  }, [confirmDeleteId, deleteCreatorFile]);
 
   const handleFileInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -236,8 +226,8 @@ export default function FileManager() {
       <div className="p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <FolderOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-            Quản lý tệp
+          <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tracking-wider">
+            Quản Lý Tệp
           </h3>
         </div>
         <button 
@@ -297,8 +287,8 @@ export default function FileManager() {
 
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
-          <span>Danh sách tệp</span>
+        <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
+          <span>Danh Sách Tệp</span>
           <span className={cn("text-[9px] font-extrabold px-1.5 py-0.5 rounded", creatorFiles.length >= FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
             {creatorFiles.length}/{FILE_LIMIT}
           </span>
@@ -690,9 +680,6 @@ export default function FileManager() {
               Bạn có chắc chắn muốn xóa <span className="font-bold text-slate-800 dark:text-slate-200">
                 {creatorFiles.find(f => f.id === confirmDeleteId)?.name}
               </span>?
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500">
-              Hành động này không thể hoàn tác.
             </p>
             <div className="flex gap-3 pt-2">
               <button

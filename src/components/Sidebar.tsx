@@ -714,9 +714,6 @@ const SidebarList = React.memo(({
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               Bạn có chắc chắn muốn xóa nguồn dữ liệu <span className="font-bold text-slate-800 dark:text-slate-200">{getSourceDisplayName(confirmSource)}</span>?
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500">
-              Hành động này không thể hoàn tác.
-            </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setConfirmDeleteId(null)}

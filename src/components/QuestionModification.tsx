@@ -570,9 +570,6 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 ? "Bạn có chắc chắn muốn xóa câu hỏi này?"
                 : `Bạn có chắc chắn muốn xóa đáp án ${deleteConfirmTarget.optionLabel}?`}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-500">
-              Hành động này không thể hoàn tác.
-            </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setDeleteConfirmTarget(null)}
@@ -962,7 +959,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Nội dung dữ liệu JSON đáp án &amp; giải thích:
+                  Nội dung
                 </label>
                 <textarea
                   value={jsonText}
@@ -971,7 +968,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
   { "Question": 1, "CorrectOptions": ["A"], "Explanation": "..." },
   { "Question": 2, "CorrectOptions": ["B"], "Explanation": "..." }
 ]`}
-                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar"
                 />
               </div>
 
@@ -1026,7 +1023,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("APPEND")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none",
                       importStrategy === "APPEND"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1039,7 +1036,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("OVERWRITE")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none",
                       importStrategy === "OVERWRITE"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1052,7 +1049,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("REPLACE_ALL")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none",
+                      "px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer select-none outline-none focus:outline-none",
                       importStrategy === "REPLACE_ALL"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1067,7 +1064,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
               {/* Raw Textarea */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Nội dung văn bản câu hỏi:
+                  Nội dung
                 </label>
                 <textarea
                   value={rawText}
@@ -1083,7 +1080,7 @@ A. Vôn (V)
 B. Ampe (A) /
 C. Ôm (Ω)
 D. Oát (W)`}
-                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-500 resize-none style-scrollbar"
+                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-750 bg-slate-50 dark:bg-slate-950 font-mono text-xs text-slate-800 dark:text-slate-200 outline-none focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 resize-none style-scrollbar"
                 />
               </div>
 
@@ -1516,7 +1513,7 @@ export default function QuestionModification({
       <div className="p-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
           <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span className="text-sm font-extrabold text-slate-850 dark:text-slate-100 uppercase tracking-wider truncate" title={activeFile.name}>
+          <span className="text-sm font-extrabold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
         </div>
@@ -1956,7 +1953,7 @@ export default function QuestionModification({
 
                 {/* Section 2: Question List (List selector on the right) */}
                 <div className="md:col-span-4 xl:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0 min-w-0">
-                  <h5 className="text-[9px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">DANH SÁCH CÂU HỎI</h5>
+                  <h5 className="text-[9px] font-black text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">Danh Sách Câu Hỏi</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map((q, idx) => {
@@ -2039,9 +2036,6 @@ export default function QuestionModification({
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                 Bạn có chắc chắn muốn xóa câu hỏi này?
-              </p>
-              <p className="text-xs text-slate-500 dark:text-slate-500">
-                Hành động này không thể hoàn tác.
               </p>
               <div className="flex gap-3 pt-2">
                 <button
