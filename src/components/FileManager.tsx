@@ -226,23 +226,10 @@ export default function FileManager() {
       <div className="p-5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           <FolderOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 tracking-wider">
+          <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-200 tracking-wider">
             Quản Lý Tệp
           </h3>
         </div>
-        <button 
-          onClick={() => setIsCreateModalOpen(true)}
-          disabled={creatorFiles.length >= FILE_LIMIT || isStorageFull}
-          className={cn(
-            "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-extrabold text-xs transition-all",
-            creatorFiles.length >= FILE_LIMIT || isStorageFull
-              ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
-              : "border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:shadow-sm active:scale-95 cursor-pointer"
-          )}
-        >
-          <Plus className="w-4 h-4" />
-          Thêm tệp
-        </button>
       </div>
 
       {/* Storage Bar (Unified Quiz File Storage) */}
@@ -288,10 +275,20 @@ export default function FileManager() {
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
-          <span>Danh Sách Tệp</span>
-          <span className={cn("text-xs font-semibold px-1.5 py-0.5 rounded", creatorFiles.length >= FILE_LIMIT ? "bg-red-500/10 text-red-500" : "bg-slate-100 dark:bg-slate-800 text-slate-400")}>
-            {creatorFiles.length}/{FILE_LIMIT}
-          </span>
+          <span>Danh Sách Tệp ({creatorFiles.length}/{FILE_LIMIT})</span>
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            disabled={creatorFiles.length >= FILE_LIMIT || isStorageFull}
+            className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold text-xs transition-all",
+              creatorFiles.length >= FILE_LIMIT || isStorageFull
+                ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
+                : "border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:shadow-sm active:scale-95 cursor-pointer"
+            )}
+          >
+            <Plus className="w-4 h-4" />
+            Thêm tệp
+          </button>
         </h4>
 
         <div className="space-y-2.5">
