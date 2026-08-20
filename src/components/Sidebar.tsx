@@ -344,13 +344,13 @@ const SidebarControls = React.memo(({
   return (
     <div className="flex flex-col shrink-0 bg-white dark:bg-slate-900">
       {/* Sticky Header for Tùy chỉnh chung */}
-      <div className="sticky top-0 z-10 px-5 md:px-6 py-3.5 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
+      <div className="sticky top-0 z-40 px-5 md:px-6 py-3.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
         <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">Tùy chỉnh chung</h2>
       </div>
 
       <div className="p-5 md:p-6 space-y-6">
-        {/* 1. Giao diện & Thời gian (Cùng 1 hàng) */}
-        <div className="grid grid-cols-2 gap-4">
+        {/* 1. Giao diện & Thời gian (Cùng 1 hàng với vạch ngăn cách dọc) */}
+        <div className="grid grid-cols-[1fr_auto_1fr] items-start gap-3 sm:gap-4">
           {/* Giao diện */}
           <div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
@@ -380,6 +380,9 @@ const SidebarControls = React.memo(({
             </div>
           </div>
 
+          {/* Vertical Divider */}
+          <div className="w-px h-full min-h-[76px] bg-slate-200 dark:bg-slate-700/80 self-stretch my-0.5" />
+
           {/* Thời gian */}
           <div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
@@ -394,8 +397,8 @@ const SidebarControls = React.memo(({
                 />
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn</span>
               </label>
-              <div className="flex items-center space-x-2">
-                <label className="flex items-center space-x-2 cursor-pointer shrink-0">
+              <div className="flex items-center space-x-1.5">
+                <label className="flex items-center space-x-1.5 cursor-pointer shrink-0">
                   <input
                     type="radio"
                     name="timeLimitMode"
@@ -426,7 +429,7 @@ const SidebarControls = React.memo(({
                       setLocalTimeLimitMinutes(15);
                     }
                   }}
-                  className="w-16 px-1.5 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
+                  className="w-14 px-1 py-0.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
                 />
                 <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">phút</span>
               </div>
@@ -613,7 +616,7 @@ const SidebarList = React.memo(({
   return (
     <div className="flex flex-col shrink-0 relative bg-slate-50/50 dark:bg-slate-900/50">
       {/* Sticky Header */}
-      <div className="sticky top-0 z-10 px-5 md:px-6 py-3.5 bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
+      <div className="sticky top-0 z-40 px-5 md:px-6 py-3.5 bg-slate-100 dark:bg-slate-800 border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
         <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
         <button
           onClick={() => fileInputRef.current?.click()}

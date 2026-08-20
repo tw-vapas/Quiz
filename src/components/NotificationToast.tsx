@@ -33,16 +33,16 @@ export default function NotificationToast() {
         >
           <div
             className={cn(
-              "flex items-center gap-3 px-4 py-3 rounded-2xl border shadow-xl backdrop-blur-md relative overflow-hidden",
-              notification.type === "success" && "bg-emerald-500/10 border-emerald-500/25 dark:bg-emerald-950/20 text-emerald-800 dark:text-emerald-300",
-              notification.type === "error" && "bg-red-500/10 border-red-500/25 dark:bg-red-950/20 text-red-800 dark:text-red-300",
-              notification.type === "info" && "bg-indigo-500/10 border-indigo-500/25 dark:bg-indigo-950/20 text-indigo-800 dark:text-indigo-300"
+              "flex items-center gap-3 px-4 py-3.5 rounded-2xl border-2 shadow-2xl relative overflow-hidden bg-white dark:bg-slate-900 transition-all duration-200",
+              notification.type === "success" && "border-emerald-500 text-slate-900 dark:text-slate-100",
+              notification.type === "error" && "border-red-500 text-slate-900 dark:text-slate-100",
+              notification.type === "info" && "border-indigo-500 text-slate-900 dark:text-slate-100"
             )}
           >
             {/* Left Status Bar */}
             <div
               className={cn(
-                "absolute left-0 top-0 bottom-0 w-1",
+                "absolute left-0 top-0 bottom-0 w-1.5",
                 notification.type === "success" && "bg-emerald-500",
                 notification.type === "error" && "bg-red-500",
                 notification.type === "info" && "bg-indigo-500"
@@ -50,21 +50,21 @@ export default function NotificationToast() {
             />
 
             {/* Icon */}
-            <div className="shrink-0">
-              {notification.type === "success" && <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />}
-              {notification.type === "error" && <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />}
-              {notification.type === "info" && <Info className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />}
+            <div className="shrink-0 ml-1">
+              {notification.type === "success" && <CheckCircle className="w-5 h-5 text-emerald-500" />}
+              {notification.type === "error" && <AlertCircle className="w-5 h-5 text-red-500" />}
+              {notification.type === "info" && <Info className="w-5 h-5 text-indigo-500" />}
             </div>
 
             {/* Message */}
-            <span className="flex-1 text-xs font-black leading-relaxed">
+            <span className="flex-1 text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 leading-snug">
               {notification.message}
             </span>
 
             {/* Close Button */}
             <button
               onClick={clearNotification}
-              className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer text-slate-500 dark:text-slate-400"
+              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
             >
               <X className="w-4 h-4" />
             </button>

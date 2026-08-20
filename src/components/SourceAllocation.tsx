@@ -369,7 +369,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
                 <div className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate" title={source.customName || source.name}>
                   {source.customName || source.name}
                 </div>
-                <div className="text-[10px] text-slate-500 font-medium truncate">
+                <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
                   Tối đa {source.questionsCount} câu ({percentage}%)
                 </div>
               </div>
