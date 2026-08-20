@@ -335,76 +335,82 @@ export default function SettingExport({
             <div className="flex-1 overflow-y-auto space-y-5 pr-1 custom-scrollbar">
               
               {/* Question Quantity Mode Selection */}
-              <div className="space-y-2">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+              <div className="space-y-2.5">
+                <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">
                   Số lượng câu hỏi xuất bản
                 </label>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2.5">
                   {[
                     { id: "ALL", label: "Tất cả câu hỏi", desc: `Toàn bộ ${activeFile.questions.length} câu` },
                     { id: "FIRST", label: "N câu đầu tiên", desc: "Lấy từ đầu danh sách" },
                     { id: "LAST", label: "N câu cuối cùng", desc: "Lấy từ cuối danh sách" },
                     { id: "RANGE", label: "Khoảng chỉ định", desc: "Chỉ định vị trí Từ - Đến" }
-                  ].map((mode) => (
-                    <div
-                      key={mode.id}
-                      onClick={() => setQuantityMode(mode.id as any)}
-                      className={cn(
-                        "p-3 rounded-2xl border-2 cursor-pointer transition-all duration-150 flex items-center justify-between select-none",
-                        quantityMode === mode.id
-                          ? "border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/40 text-indigo-950 dark:text-indigo-200 shadow-sm"
-                          : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 text-slate-700 dark:text-slate-300"
-                      )}
-                    >
-                      <div>
-                        <div className="text-xs font-semibold">{mode.label}</div>
-                        <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-medium">{mode.desc}</div>
+                  ].map((mode) => {
+                    const isActive = quantityMode === mode.id;
+                    return (
+                      <div
+                        key={mode.id}
+                        onClick={() => setQuantityMode(mode.id as any)}
+                        className={cn(
+                          "p-3.5 rounded-xl border transition-all cursor-pointer select-none flex items-start justify-between gap-2",
+                          isActive
+                            ? "border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 shadow-2xs"
+                            : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 text-slate-700 dark:text-slate-300"
+                        )}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <span className="text-sm font-semibold block truncate">{mode.label}</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-normal block truncate">{mode.desc}</span>
+                        </div>
+                        <div className={cn(
+                          "w-4 h-4 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors",
+                          isActive ? "border-indigo-600 bg-indigo-600" : "border-slate-300 dark:border-slate-600 bg-transparent"
+                        )}>
+                          {isActive && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                        </div>
                       </div>
-                      {quantityMode === mode.id && (
-                        <div className="w-2 h-2 rounded-full bg-indigo-600 shrink-0 ml-1" />
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Range Numeric Inputs */}
                 {quantityMode === "FIRST" && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-indigo-150 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
+                  <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
                     <input 
                       type="number" 
                       min={1}
                       max={activeFile.questions.length}
                       value={firstCount}
                       onChange={(e) => setFirstCount(Math.max(1, Math.min(activeFile.questions.length, parseInt(e.target.value) || 1)))}
-                      className="w-24 px-3 py-1.5 text-xs font-black border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-24 px-3 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       / {activeFile.questions.length} câu đầu tiên
                     </span>
                   </div>
                 )}
 
                 {quantityMode === "LAST" && (
-                  <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-indigo-150 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
+                  <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
                     <input 
                       type="number" 
                       min={1}
                       max={activeFile.questions.length}
                       value={lastCount}
                       onChange={(e) => setLastCount(Math.max(1, Math.min(activeFile.questions.length, parseInt(e.target.value) || 1)))}
-                      className="w-24 px-3 py-1.5 text-xs font-black border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-24 px-3 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
-                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       / {activeFile.questions.length} câu cuối cùng
                     </span>
                   </div>
                 )}
 
                 {quantityMode === "RANGE" && (
-                  <div className="flex items-center justify-between gap-2 p-3.5 rounded-2xl border border-indigo-150 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-xs font-bold text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs font-semibold text-slate-700 dark:text-slate-300">
                     <div className="flex items-center gap-2">
                       <span>Từ câu:</span>
                       <input 
@@ -413,7 +419,7 @@ export default function SettingExport({
                         max={rangeEnd}
                         value={rangeStart}
                         onChange={(e) => setRangeStart(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-20 px-2.5 py-1.5 border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-center font-black"
+                        className="w-20 px-2.5 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-center text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </div>
                     <div className="flex items-center gap-2">
@@ -424,7 +430,7 @@ export default function SettingExport({
                         max={activeFile.questions.length}
                         value={rangeEnd}
                         onChange={(e) => setRangeEnd(Math.min(activeFile.questions.length, parseInt(e.target.value) || 1))}
-                        className="w-20 px-2.5 py-1.5 border border-slate-200 dark:border-slate-750 rounded-xl bg-white dark:bg-slate-900 text-center font-black"
+                        className="w-20 px-2.5 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-center text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       />
                     </div>
                   </div>
