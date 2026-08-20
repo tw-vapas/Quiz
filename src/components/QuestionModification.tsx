@@ -63,7 +63,9 @@ function AnswerTextarea({
   React.useLayoutEffect(() => {
     if (ref.current) {
       ref.current.style.height = "auto";
-      ref.current.style.height = `${ref.current.scrollHeight}px`;
+      if (ref.current.scrollHeight > 0) {
+        ref.current.style.height = `${ref.current.scrollHeight}px`;
+      }
     }
   }, [value]);
 
@@ -79,7 +81,9 @@ function AnswerTextarea({
       onInput={(e) => {
         const target = e.currentTarget;
         target.style.height = "auto";
-        target.style.height = `${target.scrollHeight}px`;
+        if (target.scrollHeight > 0) {
+          target.style.height = `${target.scrollHeight}px`;
+        }
       }}
     />
   );
@@ -370,13 +374,13 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     {String.fromCharCode(65 + idx)}
                   </span>
 
-                  <div className="flex-1 flex flex-col justify-center min-w-0 my-auto">
+                  <div className="flex-1 flex flex-col justify-center min-w-0">
                     <AnswerTextarea 
                       maxLength={150}
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
                       placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
-                      className="w-full bg-transparent text-sm font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-normal py-1 my-auto custom-scrollbar"
+                      className="w-full bg-transparent text-sm font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed py-0.5 custom-scrollbar"
                     />
                     {ans.text.length >= 100 && (
                       <span className={cn("text-xs font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-semibold" : "text-slate-400")}>
