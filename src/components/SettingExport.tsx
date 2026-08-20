@@ -354,10 +354,10 @@ export default function SettingExport({
       <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/10 shrink-0">
         <button
           onClick={() => setIsExportModalOpen(true)}
-          className="w-full min-h-11 bg-indigo-650 hover:bg-indigo-755 text-white font-medium text-base rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          className="w-full min-h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <Download className="w-4 h-4" />
-          Xuất bản
+          <span>Xuất bản</span>
         </button>
       </div>
 

@@ -1571,16 +1571,16 @@ export default function QuestionModification({
     <div className={cn("flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all duration-300 shadow-sm", className)}>
       
       {/* 1. HEADER */}
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2.5 min-w-0">
+      <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex flex-row items-center justify-between gap-2 shrink-0 overflow-x-auto no-scrollbar">
+        <div className="flex items-center gap-2 min-w-0 shrink">
           <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span className="text-lg font-bold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
+          <span className="text-base sm:text-lg font-bold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
         </div>
 
         {/* Undo/Redo & Tab Selection */}
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+        <div className="flex items-center gap-2 shrink-0">
           {/* Undo & Redo Quick Action Buttons */}
           <div className="flex items-center gap-0.5">
             <button
@@ -1603,13 +1603,13 @@ export default function QuestionModification({
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl">
             {(["DOCUMENT", "QUESTION_VIEW"] as const).map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={cn(
-                  "px-3 py-1.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer",
+                  "px-2.5 sm:px-3 py-1.5 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer whitespace-nowrap",
                   activeTab === tab 
                     ? "bg-white dark:bg-slate-700 text-indigo-650 dark:text-indigo-350 shadow-sm"
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
@@ -1624,7 +1624,7 @@ export default function QuestionModification({
       </div>
 
       {/* 2. BODY CONTENT */}
-      <div className="flex-1 overflow-y-auto md:overflow-hidden p-5 relative min-h-0 flex flex-col">
+      <div className="flex-1 overflow-y-auto md:overflow-hidden p-3 sm:p-5 relative min-h-0 flex flex-col">
         
         {/* --- TAB A: DOCUMENT VIEW --- */}
         {activeTab === "DOCUMENT" && (
@@ -1729,9 +1729,9 @@ export default function QuestionModification({
 
             {/* Chế độ Panel split view */}
             {displayMode === "Panel" && (
-              <div className="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-10 gap-4 overflow-y-auto md:overflow-hidden">
-                {/* Section 1: Question Setting (Editor on the left) */}
-                <div className="md:col-span-6 xl:col-span-7 h-full overflow-y-auto custom-scrollbar pr-2 space-y-4 min-w-0">
+              <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-10 gap-4 overflow-hidden">
+                {/* Section 1: Question Setting (Editor on top 2/3 on mobile, left on desktop) */}
+                <div className="flex-[2] md:col-span-6 xl:col-span-7 h-full overflow-y-auto custom-scrollbar pr-2 space-y-4 min-w-0 min-h-0">
                   {panelQuestion ? (
                     <QuestionCard 
                       key={panelQuestion.id}
@@ -1749,8 +1749,8 @@ export default function QuestionModification({
                   )}
                 </div>
 
-                {/* Section 2: Question List (List selector on the right) */}
-                <div className="md:col-span-4 xl:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0 min-w-0">
+                {/* Section 2: Question List (List selector bottom 1/3 on mobile, right on desktop) */}
+                <div className="flex-1 md:col-span-4 xl:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0 min-w-0">
                   <h5 className="text-xs font-semibold text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">Danh Sách Câu Hỏi</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (

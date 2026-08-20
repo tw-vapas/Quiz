@@ -349,32 +349,88 @@ const SidebarControls = React.memo(({
       </div>
 
       <div className="p-5 md:p-6 space-y-6">
-        {/* 1. Giao diện */}
-        <div>
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="themeMode"
-                value="light"
-                checked={localTheme === 'light'}
-                onChange={() => setLocalTheme('light')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sáng</span>
-            </label>
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="themeMode"
-                value="dark"
-                checked={localTheme === 'dark'}
-                onChange={() => setLocalTheme('dark')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tối</span>
-            </label>
+        {/* 1. Giao diện & Thời gian (Cùng 1 hàng) */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Giao diện */}
+          <div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
+            <div className="space-y-3">
+              <label className="flex items-center space-x-2.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="themeMode"
+                  value="light"
+                  checked={localTheme === 'light'}
+                  onChange={() => setLocalTheme('light')}
+                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sáng</span>
+              </label>
+              <label className="flex items-center space-x-2.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="themeMode"
+                  value="dark"
+                  checked={localTheme === 'dark'}
+                  onChange={() => setLocalTheme('dark')}
+                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tối</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Thời gian */}
+          <div>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
+            <div className="space-y-3">
+              <label className="flex items-center space-x-2.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="timeLimitMode"
+                  checked={localTimeLimitMode === 'UNLIMITED'}
+                  onChange={() => setLocalTimeLimitMode('UNLIMITED')}
+                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
+                />
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn</span>
+              </label>
+              <div className="flex items-center space-x-2">
+                <label className="flex items-center space-x-2 cursor-pointer shrink-0">
+                  <input
+                    type="radio"
+                    name="timeLimitMode"
+                    checked={localTimeLimitMode === 'LIMITED'}
+                    onChange={() => setLocalTimeLimitMode('LIMITED')}
+                    className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
+                  />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Giới hạn:</span>
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  disabled={localTimeLimitMode !== 'LIMITED'}
+                  value={localTimeLimitMinutes === 0 ? '' : localTimeLimitMinutes}
+                  onChange={(e) => {
+                    const valStr = e.target.value;
+                    if (valStr === '') {
+                      setLocalTimeLimitMinutes(0);
+                      return;
+                    }
+                    let val = parseInt(valStr);
+                    if (isNaN(val)) val = 0;
+                    val = Math.max(1, val);
+                    setLocalTimeLimitMinutes(val);
+                  }}
+                  onBlur={() => {
+                    if (localTimeLimitMinutes < 1) {
+                      setLocalTimeLimitMinutes(15);
+                    }
+                  }}
+                  className="w-16 px-1.5 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
+                />
+                <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">phút</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -484,59 +540,6 @@ const SidebarControls = React.memo(({
                 onChange={setLocalAllocations}
               />
             )}
-          </div>
-        </div>
-
-        {/* 4. Thời gian */}
-        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
-          <div className="space-y-3">
-            <label className="flex items-center space-x-3 cursor-pointer">
-              <input
-                type="radio"
-                name="timeLimitMode"
-                checked={localTimeLimitMode === 'UNLIMITED'}
-                onChange={() => setLocalTimeLimitMode('UNLIMITED')}
-                className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-              />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn thời gian</span>
-            </label>
-            <div className="flex items-center space-x-3">
-              <label className="flex items-center space-x-3 cursor-pointer shrink-0">
-                <input
-                  type="radio"
-                  name="timeLimitMode"
-                  checked={localTimeLimitMode === 'LIMITED'}
-                  onChange={() => setLocalTimeLimitMode('LIMITED')}
-                  className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
-                />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Giới hạn thời gian:</span>
-              </label>
-              <input
-                type="number"
-                min={1}
-                disabled={localTimeLimitMode !== 'LIMITED'}
-                value={localTimeLimitMinutes === 0 ? '' : localTimeLimitMinutes}
-                onChange={(e) => {
-                  const valStr = e.target.value;
-                  if (valStr === '') {
-                    setLocalTimeLimitMinutes(0);
-                    return;
-                  }
-                  let val = parseInt(valStr);
-                  if (isNaN(val)) val = 0;
-                  val = Math.max(1, val);
-                  setLocalTimeLimitMinutes(val);
-                }}
-                onBlur={() => {
-                  if (localTimeLimitMinutes < 1) {
-                    setLocalTimeLimitMinutes(15);
-                  }
-                }}
-                className="w-20 px-2 py-1 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
-              />
-              <span className="text-sm text-slate-500 dark:text-slate-400">phút</span>
-            </div>
           </div>
         </div>
       </div>
