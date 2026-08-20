@@ -1,0 +1,28 @@
+Hãy dựa trên danh sách các câu hỏi trắc nghiệm vừa được tạo từ bước trước. Hãy đọc kỹ từng câu hỏi và các đáp án A, B, C, D để:
+1. Xác định chính xác đáp án đúng cho từng câu.
+2. Viết lời giải thích ngắn gọn nhưng đủ rõ để giải thích tại sao đáp án đúng.
+3. Xác định các Tags phù hợp với nội dung kiến thức được kiểm tra.
+
+Yêu cầu:
+
+- Giữ nguyên thứ tự các câu hỏi.
+- Mỗi câu hỏi đầu vào phải tương ứng với đúng một object trong output.
+- Không bỏ sót hoặc thêm câu hỏi.
+- "CorrectOptions" chứa chữ cái của đáp án đúng, ví dụ: ["A"] hoặc ["A", "C"].
+- Nếu câu hỏi chỉ có một đáp án đúng, chỉ trả về một chữ cái.
+- "Explanation" phải dựa trên nội dung câu hỏi và kiến thức liên quan, không suy đoán hoặc bịa đặt.
+- "Tags" là mảng tùy chọn dùng để phân loại chủ đề/knowledge point; nếu không xác định được thì dùng [].
+
+Output Format
+- Chỉ trả về một JSON array hợp lệ.
+- Không sử dụng Markdown code block.
+- Không thêm heading, commentary hoặc bất kỳ text nào bên ngoài JSON.
+
+[
+  {
+    "Question": 1,
+    "CorrectOptions": ["A"],
+    "Explanation": "Lời giải thích tại sao đáp án đúng.",
+    "Tags": ["Môn Toán"]
+  }
+]
