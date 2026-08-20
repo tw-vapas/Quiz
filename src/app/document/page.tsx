@@ -140,7 +140,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
   }, [sources, searchQuery]);
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col overflow-hidden">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
         <div>
           <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
@@ -171,7 +171,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto min-h-0 pr-1">
+      <div className="w-full">
         {filteredSources.length === 0 ? (
           <div className="text-center py-12 text-slate-450 dark:text-slate-500">
             Không tìm thấy tài liệu phù hợp.
@@ -585,7 +585,7 @@ export default function DocumentViewerPage() {
     }
     if (uiState === "PICKER_ENTRY") {
       return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] py-8">
+        <div className="w-full py-4 md:py-8">
           <DocumentPickerEntry
             sources={sources}
             onSelect={handleSourceSelect}
@@ -598,7 +598,7 @@ export default function DocumentViewerPage() {
     switch (renderState) {
       case "NO_SELECTION":
         return (
-          <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] py-8">
+          <div className="w-full py-4 md:py-8">
             <DocumentPickerEntry
               sources={sources}
               onSelect={handleSourceSelect}
