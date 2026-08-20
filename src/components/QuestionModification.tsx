@@ -1562,7 +1562,7 @@ export default function QuestionModification({
       <div className={cn("flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all duration-300 shadow-sm items-center justify-center p-8", className)}>
         <FileCode className="w-16 h-16 text-indigo-500/30 mb-4" />
         <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">No File Selected</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">Chọn một tệp từ Quản Lý Tệp ở cột bên trái hoặc tạo tệp mới để bắt đầu chỉnh sửa câu hỏi.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">Chọn một tệp từ Quản Lý Tệp hoặc tạo tệp mới để bắt đầu chỉnh sửa câu hỏi.</p>
       </div>
     );
   }

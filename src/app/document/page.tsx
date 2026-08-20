@@ -644,6 +644,7 @@ export default function DocumentViewerPage() {
         <div className="flex items-center gap-3">
           <Link
             href="/"
+            onClick={() => useQuizStore.getState().clearNotification()}
             className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-250 transition-colors flex items-center justify-center cursor-pointer"
             title="Quay lại trang chủ"
           >

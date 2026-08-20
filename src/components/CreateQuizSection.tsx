@@ -65,7 +65,7 @@ export default function CreateQuizSection() {
           )}
         >
           <Settings2 className="w-3.5 h-3.5" />
-          <span className="truncate">Cài đặt</span>
+          <span className="truncate">Xuất Bản</span>
         </button>
       </div>
 

@@ -74,6 +74,7 @@ export default function Home() {
       if (savedActiveFileId) {
         useQuizStore.setState({ activeFileId: savedActiveFileId });
       }
+      useQuizStore.getState().clearNotification();
       setHasHydrated(true);
     }
   }, []);
@@ -209,7 +210,7 @@ export default function Home() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
             style={{ willChange: "opacity" }}
-            className="fixed inset-0 z-[60] bg-slate-900/60 flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-8"
+            className="fixed inset-0 z-[60] bg-slate-900/60 flex items-center justify-center p-4 md:p-8"
           >
             <motion.div 
               initial={{ opacity: 0, scale: 0.96, y: 15 }}
@@ -217,7 +218,7 @@ export default function Home() {
               exit={{ opacity: 0, scale: 0.96, y: 15 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
               style={{ willChange: "transform, opacity" }}
-              className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[100dvh] sm:h-[85vh] rounded-none sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative transition-colors duration-200"
+              className="bg-white dark:bg-slate-900 w-full max-w-2xl h-[85vh] max-h-[85vh] rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative transition-colors duration-200"
             >
               <Sidebar />
             </motion.div>

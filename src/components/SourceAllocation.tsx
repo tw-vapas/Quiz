@@ -363,27 +363,26 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
           const percentage = totalQuestions > 0 ? Math.round((alloc / totalQuestions) * 100) : 0;
           
           return (
-            <div key={source.id} className="flex flex-col sm:flex-row sm:items-center gap-3 bg-white dark:bg-slate-800 p-3 sm:p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-sm transition-colors hover:border-slate-300 dark:hover:border-slate-600">
-              <div className={cn("w-4 h-4 rounded-md shrink-0 shadow-sm", color.bg)} />
+            <div key={source.id} className="flex items-center gap-2.5 sm:gap-3 bg-white dark:bg-slate-800 p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-700/50 shadow-xs transition-colors hover:border-slate-300 dark:hover:border-slate-600">
+              <div className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-md shrink-0 shadow-xs", color.bg)} />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={source.customName || source.name}>
+                <div className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 truncate" title={source.customName || source.name}>
                   {source.customName || source.name}
                 </div>
-                <div className="text-xs text-slate-500 font-medium">Tối đa {source.questionsCount} câu</div>
+                <div className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">
+                  Tối đa {source.questionsCount} câu ({percentage}%)
+                </div>
               </div>
               
-              <div className="flex items-center gap-2 shrink-0 w-full sm:w-auto">
-                <div className="text-xs font-medium text-slate-400 w-10 text-right">{percentage}%</div>
-                <input
-                  type="number"
-                  min={0}
-                  max={source.questionsCount}
-                  value={alloc === 0 ? "" : alloc}
-                  placeholder="0"
-                  onChange={(e) => handleInputChange(source.id, e.target.value)}
-                  className="min-h-11 w-full sm:w-16 px-2 py-1.5 text-sm font-semibold text-center border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
+              <input
+                type="number"
+                min={0}
+                max={source.questionsCount}
+                value={alloc === 0 ? "" : alloc}
+                placeholder="0"
+                onChange={(e) => handleInputChange(source.id, e.target.value)}
+                className="w-16 sm:w-20 px-2 py-1 text-xs sm:text-sm font-semibold text-center border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0 min-h-9"
+              />
             </div>
           );
         })}

@@ -44,7 +44,7 @@ const StartScreen = memo(function StartScreen() {
           Vui lòng chọn các nguồn dữ liệu ở phần cài đặt. Hệ thống sẽ trộn các câu hỏi và lựa chọn để bắt đầu.
         </p>
 
-        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 md:p-5 mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-0 sm:divide-x divide-slate-200 dark:divide-slate-700">
+        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 md:p-5 mb-8 grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700">
           <div>
             <div className="text-xl font-bold text-slate-800 dark:text-slate-200">{activeSources.length}</div>
             <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Tệp chọn</div>
