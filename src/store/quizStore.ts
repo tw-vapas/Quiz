@@ -117,106 +117,7 @@ function shuffleArray<T>(array: T[]): T[] {
   return newArray;
 }
 
-const initialCreatorFiles: CreatorFile[] = [
-  {
-    id: "qf1",
-    name: "Quiz File 1",
-    document: "# Tài liệu Ôn tập Giải tích\n\nĐây là tài liệu hỗ trợ ôn tập về đạo hàm và tích phân lớp 12.",
-    note: "Ghi chú cho tài liệu giải tích: tập trung ôn tập các công thức đạo hàm cơ bản.",
-    questions: [
-      {
-        id: "q1",
-        text: "Đạo hàm của hàm số y = x^2 là gì?",
-        options: [
-          { id: "a", text: "y' = 2x", originalText: "A. y' = 2x" },
-          { id: "b", text: "y' = x", originalText: "B. y' = x" },
-          { id: "c", text: "y' = 2", originalText: "C. y' = 2" },
-          { id: "d", text: "y' = 0", originalText: "D. y' = 0" }
-        ],
-        correctOptionIds: ["a"],
-        type: "single_choice",
-        explanation: "Theo công thức đạo hàm cơ bản, (x^n)' = n * x^(n-1). Do đó (x^2)' = 2x.",
-        tags: ["Giải tích", "Đạo hàm"]
-      },
-      {
-        id: "q2",
-        text: "Những hàm số nào sau đây đồng biến trên R?",
-        options: [
-          { id: "a", text: "y = x^3 + x", originalText: "A. y = x^3 + x" },
-          { id: "b", text: "y = -x^3 - x", originalText: "B. y = -x^3 - x" },
-          { id: "c", text: "y = x^2", originalText: "C. y = x^2" },
-          { id: "d", text: "y = x^5 + 2x^3", originalText: "D. y = x^5 + 2x^3" }
-        ],
-        correctOptionIds: ["a", "d"],
-        type: "multiple_choice",
-        explanation: "Các hàm số y = x^3 + x và y = x^5 + 2x^3 có đạo hàm luôn dương trên R nên đồng biến trên R.",
-        tags: ["Giải tích", "Hàm số"]
-      }
-    ],
-    metadata: {
-      file_name: "Quiz File 1",
-      question_count: 2,
-      last_modified: "12:00 01/07/2026"
-    },
-    active: true
-  },
-  {
-    id: "qf2",
-    name: "Quiz File 2",
-    document: "# Tài liệu Ôn tập Hình học\n\nĐây là tài liệu hỗ trợ ôn tập về thể tích khối đa diện lớp 12.",
-    note: "Ghi chú hình học: Nhớ công thức thể tích khối chóp và khối lăng trụ.",
-    questions: [
-      {
-        id: "q3",
-        text: "Thể tích V của khối chóp có diện tích đáy B và chiều cao h được tính theo công thức nào?",
-        options: [
-          { id: "a", text: "V = B * h", originalText: "A. V = B * h" },
-          { id: "b", text: "V = 1/3 * B * h", originalText: "B. V = 1/3 * B * h" },
-          { id: "c", text: "V = 3 * B * h", originalText: "C. V = 3 * B * h" },
-          { id: "d", text: "V = 1/2 * B * h", originalText: "D. V = 1/2 * B * h" }
-        ],
-        correctOptionIds: ["b"],
-        type: "single_choice",
-        explanation: "Công thức thể tích khối chóp là V = 1/3 * đáy * chiều cao.",
-        tags: ["Hình học", "Thể tích"]
-      }
-    ],
-    metadata: {
-      file_name: "Quiz File 2",
-      question_count: 1,
-      last_modified: "12:00 01/07/2026"
-    },
-    active: true
-  },
-  {
-    id: "qf3",
-    name: "Quiz File 3",
-    document: "# Ôn tập tổ hợp và xác suất\n\nTài liệu ôn tập về chỉnh hợp, tổ hợp lớp 11.",
-    note: "Nhớ phân biệt chỉnh hợp và tổ hợp.",
-    questions: [
-      {
-        id: "q4",
-        text: "Chọn 3 học sinh từ 10 học sinh đi trực nhật có bao nhiêu cách chọn?",
-        options: [
-          { id: "a", text: "C_10^3", originalText: "A. C_10^3" },
-          { id: "b", text: "A_10^3", originalText: "B. A_10^3" },
-          { id: "c", text: "10^3", originalText: "C. 10^3" },
-          { id: "d", text: "30", originalText: "D. 30" }
-        ],
-        correctOptionIds: ["a"],
-        type: "single_choice",
-        explanation: "Vì không phân biệt thứ tự nhiệm vụ của 3 học sinh nên ta dùng tổ hợp C_10^3.",
-        tags: ["Tổ hợp", "Xác suất"]
-      }
-    ],
-    metadata: {
-      file_name: "Quiz File 3",
-      question_count: 1,
-      last_modified: "12:00 01/07/2026"
-    },
-    active: true
-  }
-];
+const initialCreatorFiles: CreatorFile[] = [];
 
 function checkFileValidity(f: CreatorFile): boolean {
   if (!f.questions || f.questions.length === 0) return false;
@@ -330,7 +231,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   creatorFiles: initialCreatorFiles,
   pastCreatorFiles: [],
   futureCreatorFiles: [],
-  activeFileId: "qf1",
+  activeFileId: null,
   setActiveFileId: (id) => set({ activeFileId: id }),
   createCreatorFile: (name, initialData) => {
     const id = `qf_${Date.now()}`;
