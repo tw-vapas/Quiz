@@ -8,13 +8,67 @@ import {
   Settings2, 
   Download, 
   Clock, 
-  X
+  X,
+  ChevronUp,
+  ChevronDown
 } from "lucide-react";
 
 function sanitizeFileName(name: string): string {
   if (!name || !name.trim()) return `quiz_export.json`;
   const cleaned = name.replace(/\.(json|docx|txt|pdf)$/i, "").trim();
   return `${cleaned}.json`;
+}
+
+function CustomNumberInput({
+  value,
+  min,
+  max,
+  onChange,
+  className
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onChange: (val: number) => void;
+  className?: string;
+}) {
+  return (
+    <div className={cn("relative inline-flex items-center shrink-0 select-none", className)}>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => {
+          const val = parseInt(e.target.value, 10);
+          if (isNaN(val)) {
+            onChange(min);
+          } else {
+            onChange(Math.max(min, Math.min(max, val)));
+          }
+        }}
+        className="w-22 pl-3 pr-7 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <div className="absolute right-1 top-0.5 bottom-0.5 flex flex-col justify-between border-l border-slate-200 dark:border-slate-800 my-0.5 pl-0.5">
+        <button
+          type="button"
+          onClick={() => onChange(Math.min(max, value + 1))}
+          disabled={value >= max}
+          className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-t transition-colors disabled:opacity-30 cursor-pointer"
+        >
+          <ChevronUp className="w-3 h-3" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(min, value - 1))}
+          disabled={value <= min}
+          className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-b transition-colors disabled:opacity-30 cursor-pointer"
+        >
+          <ChevronDown className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
 }
 
 interface SettingExportProps {
@@ -377,14 +431,12 @@ export default function SettingExport({
                 {/* Range Numeric Inputs */}
                 {quantityMode === "FIRST" && (
                   <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
-                    <input 
-                      type="number" 
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">Lấy số lượng:</span>
+                    <CustomNumberInput 
+                      value={firstCount}
                       min={1}
                       max={activeFile.questions.length}
-                      value={firstCount}
-                      onChange={(e) => setFirstCount(Math.max(1, Math.min(activeFile.questions.length, parseInt(e.target.value) || 1)))}
-                      className="w-24 px-3 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onChange={(val) => setFirstCount(val)}
                     />
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       / {activeFile.questions.length} câu đầu tiên
@@ -394,14 +446,12 @@ export default function SettingExport({
 
                 {quantityMode === "LAST" && (
                   <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Lấy số lượng:</span>
-                    <input 
-                      type="number" 
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">Lấy số lượng:</span>
+                    <CustomNumberInput 
+                      value={lastCount}
                       min={1}
                       max={activeFile.questions.length}
-                      value={lastCount}
-                      onChange={(e) => setLastCount(Math.max(1, Math.min(activeFile.questions.length, parseInt(e.target.value) || 1)))}
-                      className="w-24 px-3 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      onChange={(val) => setLastCount(val)}
                     />
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                       / {activeFile.questions.length} câu cuối cùng
@@ -410,27 +460,23 @@ export default function SettingExport({
                 )}
 
                 {quantityMode === "RANGE" && (
-                  <div className="flex items-center justify-between gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  <div className="flex items-center justify-start gap-4 md:gap-5 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs font-semibold text-slate-700 dark:text-slate-300">
                     <div className="flex items-center gap-2">
-                      <span>Từ câu:</span>
-                      <input 
-                        type="number" 
+                      <span className="shrink-0">Từ câu:</span>
+                      <CustomNumberInput 
+                        value={rangeStart}
                         min={1}
                         max={rangeEnd}
-                        value={rangeStart}
-                        onChange={(e) => setRangeStart(Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-20 px-2.5 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-center text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        onChange={(val) => setRangeStart(val)}
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span>Đến câu:</span>
-                      <input 
-                        type="number" 
+                      <span className="shrink-0">Đến câu:</span>
+                      <CustomNumberInput 
+                        value={rangeEnd}
                         min={rangeStart}
                         max={activeFile.questions.length}
-                        value={rangeEnd}
-                        onChange={(e) => setRangeEnd(Math.min(activeFile.questions.length, parseInt(e.target.value) || 1))}
-                        className="w-20 px-2.5 py-1.5 text-sm font-semibold border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-900 text-center text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        onChange={(val) => setRangeEnd(val)}
                       />
                     </div>
                   </div>
