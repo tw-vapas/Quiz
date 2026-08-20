@@ -142,7 +142,12 @@ export default function FileManager() {
   };
 
   const handleCreateFile = () => {
-    const finalName = newFileNameInput.trim() || `Quiz File ${creatorFiles.length + 1}`;
+    const rawName = newFileNameInput.trim();
+    if (!rawName) {
+      useQuizStore.getState().showNotification("Vui lòng nhập tên tệp tin trước khi tạo!", "error");
+      return;
+    }
+    const finalName = rawName;
 
     let initialData: any = { questions: [], document: "", note: "" };
 

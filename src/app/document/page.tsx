@@ -273,13 +273,9 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header container with Top Bar (X close button on top right) */}
-        <div className="flex flex-col gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-          {/* Top Row: Label and Close button above the main title */}
-          <div className="flex items-center justify-between">
-            <div className="text-xs font-extrabold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4" />
-              <span>Nguồn tài liệu học tập</span>
-            </div>
+        <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
+          {/* Top Row: Close button on top right */}
+          <div className="flex items-center justify-end">
             <button
               onClick={onClose}
               className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
@@ -293,10 +289,10 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
               <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100">
-                Chọn tài liệu học tập
+                Chọn tài liệu
               </h2>
               <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                Chọn một tài liệu bên dưới để bắt đầu đọc và ôn luyện.
+                Chọn một tài liệu bên dưới
               </p>
             </div>
 

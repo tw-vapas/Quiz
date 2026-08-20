@@ -349,10 +349,10 @@ const SidebarControls = React.memo(({
       </div>
 
       <div className="p-5 md:p-6 space-y-6">
-        {/* 1. Giao diện & Thời gian (Cùng 1 hàng với vạch ngăn cách lệch khoảng cách) */}
-        <div className="grid grid-cols-[auto_auto_1fr] items-start gap-0">
+        {/* 1. Giao diện & Thời gian (Cùng 1 hàng với vạch ngăn cách có khoảng cách bằng độ rộng chữ Giao diện) */}
+        <div className="flex items-start">
           {/* Giao diện */}
-          <div className="pr-1 sm:pr-2">
+          <div className="shrink-0">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
             <div className="space-y-3">
               <label className="flex items-center space-x-2.5 cursor-pointer">
@@ -380,11 +380,17 @@ const SidebarControls = React.memo(({
             </div>
           </div>
 
+          {/* Space 1: Width equal to text "Giao diện" (~72px) */}
+          <div className="w-[72px] shrink-0" />
+
           {/* Vertical Divider */}
-          <div className="w-px h-full min-h-[76px] bg-slate-200 dark:bg-slate-700/80 self-stretch mx-1 sm:mx-2" />
+          <div className="w-px h-full min-h-[76px] bg-slate-200 dark:bg-slate-700/80 self-stretch shrink-0" />
+
+          {/* Space 2: Width equal to text "Giao diện" (~72px) */}
+          <div className="w-[72px] shrink-0" />
 
           {/* Thời gian */}
-          <div className="pl-4 sm:pl-6">
+          <div className="flex-1 min-w-0">
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
             <div className="space-y-3">
               <label className="flex items-center space-x-2.5 cursor-pointer">

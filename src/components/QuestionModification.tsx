@@ -1051,16 +1051,16 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
               </div>
 
               {/* Import Strategy selector (Compact Segmented UI) */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 w-full">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">
                   Chế độ áp dụng:
                 </label>
-                <div className="flex items-center gap-1 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-md">
+                <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-md w-full">
                   <button
                     type="button"
                     onClick={() => setImportStrategy("APPEND")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none",
+                      "py-1.5 px-2 rounded text-xs sm:text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none text-center flex items-center justify-center",
                       importStrategy === "APPEND"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1073,7 +1073,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                     type="button"
                     onClick={() => setImportStrategy("REPLACE_ALL")}
                     className={cn(
-                      "px-2.5 py-1 rounded text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none",
+                      "py-1.5 px-2 rounded text-xs sm:text-sm font-medium transition-all cursor-pointer select-none outline-none focus:outline-none ring-0 focus:ring-0 active:outline-none border-none text-center flex items-center justify-center",
                       importStrategy === "REPLACE_ALL"
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
@@ -1094,16 +1094,10 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
                   placeholder={`Câu 1: Thủ đô của Việt Nam là gì?
-A. Hà Nội /
+A. Hà Nội
 B. TP. Hồ Chí Minh
 C. Đà Nẵng
-D. Cần Thơ
-
-Câu 2: Đơn vị đo cường độ dòng điện là gì?
-A. Vôn (V)
-B. Ampe (A) /
-C. Ôm (Ω)
-D. Oát (W)`}
+D. Cần Thơ`}
                   className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
                 />
               </div>
