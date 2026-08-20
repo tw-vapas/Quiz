@@ -229,17 +229,30 @@ function checkFileValidity(f: CreatorFile): boolean {
   );
 }
 
-const initialSources = initialCreatorFiles.map(f => ({
-  id: f.id,
-  name: f.name,
-  customName: f.customName,
-  questionsCount: f.questions.length,
-  active: f.active !== false && checkFileValidity(f),
-  isValid: checkFileValidity(f),
-  questions: f.questions,
-  document: f.document,
-  note: f.note
-}));
+function creatorFileToSource(f: CreatorFile): SourceFile {
+  return {
+    id: f.id,
+    name: f.name,
+    customName: f.customName,
+    questionsCount: f.questions?.length || 0,
+    active: f.active !== false && checkFileValidity(f),
+    isValid: checkFileValidity(f),
+    questions: f.questions || [],
+    document: f.document,
+    note: f.note,
+    metadata: f.metadata || {
+      file_name: f.name,
+      question_count: f.questions?.length || 0,
+      last_modified: new Date().toLocaleDateString("vi-VN", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }) + " " + new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })
+    }
+  };
+}
+
+const initialSources = initialCreatorFiles.map(creatorFileToSource);
 
 export const useQuizStore = create<QuizStore>((set, get) => ({
   showResultAfterQuestion: true,
@@ -293,34 +306,14 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     const updatedFiles = [...state.creatorFiles, newFile];
     return {
       creatorFiles: updatedFiles,
-      sources: updatedFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: updatedFiles.map(creatorFileToSource)
     };
   }),
   toggleSource: (id) => set((state) => {
     const updatedFiles = state.creatorFiles.map(f => f.id === id ? { ...f, active: !f.active } : f);
     return {
       creatorFiles: updatedFiles,
-      sources: updatedFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: updatedFiles.map(creatorFileToSource)
     };
   }),
   removeSource: (id) => set((state) => {
@@ -329,17 +322,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
     return {
       creatorFiles: updatedFiles,
       activeFileId: newActiveId,
-      sources: updatedFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: updatedFiles.map(creatorFileToSource)
     };
   }),
 
@@ -385,17 +368,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
         futureCreatorFiles: [],
         creatorFiles: updatedFiles,
         activeFileId: id,
-        sources: updatedFiles.map(f => ({
-          id: f.id,
-          name: f.name,
-          customName: f.customName,
-          questionsCount: f.questions.length,
-          active: f.active !== false && checkFileValidity(f),
-          isValid: checkFileValidity(f),
-          questions: f.questions,
-          document: f.document,
-          note: f.note
-        }))
+        sources: updatedFiles.map(creatorFileToSource)
       };
     });
     return id;
@@ -410,17 +383,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       futureCreatorFiles: [],
       creatorFiles: updatedFiles,
       activeFileId: newActiveId,
-      sources: updatedFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: updatedFiles.map(creatorFileToSource)
     };
   }),
   updateCreatorFile: (id, updates) => set((state) => {
@@ -462,17 +425,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       pastCreatorFiles: [...past.slice(-29), currentSnapshot],
       futureCreatorFiles: [],
       creatorFiles: updatedFiles,
-      sources: updatedFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: updatedFiles.map(creatorFileToSource)
     };
   }),
 
@@ -489,17 +442,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       creatorFiles: previousFiles,
       pastCreatorFiles: newPast,
       futureCreatorFiles: newFuture,
-      sources: previousFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: previousFiles.map(creatorFileToSource)
     });
     get().showNotification("Đã hoàn tác (Undo)", "info");
   },
@@ -517,17 +460,7 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
       creatorFiles: nextFiles,
       pastCreatorFiles: newPast,
       futureCreatorFiles: newFuture,
-      sources: nextFiles.map(f => ({
-        id: f.id,
-        name: f.name,
-        customName: f.customName,
-        questionsCount: f.questions.length,
-        active: f.active !== false && checkFileValidity(f),
-        isValid: checkFileValidity(f),
-        questions: f.questions,
-        document: f.document,
-        note: f.note
-      }))
+      sources: nextFiles.map(creatorFileToSource)
     });
     get().showNotification("Đã làm lại (Redo)", "info");
   },

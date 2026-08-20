@@ -529,12 +529,25 @@ export default function DocumentViewerPage() {
 
   const formatDate = (timestamp?: any) => {
     if (!timestamp) return "N/A";
+    if (typeof timestamp === "string") {
+      if (isNaN(Number(timestamp))) {
+        const parsed = new Date(timestamp);
+        if (isNaN(parsed.getTime())) {
+          return timestamp;
+        }
+        return parsed.toLocaleDateString("vi-VN", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        }) + " " + parsed.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
+      }
+    }
     const date = new Date(Number(timestamp));
     if (isNaN(date.getTime())) return String(timestamp);
     return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
       year: "numeric",
-      month: "long",
-      day: "numeric",
     }) + " " + date.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
   };
 
