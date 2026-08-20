@@ -68,8 +68,8 @@ const StartScreen = memo(function StartScreen() {
           onClick={() => useQuizStore.getState().setSelectedDocumentSourceId(null)}
           className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-medium text-base py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
-          <BookOpen className="w-5 h-5" />
-          Xem tài liệu
+          <BookOpen className="w-5 h-5 shrink-0" />
+          <span>Xem tài liệu</span>
         </Link>
       </motion.div>
     </div>

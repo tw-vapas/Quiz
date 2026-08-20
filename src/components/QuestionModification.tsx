@@ -287,7 +287,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   const canAddExplanation = question.explanation === null || question.explanation === undefined;
 
   return (
-    <div className="p-5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1c2b51] shadow-sm space-y-5 relative">
+    <div className="p-5 sm:p-6 rounded-2xl border-2 border-indigo-200/80 dark:border-indigo-900/60 bg-white dark:bg-slate-900 shadow-md space-y-5 relative transition-all duration-200">
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
         <span className="text-lg font-semibold text-indigo-650 dark:text-indigo-400">
@@ -1748,7 +1748,7 @@ export default function QuestionModification({
                 </div>
 
                 {/* Section 2: Question List (List selector bottom 1/3 on mobile, right on desktop) */}
-                <div className="flex-1 md:col-span-4 xl:col-span-3 h-full border border-slate-250 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/20 p-4 flex flex-col min-h-0 min-w-0">
+                <div className="flex-1 md:col-span-4 xl:col-span-3 h-full border border-slate-200 dark:border-slate-800/80 rounded-xl bg-white dark:bg-slate-900/60 p-4 flex flex-col min-h-0 min-w-0 shadow-xs">
                   <h5 className="text-xs font-semibold text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">Danh Sách Câu Hỏi</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (

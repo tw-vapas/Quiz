@@ -141,15 +141,8 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-        <div>
-          <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-indigo-650 dark:text-indigo-400" />
-            <span>Danh sách tài liệu</span>
-          </h2>
-        </div>
-        
-        {sources.length > 5 && (
+      {sources.length > 5 && (
+        <div className="mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 flex justify-end shrink-0">
           <div className="relative w-full md:w-72 shrink-0">
             <input
               type="text"
@@ -168,8 +161,8 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
               </button>
             )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="w-full">
         {filteredSources.length === 0 ? (
@@ -644,9 +637,8 @@ export default function DocumentViewerPage() {
           </Link>
           <span className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:inline" />
           <h1 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-            <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden sm:inline">Tài liệu học tập</span>
-            <span className="sm:hidden">Tài liệu</span>
+            <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+            <span>Danh Sách Tài Liệu</span>
           </h1>
         </div>
 
