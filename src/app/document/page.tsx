@@ -145,7 +145,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
         <div>
           <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
             <BookOpen className="w-6 h-6 text-indigo-650 dark:text-indigo-400" />
-            <span>Chọn tài liệu</span>
+            <span>Danh sách tài liệu</span>
           </h2>
         </div>
         
@@ -272,7 +272,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
         {/* Header container with Title on left and Close button on right on SAME ROW */}
         <div className="flex items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
           <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100 truncate">
-            Chọn tài liệu
+            Danh sách tài liệu
           </h2>
 
           <div className="flex items-center gap-2 shrink-0">
