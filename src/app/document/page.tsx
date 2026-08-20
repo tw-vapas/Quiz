@@ -145,11 +145,8 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
         <div>
           <h2 className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-3">
             <BookOpen className="w-6 h-6 text-indigo-650 dark:text-indigo-400" />
-            <span>Chọn tài liệu học tập</span>
+            <span>Chọn tài liệu</span>
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Chọn một tài liệu bên dưới để bắt đầu đọc và ôn luyện.
-          </p>
         </div>
         
         {sources.length > 5 && (
@@ -272,40 +269,23 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
         className="w-full max-w-3xl max-h-[85vh] h-auto bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl md:rounded-3xl shadow-2xl relative p-4 sm:p-6 md:p-8 flex flex-col overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header container with Top Bar (X close button on top right) */}
-        <div className="flex flex-col gap-2 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
-          {/* Top Row: Close button on top right */}
-          <div className="flex items-center justify-end">
-            <button
-              onClick={onClose}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              title="Đóng hộp thoại"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+        {/* Header container with Title on left and Close button on right on SAME ROW */}
+        <div className="flex items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
+          <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100 truncate">
+            Chọn tài liệu
+          </h2>
 
-          {/* Main Title and Search Row */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-            <div>
-              <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100">
-                Chọn tài liệu
-              </h2>
-              <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
-                Chọn một tài liệu bên dưới
-              </p>
-            </div>
-
+          <div className="flex items-center gap-2 shrink-0">
             {sources.length > 5 && (
-              <div className="relative w-full md:w-64 shrink-0">
+              <div className="relative w-44 sm:w-60 shrink-0">
                 <input
                   type="text"
                   placeholder="Tìm kiếm tài liệu..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full min-h-10 pl-9 pr-8 py-1.5 text-xs border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full min-h-9 pl-8 pr-7 py-1 text-xs border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
                 {searchQuery && (
                   <button 
                     onClick={() => setSearchQuery("")} 
@@ -316,6 +296,14 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
                 )}
               </div>
             )}
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
+              title="Đóng hộp thoại"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
         </div>
 
