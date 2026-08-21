@@ -564,7 +564,7 @@ export default function DocumentViewerPage() {
         <div className="py-8 md:py-16 px-4 md:px-8">
           <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-12 transition-all max-w-4xl mx-auto">
           <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-700 animate-pulse" />
-          <h2 className="text-2xl font-extrabold text-slate-855 dark:text-slate-100 mb-3">Chưa có nguồn tài liệu</h2>
+          <h2 className="text-xl font-extrabold text-slate-855 dark:text-slate-100 mb-3">Chưa có nguồn tài liệu</h2>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
             Vui lòng tải lên các file trắc nghiệm để xem tài liệu đính kèm của nó
           </p>
