@@ -141,8 +141,11 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
 
   return (
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col">
-      {sources.length > 5 && (
-        <div className="mb-6 pb-5 border-b border-slate-100 dark:border-slate-800/60 flex justify-end shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
+        <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100">
+          Danh sách tài liệu
+        </h2>
+        {sources.length > 5 && (
           <div className="relative w-full md:w-72 shrink-0">
             <input
               type="text"
@@ -161,8 +164,8 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
               </button>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       <div className="w-full">
         {filteredSources.length === 0 ? (
@@ -562,16 +565,9 @@ export default function DocumentViewerPage() {
           <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-12 transition-all max-w-4xl mx-auto">
           <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-700 animate-pulse" />
           <h2 className="text-2xl font-extrabold text-slate-855 dark:text-slate-100 mb-3">Chưa có nguồn tài liệu</h2>
-          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-8 max-w-md mx-auto leading-relaxed">
-            Vui lòng tải lên tài liệu học tập (.json) có cấu trúc Learning Package hoặc tệp thô (.txt, .docx) từ trang chủ để bắt đầu ôn luyện.
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+            Vui lòng tải lên các file trắc nghiệm để xem tài liệu đính kèm của nó
           </p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 bg-indigo-650 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white font-bold px-6 py-3 rounded-2xl transition-all shadow-md active:scale-95 text-sm md:text-base cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Tải lên tệp tại Trang chủ
-          </Link>
           </div>
         </div>
       );
@@ -638,7 +634,7 @@ export default function DocumentViewerPage() {
           <span className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:inline" />
           <h1 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-            <span>Danh Sách Tài Liệu</span>
+            <span>Xem tài liệu</span>
           </h1>
         </div>
 
