@@ -60,6 +60,7 @@ context/
 │   ├── directory-map.md      # = DIRECTORY_STRUCTURE.md
 │   └── dependency-graph.md   # = DEPENDENCY_GRAPH.md
 ├── reference/                # Nhóm tra cứu khi sửa code
+│   ├── code-map.md           # ⭐ Bản đồ mã nguồn src/ — tạo TRƯỚC Giai đoạn 1 bởi task src_code_map.md
 │   ├── data-models.md        # = API.md (interface Question/ParseResult/Option/DisplayBlock)
 │   ├── store.md              # = STATE_MANAGEMENT.md
 │   ├── storage.md            # = DATABASE.md (localStorage keys + quota)
@@ -76,6 +77,8 @@ context/
 ```
 
 Sau khi hoàn tất: `context/` còn **17 file .md** (từ 21), chia 5 nhóm rõ nghĩa.
+
+> **[Ghi chú cập nhật 2026-08-23]** File `reference/code-map.md` được tạo TRƯỚC Giai đoạn 1 bởi task riêng `refactor_plan/src_code_map.md` (đã duyệt theo quy trình từng file). Khi chạy Giai đoạn 1: giữ nguyên vị trí file này, không move/không xóa, và đưa vào INDEX.md trong mục reference. Số file kết quả cuối là **18** thay vì 17.
 
 ---
 
