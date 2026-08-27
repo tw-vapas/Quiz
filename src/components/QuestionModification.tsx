@@ -472,7 +472,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
               <div className="flex flex-col gap-3 w-full">
                 <div className="space-y-1.5 w-full">
-                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Loại khối</span>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Loại khối</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
@@ -485,7 +485,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                 <div className="w-full space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Nội dung</span>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Nội dung</span>
                     <span className={cn("text-xs font-mono font-medium", db.content.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
@@ -495,7 +495,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                     placeholder="Nhập nội dung khối hiển thị (tối đa 1000 ký tự)..."
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                    className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:font-sans placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                 </div>
               </div>
