@@ -295,8 +295,8 @@ export default function SettingExport({
               type="text" 
               value={activeFile.name}
               onChange={(e) => updateCreatorFile(activeFile.id, { name: e.target.value, metadata: { ...activeFile.metadata, file_name: e.target.value } })}
-              className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              placeholder="Nhập tên tệp..."
+              className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+              placeholder="Nhập tên tệp tin..."
             />
           </div>
 
@@ -343,8 +343,8 @@ export default function SettingExport({
           <textarea
             value={activeFile.note}
             onChange={(e) => handleNoteChange(e.target.value)}
-            className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-sm font-normal text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
-            placeholder="Nhập ghi chú cho tệp tin này..."
+            className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-sm font-normal text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            placeholder="Nhập ghi chú cho tệp tin này (tối đa 200 từ)..."
           />
         </div>
 

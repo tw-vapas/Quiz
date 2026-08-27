@@ -147,7 +147,7 @@ const VirtualSourceCard = React.memo(({
             {editingSourceIds[source.id] ? (
               <input
                 type="text"
-                placeholder="Đặt tên nguồn dữ liệu..."
+                placeholder="Nhập tên nguồn dữ liệu..."
                 value={source.customName || ""}
                 onChange={(e) => updateLocalCustomName(source.id, e.target.value)}
                 onBlur={() => {
@@ -158,7 +158,7 @@ const VirtualSourceCard = React.memo(({
                     setEditingSourceIds(prev => ({ ...prev, [source.id]: false }));
                   }
                 }}
-                className="w-full px-2 py-0.5 text-sm font-bold border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                className="w-full px-2 py-0.5 text-sm font-bold border border-slate-300 dark:border-slate-600 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 autoFocus
               />
             ) : (

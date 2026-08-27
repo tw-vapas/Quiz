@@ -392,7 +392,7 @@ export default function FileManager() {
                   value={newFileNameInput}
                   onChange={(e) => setNewFileNameInput(e.target.value)}
                   placeholder="Nhập tên tệp trắc nghiệm (vd: Đề thi Toán Học Phần 1)..."
-                  className="w-full px-3.5 py-2.5 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 outline-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                  className="w-full px-3.5 py-2.5 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 outline-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
 

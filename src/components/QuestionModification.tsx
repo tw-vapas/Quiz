@@ -327,7 +327,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           maxLength={1000}
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value.slice(0, 1000) })}
-          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+          className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
           placeholder="Nhập nội dung câu hỏi (tối đa 1000 ký tự)..."
         />
       </div>
@@ -379,8 +379,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                       maxLength={150}
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
-                      placeholder={`Đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
-                      className="w-full bg-transparent text-sm font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed py-0.5 custom-scrollbar"
+                      placeholder={`Nhập đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
+                      className="w-full bg-transparent text-sm font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed py-0.5 custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                     {ans.text.length >= 100 && (
                       <span className={cn("text-xs font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-semibold" : "text-slate-400")}>
@@ -445,8 +445,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 e.currentTarget.blur();
               }
             }}
-            className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="tag1, tag2..."
+            className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+            placeholder="Nhập thẻ phân loại (vd: toán, lý, hóa)..."
           />
         </div>
       </div>
@@ -492,10 +492,10 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   </div>
                   <textarea
                     maxLength={1000}
-                    placeholder="Nhập nội dung của khối hiển thị (tối đa 1000 kí tự)..."
+                    placeholder="Nhập nội dung khối hiển thị (tối đa 1000 ký tự)..."
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
-                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+                    className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
                   />
                 </div>
               </div>
@@ -526,7 +526,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             maxLength={1000}
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value.slice(0, 1000))}
-            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar"
+            className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
             placeholder="Nhập nội dung giải thích (tối đa 1000 ký tự)..."
           />
         </div>
@@ -1088,12 +1088,8 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 <textarea
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
-                  placeholder={`Câu 1: Thủ đô của Việt Nam là gì?
-A. Hà Nội
-B. TP. Hồ Chí Minh
-C. Đà Nẵng
-D. Cần Thơ`}
-                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                  placeholder={`Nhập nội dung câu hỏi thô (Ví dụ:\nCâu 1: Thủ đô của Việt Nam là gì?\nA. Hà Nội\nB. TP. Hồ Chí Minh\nC. Đà Nẵng\nD. Cần Thơ)...`}
+                  className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
 
@@ -1166,11 +1162,8 @@ D. Cần Thơ`}
                 <textarea
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
-                  placeholder={`[
-  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "...", "Tags": ["Môn Toán"] },
-  { "Question": 2, "CorrectOptions": ["B"], "Explanation": "...", "Tags": ["Học Phần 1"] }
-]`}
-                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none"
+                  placeholder={`Nhập dữ liệu trắc nghiệm JSON (Ví dụ:\n[\n  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "...", "Tags": ["Môn Toán"] }\n])...`}
+                  className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
 
@@ -1670,7 +1663,7 @@ export default function QuestionModification({
                   value={activeFile.document}
                   onChange={(e) => updateCreatorFile(activeFile.id, { document: e.target.value })}
                   placeholder="Nhập nội dung tài liệu học tập bằng định dạng Markdown (.md)..."
-                  className="w-full flex-1 min-h-0 p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-sm font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none overflow-y-auto custom-scrollbar"
+                  className="w-full flex-1 min-h-0 p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-sm font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
             )}
