@@ -977,14 +977,9 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
-            <div>
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                Tạo Quiz Nhanh
-              </h3>
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Thao tác tệp <span className="font-semibold text-indigo-600 dark:text-indigo-400">"{activeFile.name}"</span> ({activeFile.questions.length} câu hiện có)
-              </p>
-            </div>
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              Tạo Quiz Nhanh
+            </h3>
           </div>
 
           <button

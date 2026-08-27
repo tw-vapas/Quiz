@@ -176,7 +176,9 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 pb-2">
             {filteredSources.map((src) => {
               const hasDocument = !!src.document && src.document.trim() !== "";
-              const displayName = getSourceDisplayName(src);
+              const rawDisplayName = getSourceDisplayName(src);
+              const displayName = rawDisplayName ? rawDisplayName.replace(/\.json$/i, "") : rawDisplayName;
+              const rawName = src.name ? src.name.replace(/\.json$/i, "") : src.name;
 
               return (
                 <button
@@ -197,9 +199,9 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
                     <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate mb-0.5" title={displayName}>
                       {displayName}
                     </h3>
-                    {displayName !== src.name && (
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-1.5" title={src.name}>
-                        {src.name}
+                    {displayName !== rawName && (
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-1.5" title={rawName}>
+                        {rawName}
                       </p>
                     )}
                     
@@ -213,7 +215,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
                           <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                           <span className="truncate flex items-center gap-1 font-medium">
                             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                            {formatDate(src.metadata.last_modified).split(" ")[0]}
+                            {formatDate(src.metadata.last_modified)}
                           </span>
                         </>
                       )}
@@ -312,7 +314,9 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 pb-2">
               {filteredSources.map((src) => {
                 const hasDocument = !!src.document && src.document.trim() !== "";
-                const displayName = getSourceDisplayName(src);
+                const rawDisplayName = getSourceDisplayName(src);
+                const displayName = rawDisplayName ? rawDisplayName.replace(/\.json$/i, "") : rawDisplayName;
+                const rawName = src.name ? src.name.replace(/\.json$/i, "") : src.name;
 
                 return (
                   <button
@@ -333,9 +337,9 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
                       <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate mb-0.5" title={displayName}>
                         {displayName}
                       </h3>
-                      {displayName !== src.name && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-1.5" title={src.name}>
-                          {src.name}
+                      {displayName !== rawName && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mb-1.5" title={rawName}>
+                          {rawName}
                         </p>
                       )}
                       
@@ -349,7 +353,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
                             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                             <span className="truncate flex items-center gap-1 font-medium">
                               <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                              {formatDate(src.metadata.last_modified).split(" ")[0]}
+                              {formatDate(src.metadata.last_modified)}
                             </span>
                           </>
                         )}
@@ -517,26 +521,24 @@ export default function DocumentViewerPage() {
 
   const formatDate = (timestamp?: any) => {
     if (!timestamp) return "N/A";
-    if (typeof timestamp === "string") {
-      if (isNaN(Number(timestamp))) {
-        const parsed = new Date(timestamp);
-        if (isNaN(parsed.getTime())) {
-          return timestamp;
-        }
-        return parsed.toLocaleDateString("vi-VN", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        }) + " " + parsed.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
-      }
+    let dateObj: Date;
+    if (typeof timestamp === "string" && isNaN(Number(timestamp))) {
+      dateObj = new Date(timestamp);
+    } else {
+      dateObj = new Date(Number(timestamp));
     }
-    const date = new Date(Number(timestamp));
-    if (isNaN(date.getTime())) return String(timestamp);
-    return date.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    }) + " " + date.toLocaleTimeString("vi-VN", { hour: '2-digit', minute: '2-digit' });
+    if (isNaN(dateObj.getTime())) {
+      const match = String(timestamp).match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+      if (match) {
+        const [, y, m, d] = match;
+        return `${d.padStart(2, "0")}/${m.padStart(2, "0")}/${y}`;
+      }
+      return String(timestamp);
+    }
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   const renderMobileHeaderInfo = () => {
@@ -662,7 +664,7 @@ export default function DocumentViewerPage() {
             )}
             title="Chọn nguồn tài liệu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-3.5 h-3.5 shrink-0" />
             <span className="text-xs font-semibold hidden md:inline">Nguồn tài liệu</span>
           </button>
         )}
