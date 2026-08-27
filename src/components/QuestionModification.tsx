@@ -1622,7 +1622,7 @@ export default function QuestionModification({
       </div>
 
       {/* 2. BODY CONTENT */}
-      <div className="flex-1 overflow-y-auto md:overflow-hidden p-3 sm:p-5 relative min-h-0 flex flex-col">
+      <div className="flex-1 overflow-hidden p-3 sm:p-5 relative min-h-0 flex flex-col">
         
         {/* --- TAB A: DOCUMENT VIEW --- */}
         {activeTab === "DOCUMENT" && (
@@ -1689,7 +1689,7 @@ export default function QuestionModification({
             {/* Options Sub-Header Bar */}
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-black text-slate-800 dark:text-slate-200">
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                   Tổng cộng: {activeFile.questions.length} câu hỏi
                 </span>
               </div>

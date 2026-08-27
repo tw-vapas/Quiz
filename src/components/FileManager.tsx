@@ -277,7 +277,7 @@ export default function FileManager() {
 
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
-        <h4 className="text-xs font-semibold text-slate-400 dark:text-slate-500 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
+        <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
           <span>Danh Sách Tệp ({creatorFiles.length}/{FILE_LIMIT})</span>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
@@ -286,10 +286,10 @@ export default function FileManager() {
               "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold text-xs transition-all",
               creatorFiles.length >= FILE_LIMIT || isStorageFull
                 ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
-                : "border-indigo-200 dark:border-indigo-900 bg-indigo-50/30 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/50 hover:shadow-sm active:scale-95 cursor-pointer"
+                : "border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:shadow-xs active:scale-95 cursor-pointer"
             )}
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             Tạo tệp
           </button>
         </h4>
