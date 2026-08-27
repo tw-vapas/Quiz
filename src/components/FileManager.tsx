@@ -280,17 +280,18 @@ export default function FileManager() {
         <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
           <span>Danh Sách Tệp ({creatorFiles.length}/{FILE_LIMIT})</span>
           <button 
+            type="button"
             onClick={() => setIsCreateModalOpen(true)}
             disabled={creatorFiles.length >= FILE_LIMIT || isStorageFull}
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border font-semibold text-xs transition-all",
+              "px-3 py-1.5 rounded-lg font-medium text-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none",
               creatorFiles.length >= FILE_LIMIT || isStorageFull
-                ? "border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
-                : "border-slate-200 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 hover:shadow-xs active:scale-95 cursor-pointer"
+                ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 opacity-50 cursor-not-allowed"
+                : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
             )}
           >
-            <Plus className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-            Tạo tệp
+            <Plus className="w-3.5 h-3.5 text-slate-500" />
+            <span>Tạo tệp</span>
           </button>
         </h4>
 

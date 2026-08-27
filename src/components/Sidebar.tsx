@@ -162,14 +162,14 @@ const VirtualSourceCard = React.memo(({
                 autoFocus
               />
             ) : (
-              <h3 className="font-semibold text-sm truncate text-slate-800 dark:text-slate-200" title={source.customName ? `${source.customName} - (${source.name})` : source.name}>
+              <h3 className="font-semibold text-sm truncate text-slate-800 dark:text-slate-200" title={source.customName ? `${source.customName} - (${source.name.replace(/\.json$/i, "")})` : source.name.replace(/\.json$/i, "")}>
                 {source.customName ? (
                   <>
                     <span className="font-bold text-slate-900 dark:text-slate-100">{source.customName}</span>
-                    <span className="text-slate-400 dark:text-slate-500 font-normal ml-1"> - ({source.name})</span>
+                    <span className="text-slate-400 dark:text-slate-500 font-normal ml-1"> - ({source.name.replace(/\.json$/i, "")})</span>
                   </>
                 ) : (
-                  <span>{source.name}</span>
+                  <span>{source.name.replace(/\.json$/i, "")}</span>
                 )}
               </h3>
             )}
@@ -201,10 +201,10 @@ const VirtualSourceCard = React.memo(({
         </div>
         
         {source.isValid ? (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-center gap-2">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-baseline gap-1.5 leading-none">
             <span>{source.questionsCount} câu hỏi</span>
             <span className="text-slate-400 dark:text-slate-500">•</span>
-            <span className="font-mono">{sourceSizeText}</span>
+            <span className="font-mono text-xs">{sourceSizeText}</span>
           </p>
         ) : (
           <button
@@ -679,7 +679,7 @@ const SidebarList = React.memo(({
         </div>
 
         <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 font-medium">
-          <span>{localSources.length} / 10 Quiz Files</span>
+          <span>{localSources.length} / 10 Tệp Tin</span>
           {isStorageFull && (
             <span className="text-red-500 font-medium">
               Đã đạt giới hạn dung lượng bộ nhớ.

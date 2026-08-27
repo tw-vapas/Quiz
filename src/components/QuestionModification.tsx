@@ -470,8 +470,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 </button>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-start gap-3">
-                <div className="space-y-1.5 shrink-0 w-32">
+              <div className="flex flex-col gap-3 w-full">
+                <div className="space-y-1.5 w-full">
                   <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Loại khối</span>
                   <select
                     value={db.type}
@@ -483,7 +483,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   </select>
                 </div>
 
-                <div className="flex-1 space-y-1.5">
+                <div className="w-full space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 block">Nội dung</span>
                     <span className={cn("text-xs font-mono font-medium", db.content.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
@@ -1626,9 +1626,9 @@ export default function QuestionModification({
         
         {/* --- TAB A: DOCUMENT VIEW --- */}
         {activeTab === "DOCUMENT" && (
-          <div className="h-full flex flex-col gap-4">
+          <div className="h-full flex flex-col gap-4 min-h-0">
             {/* Sub tab toggles */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 shrink-0">
               <div className="flex gap-2">
                 <button 
                   onClick={() => setDocSubTab("PREVIEW")}
@@ -1659,8 +1659,8 @@ export default function QuestionModification({
             </div>
 
             {/* Document Editor / Viewer */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              {docSubTab === "PREVIEW" ? (
+            {docSubTab === "PREVIEW" ? (
+              <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                 <div className="prose dark:prose-invert max-w-none text-sm">
                   {activeFile.document ? (
                     <MarkdownRenderer content={activeFile.document} />
@@ -1668,15 +1668,17 @@ export default function QuestionModification({
                     <div className="text-center py-12 text-slate-400">Tài liệu trống. Hãy nhấn nút Chỉnh sửa để thêm nội dung.</div>
                   )}
                 </div>
-              ) : (
+              </div>
+            ) : (
+              <div className="flex-1 min-h-0 flex flex-col">
                 <textarea
                   value={activeFile.document}
                   onChange={(e) => updateCreatorFile(activeFile.id, { document: e.target.value })}
                   placeholder="Nhập nội dung tài liệu học tập bằng định dạng Markdown (.md)..."
-                  className="w-full h-full p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-sm font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none custom-scrollbar"
+                  className="w-full flex-1 min-h-0 p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-sm font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none overflow-y-auto custom-scrollbar"
                 />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
