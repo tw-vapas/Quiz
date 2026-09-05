@@ -14,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Quiz Lab",
+  title: "VapasQuiz",
   description: "Làm bài kiểm tra trắc nghiệm từ tệp Word hoặc Text",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
