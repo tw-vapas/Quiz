@@ -96,29 +96,30 @@ body {
 
 /* KaTeX Fraction Spacing: Push numerator UP and denominator DOWN away from the fraction bar */
 .katex .mfrac {
-  padding: 0.2em 0.25em !important;
-  margin: 0 0.15em !important;
+  padding: 0.35em 0.3em !important;
+  margin: 0.15em 0.25em !important;
 }
 
 .katex .mfrac .frac-line {
   border-bottom-width: 1.5px !important;
+  margin: 0.15em 0 !important;
 }
 
 /* Move numerator UP away from line */
 .katex .mfrac .numerator,
 .katex .mfrac > span > span > span > span:has(.numerator) {
-  transform: translateY(-0.35em) !important;
+  transform: translateY(-0.55em) !important;
 }
 
 /* Move denominator DOWN away from line */
 .katex .mfrac .denominator,
 .katex .mfrac > span > span > span > span:has(.denominator) {
-  transform: translateY(0.35em) !important;
+  transform: translateY(0.55em) !important;
 }
 
 /* Inline math fraction vertical balance */
 .katex .mord.mfrac {
-  vertical-align: -0.35em !important;
+  vertical-align: -0.45em !important;
 }
 
 html {
