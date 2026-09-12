@@ -34,11 +34,14 @@ const MARKDOWN_COMPONENTS = {
   
   // Blockquote & AI Callout Card styling (NotebookLM / ChatGPT / Gemini Callouts)
   blockquote: ({ children }: any) => {
-    const textContent = React.Children.toArray(children)
-      .map(child => (typeof child === 'string' ? child : (child as any)?.props?.children))
-      .flat()
-      .join(' ');
-
+    const extractText = (node: any): string => {
+      if (!node) return "";
+      if (typeof node === "string" || typeof node === "number") return String(node);
+      if (Array.isArray(node)) return node.map(extractText).join(" ");
+      if (node?.props?.children) return extractText(node.props.children);
+      return "";
+    };
+    const textContent = extractText(children);
     const lower = textContent.trim().toLowerCase();
 
     if (lower.startsWith('[!note]') || lower.startsWith('note:') || lower.startsWith('ghi chú:') || lower.startsWith('ghi chú')) {
@@ -180,7 +183,10 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Mark
     };
   }, [blocks]);
 
-  const visibleBlocks = useMemo(() => blocks.slice(0, visibleCount), [blocks, visibleCount]);
+  const visibleBlocks = useMemo(
+    () => blocks.slice(0, visibleCount).filter(b => b && typeof b === "string" && b.trim() !== "" && b.trim() !== "undefined" && b.trim() !== "null"),
+    [blocks, visibleCount]
+  );
 
   return (
     <div className="prose dark:prose-invert max-w-none text-slate-800 dark:text-slate-200 space-y-4 overflow-x-hidden">
