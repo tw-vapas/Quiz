@@ -87,28 +87,36 @@ body {
 
 /* Fix prime symbol (') size - reduce superscript scale for primes like m', p', t', z' */
 .katex .msupsub .vlist-t {
-  font-size: 0.82em;
+  font-size: 0.8em;
 }
 
 .katex .msupsub .vlist-t .vlist-r .vlist .mord {
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
 
-/* Ensure fractions (\frac) have proper vertical spacing between numerator, fraction bar, and denominator */
+/* Fraction spacing: Increase distance between numerator, fraction bar, and denominator */
 .katex .mfrac {
-  padding: 0 0.15em;
+  padding: 0 0.2em;
 }
 
 .katex .mfrac .frac-line {
-  border-bottom-width: 1.2px !important;
-  margin-top: 0.12em !important;
-  margin-bottom: 0.12em !important;
+  border-bottom-width: 1.5px !important;
 }
 
-/* Add breathing room around fraction expressions in inline math */
+/* Force vertical separation using CSS translateY transforms on numerator and denominator */
+.katex .mfrac .vlist-t .vlist-r .vlist > span:first-child {
+  transform: translateY(-0.25em) !important;
+}
+
+.katex .mfrac .vlist-t .vlist-r .vlist > span:last-child,
+.katex .mfrac .vlist-t .vlist-r .vlist > span:nth-child(3) {
+  transform: translateY(0.25em) !important;
+}
+
+/* Extra margin around fractions in inline text */
 .katex .mord.mfrac {
-  margin: 0 0.1em;
-  vertical-align: -0.15em;
+  margin: 0 0.15em;
+  vertical-align: -0.2em;
 }
 
 html {

@@ -36,46 +36,26 @@ export function normalizeMarkdownForRendering(content: string): string {
   result = result.replace(/\$\\frac\$\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
   result = result.replace(/\$\\frac(\{[\s\S]*?\})\$\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
 
-  // 7. Auto-detect ASCII Box Art diagrams and wrap them in ```diagram ... ``` code blocks
+  // 7. Auto-detect ASCII Box Art diagrams and wrap raw un-fenced box lines in ```diagram ... ``` code blocks
   const lines = result.split("\n");
   const processedLines: string[] = [];
-  let inBoxArt = false;
-  let boxArtLines: string[] = [];
-
-  const isBoxSymbol = (l: string) => /[┌┐└┘├┤┬┴┼━┃┏┓┗┛║╔╗╚╝─│▼▲◄►]/.test(l);
+  let inCodeFence = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
 
-    if (!inBoxArt && isBoxSymbol(line)) {
-      inBoxArt = true;
-      boxArtLines = [line];
-    } else if (inBoxArt) {
-      if (trimmed === "" || trimmed.startsWith("#") || trimmed === "---" || trimmed.startsWith(">")) {
-        inBoxArt = false;
-        processedLines.push("```diagram");
-        processedLines.push(...boxArtLines);
-        processedLines.push("```");
-        boxArtLines = [];
-        processedLines.push(line.replace(/<br\s*\/?>/gi, "\n"));
-      } else {
-        boxArtLines.push(line);
-      }
-    } else {
-      // Preserve <br> inside tables, replace <br> outside tables
-      if (trimmed.startsWith("|")) {
-        processedLines.push(line);
-      } else {
-        processedLines.push(line.replace(/<br\s*\/?>/gi, "\n"));
-      }
+    if (trimmed.startsWith("```")) {
+      inCodeFence = !inCodeFence;
+      processedLines.push(line);
+      continue;
     }
-  }
 
-  if (inBoxArt) {
-    processedLines.push("```diagram");
-    processedLines.push(...boxArtLines);
-    processedLines.push("```");
+    if (trimmed.startsWith("|")) {
+      processedLines.push(line);
+    } else {
+      processedLines.push(line.replace(/<br\s*\/?>/gi, "\n"));
+    }
   }
 
   result = processedLines.join("\n");
@@ -88,10 +68,15 @@ export function normalizeMarkdownForRendering(content: string): string {
   // 9. Normalize unicode bullet characters (•, ◦, ▪, ►, ▸) at line starts to standard markdown bullet items (- )
   result = result.replace(/^(\s*)[•◦▪►▸]\s*/gm, "$1- ");
 
-  // 10. Process line-by-line to wrap unwrapped inline math expressions safely
+  // 10. Process line-by-line to wrap unwrapped inline math expressions safely outside code fences
+  let insideFence = false;
   const finalLines = result.split("\n").map(line => {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('```') || trimmed.startsWith('#') || trimmed.startsWith('>[!') || trimmed.startsWith('> [!')) {
+    if (trimmed.startsWith("```")) {
+      insideFence = !insideFence;
+      return line;
+    }
+    if (insideFence || !trimmed || trimmed.startsWith("#") || trimmed.startsWith(">[!") || trimmed.startsWith("> [!")) {
       return line;
     }
 
