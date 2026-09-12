@@ -68,21 +68,21 @@ body {
   @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100;
 }
 
-/* KaTeX Math Styling Adjustments & Fraction Overlap Fix */
+/* KaTeX Math Styling Adjustments & Fraction Spacing Fix */
 .katex {
   font-size: 1.05em;
-  line-height: 1.2;
+  line-height: 1.25;
   text-indent: 0;
   text-rendering: auto;
 }
 
 .katex-display {
   display: block;
-  margin: 1.2em 0 !important;
+  margin: 1.4em 0 !important;
   text-align: center;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.4em 0;
+  padding: 0.5em 0;
 }
 
 /* Fix prime symbol (') size - reduce superscript scale for primes like m', p', t', z' */
@@ -94,29 +94,31 @@ body {
   font-size: 0.85em;
 }
 
-/* Fraction spacing: Increase distance between numerator, fraction bar, and denominator */
+/* KaTeX Fraction Spacing: Push numerator UP and denominator DOWN away from the fraction bar */
 .katex .mfrac {
-  padding: 0 0.2em;
+  padding: 0.2em 0.25em !important;
+  margin: 0 0.15em !important;
 }
 
 .katex .mfrac .frac-line {
   border-bottom-width: 1.5px !important;
 }
 
-/* Force vertical separation using CSS translateY transforms on numerator and denominator */
-.katex .mfrac .vlist-t .vlist-r .vlist > span:first-child {
-  transform: translateY(-0.25em) !important;
+/* Move numerator UP away from line */
+.katex .mfrac .numerator,
+.katex .mfrac > span > span > span > span:has(.numerator) {
+  transform: translateY(-0.35em) !important;
 }
 
-.katex .mfrac .vlist-t .vlist-r .vlist > span:last-child,
-.katex .mfrac .vlist-t .vlist-r .vlist > span:nth-child(3) {
-  transform: translateY(0.25em) !important;
+/* Move denominator DOWN away from line */
+.katex .mfrac .denominator,
+.katex .mfrac > span > span > span > span:has(.denominator) {
+  transform: translateY(0.35em) !important;
 }
 
-/* Extra margin around fractions in inline text */
+/* Inline math fraction vertical balance */
 .katex .mord.mfrac {
-  margin: 0 0.15em;
-  vertical-align: -0.2em;
+  vertical-align: -0.35em !important;
 }
 
 html {
