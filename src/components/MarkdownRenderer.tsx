@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { CodeBlock } from "@/components/DisplayBlockRenderer";
 import { splitMarkdownIntoBlocks } from "@/lib/markdownHelper";
@@ -120,7 +121,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Mark
         <ReactMarkdown
           key={idx}
           remarkPlugins={[remarkGfm, remarkMath]}
-          rehypePlugins={[rehypeKatex]}
+          rehypePlugins={[rehypeRaw, rehypeKatex]}
           components={MARKDOWN_COMPONENTS}
         >
           {blockContent}

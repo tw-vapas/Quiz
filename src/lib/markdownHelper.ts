@@ -1,11 +1,38 @@
 /**
+ * Normalizes raw document text into standardized markdown before rendering.
+ * Converts LaTeX \(...\) -> $...$ and \[...\] -> $$...$$
+ * Converts raw <br> tags and unicode bullet dots (•) to clean markdown list syntax.
+ */
+export function normalizeMarkdownForRendering(content: string): string {
+  if (!content) return "";
+
+  let result = content;
+
+  // 1. Convert LaTeX inline delimiters \( ... \) to $ ... $
+  result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math.trim()}$`);
+
+  // 2. Convert LaTeX display delimiters \[ ... \] to $$ ... $$
+  result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `\n$$\n${math.trim()}\n$$\n`);
+
+  // 3. Normalize raw <br>, <br/>, <br /> HTML linebreaks to actual newlines
+  result = result.replace(/<br\s*\/?>/gi, "\n");
+
+  // 4. Normalize unicode bullet characters (•) at line starts or after newlines into standard markdown bullet items (- )
+  result = result.replace(/^(\s*)•\s*/gm, "$1- ");
+
+  return result;
+}
+
+/**
  * Safely splits a markdown string into logical block-level chunks
  * (paragraphs, code blocks, tables, headers) to enable progressive rendering.
  */
 export function splitMarkdownIntoBlocks(content: string): string[] {
   if (!content) return [];
 
-  const lines = content.split(/\r?\n/);
+  const normalized = normalizeMarkdownForRendering(content);
+
+  const lines = normalized.split(/\r?\n/);
   const blocks: string[] = [];
   let currentBlock: string[] = [];
   let inCodeBlock = false;
