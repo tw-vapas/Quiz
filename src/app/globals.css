@@ -68,16 +68,56 @@ body {
   @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100;
 }
 
-/* KaTeX Math Styling Adjustments */
-.katex-display {
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 0.5rem 0;
-  margin: 1rem 0 !important;
-}
-
+/* KaTeX Math Styling Adjustments & Fraction Overlap Fix */
 .katex {
   font-size: 1.08em;
+  line-height: 1.25;
+  text-indent: 0;
+  text-rendering: auto;
+}
+
+.katex-display {
+  display: block;
+  margin: 1em 0 !important;
+  text-align: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.3em 0;
+}
+
+/* Fix Tailwind baseline/table resets breaking KaTeX fraction alignment */
+.katex .vlist-t {
+  display: inline-table !important;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.katex .vlist-r {
+  display: table-row !important;
+}
+
+.katex .vlist {
+  display: table-cell !important;
+  vertical-align: bottom;
+}
+
+/* Add vertical padding & spacing around fraction bar to eliminate line overlap */
+.katex .mfrac .frac-line {
+  border-bottom-width: 0.07em !important;
+  margin-top: 0.25em !important;
+  margin-bottom: 0.25em !important;
+}
+
+.katex .mfrac .vlist-t {
+  vertical-align: -0.45em !important;
+}
+
+.katex .mfrac .numerator {
+  padding-bottom: 0.2em !important;
+}
+
+.katex .mfrac .denominator {
+  padding-top: 0.35em !important;
 }
 
 html {

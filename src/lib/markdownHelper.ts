@@ -20,6 +20,11 @@ export function normalizeMarkdownForRendering(content: string): string {
   // 4. Normalize unicode bullet characters (•) at line starts or after newlines into standard markdown bullet items (- )
   result = result.replace(/^(\s*)•\s*/gm, "$1- ");
 
+  // 5. Wrap standalone un-bracketed LaTeX commands (like \rightarrow, \frac{a}{b}, \bar{p}, \infty) in $...$ if not already enclosed
+  result = result.replace(/(?<!\$)\\(?:rightarrow|leftarrow|leftrightarrow|frac|bar|sum|int|sqrt|alpha|beta|gamma|delta|theta|pi|sigma|omega|infty)(?:\{[^{}]*\}|\b)(?!\$)/g, (match) => {
+    return `$${match}$`;
+  });
+
   return result;
 }
 

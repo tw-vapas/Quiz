@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Clock, Pause, Play, LogOut, CheckSquare, AlertTriangle, CheckCircle } from "lucide-react";
 import { isQuestionCorrect, Question } from "@/lib/parser";
 
+import { InlineMarkdown } from "@/components/MarkdownRenderer";
 import { DisplayBlockRenderer } from "@/components/DisplayBlockRenderer";
 
 const Timer = memo(() => {
@@ -335,8 +336,8 @@ const QuestionCard = memo(function QuestionCard({
         </div>
       )}
 
-      <h2 className="text-lg sm:text-xl md:text-2xl leading-relaxed text-slate-900 dark:text-slate-100 font-medium mb-5 md:mb-8 whitespace-pre-wrap break-words">
-        {question.text}
+      <h2 className="text-lg sm:text-xl md:text-2xl leading-relaxed text-slate-900 dark:text-slate-100 font-medium mb-5 md:mb-8 break-words">
+        <InlineMarkdown content={question.text} />
       </h2>
 
       {(() => {
@@ -396,7 +397,7 @@ const QuestionCard = memo(function QuestionCard({
                 {labels[idx]}
               </div>
               <div className={cn("pt-0.5 md:pt-1 leading-relaxed text-sm md:text-base", textClass)}>
-                {option.text}
+                <InlineMarkdown content={option.text} />
               </div>
             </button>
           );
@@ -422,7 +423,9 @@ const QuestionCard = memo(function QuestionCard({
             <InfoIcon className={cn("w-5 h-5 shrink-0 mt-0.5", iconColor)} />
             <div>
               <div className={cn("font-bold text-xs uppercase tracking-wider mb-1", explanationTitle)}>Giải thích</div>
-              <div className="whitespace-pre-wrap">{question.explanation}</div>
+              <div>
+                <InlineMarkdown content={question.explanation} />
+              </div>
             </div>
           </motion.div>
         );

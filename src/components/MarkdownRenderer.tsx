@@ -8,7 +8,8 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { CodeBlock } from "@/components/DisplayBlockRenderer";
-import { splitMarkdownIntoBlocks } from "@/lib/markdownHelper";
+import { cn } from "@/lib/utils";
+import { normalizeMarkdownForRendering, splitMarkdownIntoBlocks } from "@/lib/markdownHelper";
 
 interface MarkdownRendererProps {
   content: string;
@@ -120,7 +121,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Mark
       {visibleBlocks.map((blockContent, idx) => (
         <ReactMarkdown
           key={idx}
-          remarkPlugins={[remarkGfm, remarkMath]}
+          remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]}
           rehypePlugins={[rehypeRaw, rehypeKatex]}
           components={MARKDOWN_COMPONENTS}
         >
@@ -131,5 +132,36 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Mark
   );
 });
 
+interface InlineMarkdownProps {
+  content: string;
+  className?: string;
+}
+
+export const InlineMarkdown = memo(function InlineMarkdown({ content, className }: InlineMarkdownProps) {
+  const normalized = useMemo(() => normalizeMarkdownForRendering(content), [content]);
+
+  if (!content) return null;
+
+  return (
+    <span className={cn("inline-markdown", className)}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
+        components={{
+          p: ({ children }: any) => <span className="inline">{children}</span>,
+          a: ({ href, children }: any) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-indigo-600 dark:text-indigo-400 underline font-semibold">
+              {children}
+            </a>
+          ),
+        }}
+      >
+        {normalized}
+      </ReactMarkdown>
+    </span>
+  );
+});
+
+InlineMarkdown.displayName = "InlineMarkdown";
 MarkdownRenderer.displayName = "MarkdownRenderer";
 export default MarkdownRenderer;

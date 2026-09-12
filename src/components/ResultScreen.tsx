@@ -5,6 +5,7 @@ import { useQuizStore } from "@/store/quizStore";
 import { CheckCircle2, XCircle, RotateCcw, Target, AlertTriangle, PlayCircle, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { InlineMarkdown } from "@/components/MarkdownRenderer";
 import { isQuestionCorrect, Question, Option } from "@/lib/parser";
 import { DisplayBlockRenderer } from "@/components/DisplayBlockRenderer";
 
@@ -295,9 +296,9 @@ const ResultScreen = memo(function ResultScreen() {
 
                 return (
                   <div key={q.id} className="bg-white dark:bg-slate-800 rounded-2xl p-4 md:p-6 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300 overflow-hidden">
-                    <div className="font-medium text-slate-900 dark:text-slate-100 mb-4 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
+                    <div className="font-medium text-slate-900 dark:text-slate-100 mb-4 leading-relaxed text-sm md:text-base">
                       <span className="text-slate-400 dark:text-slate-500 mr-2">#{idx + 1}</span>
-                      {q.text}
+                      <InlineMarkdown content={q.text} />
                     </div>
 
                     {q.display_block && (
@@ -316,7 +317,7 @@ const ResultScreen = memo(function ResultScreen() {
                                 const letter = optIdx !== -1 ? String.fromCharCode(65 + optIdx) : '';
                                 return (
                                   <div key={opt.id} className="text-sm md:text-base flex items-start gap-1">
-                                    {letter && <span className="font-semibold">{letter}.</span>} <span>{opt.text}</span>
+                                    {letter && <span className="font-semibold">{letter}.</span>} <InlineMarkdown content={opt.text} />
                                   </div>
                                 );
                               })}
@@ -344,7 +345,7 @@ const ResultScreen = memo(function ResultScreen() {
                                 const letter = optIdx !== -1 ? String.fromCharCode(65 + optIdx) : '';
                                 return (
                                   <div key={opt.id} className="text-sm md:text-base flex items-start gap-1">
-                                    {letter && <span className="font-semibold">{letter}.</span>} <span>{opt.text}</span>
+                                    {letter && <span className="font-semibold">{letter}.</span>} <InlineMarkdown content={opt.text} />
                                   </div>
                                 );
                               })}
@@ -359,7 +360,7 @@ const ResultScreen = memo(function ResultScreen() {
                         <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
                         <div>
                           <div className="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">Giải thích</div>
-                          <div className="whitespace-pre-wrap">{q.explanation}</div>
+                          <div><InlineMarkdown content={q.explanation} /></div>
                         </div>
                       </div>
                     )}
