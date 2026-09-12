@@ -68,10 +68,10 @@ body {
   @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100;
 }
 
-/* KaTeX Math Styling Adjustments & Fraction Spacing Fix */
+/* KaTeX Math Styling Adjustments & Fraction Layout Fix */
 .katex {
   font-size: 1.05em;
-  line-height: 1.25;
+  line-height: 1.6;
   text-indent: 0;
   text-rendering: auto;
 }
@@ -87,39 +87,29 @@ body {
 
 /* Fix prime symbol (') size - reduce superscript scale for primes like m', p', t', z' */
 .katex .msupsub .vlist-t {
-  font-size: 0.8em;
+  font-size: 0.82em;
 }
 
 .katex .msupsub .vlist-t .vlist-r .vlist .mord {
-  font-size: 0.85em;
+  font-size: 0.88em;
 }
 
-/* KaTeX Fraction Spacing: Push numerator UP and denominator DOWN away from the fraction bar */
+/* Fraction spacing: Expand the layout box height using inline-block & padding so fractions never overlap surrounding text lines */
 .katex .mfrac {
-  padding: 0.6em 0.5em !important;
-  margin: 0.3em 0.35em !important;
+  display: inline-block !important;
+  vertical-align: middle !important;
+  padding: 0.45em 0.25em !important;
+  margin: 0 0.2em !important;
 }
 
 .katex .mfrac .frac-line {
-  border-bottom-width: 1.8px !important;
-  margin: 0.3em 0 !important;
+  border-bottom-width: 1.5px !important;
 }
 
-/* Move numerator UP away from line */
+/* Clear transforms so KaTeX native alignment is preserved inside the fraction box */
 .katex .mfrac .numerator,
-.katex .mfrac > span > span > span > span:has(.numerator) {
-  transform: translateY(-1.0em) !important;
-}
-
-/* Move denominator DOWN away from line */
-.katex .mfrac .denominator,
-.katex .mfrac > span > span > span > span:has(.denominator) {
-  transform: translateY(1.0em) !important;
-}
-
-/* Inline math fraction vertical balance */
-.katex .mord.mfrac {
-  vertical-align: -0.75em !important;
+.katex .mfrac .denominator {
+  transform: none !important;
 }
 
 html {
