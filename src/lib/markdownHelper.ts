@@ -8,30 +8,38 @@ export function normalizeMarkdownForRendering(content: string): string {
 
   let result = content;
 
-  // 1. Repair malformed dollar insertions inside LaTeX commands like $\frac{m}${v} or $\frac${\text{...}} or $\bar${p}
+  // 1. Clean non-breaking spaces (\u00A0) and carriage returns
+  result = result.replace(/\u00A0/g, " ");
+
+  // 2. Repair malformed dollar insertions inside LaTeX commands like $\frac{m}${v} or $\frac${\text{...}} or $\bar${p}
   result = result.replace(/\$\\frac\$\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
   result = result.replace(/\$\\frac(\{[\s\S]*?\})\$\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
   result = result.replace(/\$\\([a-zA-Z]+)\$\s*(\{[\s\S]*?\})/g, '\\$1$2');
   result = result.replace(/\\([a-zA-Z]+)\$\s*(\{[\s\S]*?\})\$/g, '\\$1$2');
 
-  // 2. Convert LaTeX inline delimiters \( ... \) to $ ... $
+  // 3. Convert LaTeX inline delimiters \( ... \) to $ ... $
   result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math.trim()}$`);
 
-  // 3. Convert LaTeX display delimiters \[ ... \] to $$ ... $$
+  // 4. Convert LaTeX display delimiters \[ ... \] to $$ ... $$
   result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `\n$$\n${math.trim()}\n$$\n`);
 
-  // 4. Normalize raw <br>, <br/>, <br /> HTML linebreaks to actual newlines
+  // 5. Wrap raw LaTeX environments (\begin{matrix|align|equation|cases|bmatrix|pmatrix}... \end{...}) in $$...$$ if not wrapped
+  result = result.replace(/(?<!\$\$)\s*(\\begin\{(?:matrix|bmatrix|pmatrix|vmatrix|cases|align|aligned|equation|gather)\}[\s\S]*?\\end\{(?:matrix|bmatrix|pmatrix|vmatrix|cases|align|aligned|equation|gather)\})\s*(?!\$\$)/g, (_, env) => {
+    return `\n$$\n${env.trim()}\n$$\n`;
+  });
+
+  // 6. Normalize raw <br>, <br/>, <br /> HTML linebreaks to actual newlines
   result = result.replace(/<br\s*\/?>/gi, "\n");
 
-  // 5. Normalize unicode bullet characters (•) at line starts or after newlines into standard markdown bullet items (- )
-  result = result.replace(/^(\s*)•\s*/gm, "$1- ");
+  // 7. Normalize unicode bullet characters (•, ◦, ▪, ►, ▸) at line starts to standard markdown bullet items (- )
+  result = result.replace(/^(\s*)[•◦▪►▸]\s*/gm, "$1- ");
 
-  // 6. Process equations line-by-line: If a line contains LaTeX math commands (\frac, \bar, \text, \implies, etc.),
+  // 8. Process equations line-by-line: If a line contains LaTeX math commands (\frac, \bar, \text, \implies, etc.),
   // repair fragmented inner dollars and wrap the entire math equation in $...$
   const lines = result.split(/\r?\n/);
   const processedLines = lines.map(line => {
     const trimmed = line.trim();
-    if (!trimmed || trimmed.startsWith('```') || trimmed.startsWith('#')) {
+    if (!trimmed || trimmed.startsWith('```') || trimmed.startsWith('#') || trimmed.startsWith('>')) {
       return line;
     }
 

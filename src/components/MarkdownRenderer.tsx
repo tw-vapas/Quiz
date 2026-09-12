@@ -7,6 +7,7 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
+import { Info, AlertTriangle, Lightbulb, AlertCircle } from "lucide-react";
 import { CodeBlock } from "@/components/DisplayBlockRenderer";
 import { cn } from "@/lib/utils";
 import { normalizeMarkdownForRendering, splitMarkdownIntoBlocks } from "@/lib/markdownHelper";
@@ -31,12 +32,54 @@ const MARKDOWN_COMPONENTS = {
   ol: ({ children }: any) => <ol className="list-decimal pl-6 mb-4 space-y-1.5 text-slate-700 dark:text-slate-300">{children}</ol>,
   li: ({ children }: any) => <li className="leading-relaxed">{children}</li>,
   
-  // Blockquote styling
-  blockquote: ({ children }: any) => (
-    <blockquote className="border-l-4 border-indigo-500 dark:border-indigo-650 bg-slate-50 dark:bg-slate-900/50 pl-4 py-2 pr-2 rounded-r-lg my-4 italic text-slate-600 dark:text-slate-400">
-      {children}
-    </blockquote>
-  ),
+  // Blockquote & AI Callout Card styling (NotebookLM / ChatGPT / Gemini Callouts)
+  blockquote: ({ children }: any) => {
+    const textContent = React.Children.toArray(children)
+      .map(child => (typeof child === 'string' ? child : (child as any)?.props?.children))
+      .flat()
+      .join(' ');
+
+    const lower = textContent.trim().toLowerCase();
+
+    if (lower.startsWith('[!note]') || lower.startsWith('note:') || lower.startsWith('ghi chú:') || lower.startsWith('ghi chú')) {
+      return (
+        <div className="my-4 p-4 rounded-xl border border-blue-200 dark:border-blue-900/50 bg-blue-50/60 dark:bg-blue-950/20 text-blue-900 dark:text-blue-200 flex items-start gap-3 shadow-2xs">
+          <Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">{children}</div>
+        </div>
+      );
+    }
+    if (lower.startsWith('[!warning]') || lower.startsWith('[!caution]') || lower.startsWith('warning:') || lower.startsWith('lưu ý:') || lower.startsWith('chú ý:')) {
+      return (
+        <div className="my-4 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/60 dark:bg-amber-950/20 text-amber-900 dark:text-amber-200 flex items-start gap-3 shadow-2xs">
+          <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">{children}</div>
+        </div>
+      );
+    }
+    if (lower.startsWith('[!tip]') || lower.startsWith('tip:') || lower.startsWith('mẹo:')) {
+      return (
+        <div className="my-4 p-4 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/60 dark:bg-emerald-950/20 text-emerald-900 dark:text-emerald-200 flex items-start gap-3 shadow-2xs">
+          <Lightbulb className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">{children}</div>
+        </div>
+      );
+    }
+    if (lower.startsWith('[!important]') || lower.startsWith('important:') || lower.startsWith('quan trọng:')) {
+      return (
+        <div className="my-4 p-4 rounded-xl border border-red-200 dark:border-red-900/50 bg-red-50/60 dark:bg-red-950/20 text-red-900 dark:text-red-200 flex items-start gap-3 shadow-2xs">
+          <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">{children}</div>
+        </div>
+      );
+    }
+
+    return (
+      <blockquote className="border-l-4 border-indigo-500 dark:border-indigo-650 bg-slate-50 dark:bg-slate-900/50 pl-4 py-2 pr-2 rounded-r-lg my-4 italic text-slate-600 dark:text-slate-400">
+        {children}
+      </blockquote>
+    );
+  },
   
   // Code & Code block styling
   code: ({ className, children, ...props }: any) => {
@@ -84,6 +127,29 @@ const MARKDOWN_COMPONENTS = {
   tr: ({ children }: any) => <tr>{children}</tr>,
   th: ({ children }: any) => <th className="px-3 md:px-4 py-3 text-left font-bold border-b border-slate-200 dark:border-slate-800">{children}</th>,
   td: ({ children }: any) => <td className="px-3 md:px-4 py-3 border-b border-slate-100 dark:border-slate-900/50 text-slate-650 dark:text-slate-300">{children}</td>,
+
+  // Additional AI Markdown elements: Accordions, Badges, Dividers, Highlights
+  details: ({ children }: any) => (
+    <details className="my-4 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/50 shadow-2xs transition-colors">
+      {children}
+    </details>
+  ),
+  summary: ({ children }: any) => (
+    <summary className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200 bg-slate-100/60 dark:bg-slate-800/60 cursor-pointer select-none border-b border-slate-200 dark:border-slate-800 hover:bg-slate-150 dark:hover:bg-slate-800 transition-colors">
+      {children}
+    </summary>
+  ),
+  hr: () => <hr className="my-8 border-t border-slate-200 dark:border-slate-800" />,
+  mark: ({ children }: any) => (
+    <mark className="px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-200 font-medium">
+      {children}
+    </mark>
+  ),
+  kbd: ({ children }: any) => (
+    <kbd className="px-1.5 py-0.5 text-xs font-mono font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded shadow-2xs">
+      {children}
+    </kbd>
+  ),
 };
 
 export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: MarkdownRendererProps) {
