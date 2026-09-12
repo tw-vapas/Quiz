@@ -1,8 +1,10 @@
 /**
  * Normalizes raw document text into standardized markdown before rendering.
  * Converts LaTeX \(...\) -> $...$ and \[...\] -> $$...$$
- * Fixes broken math expressions, unescaped AI symbols, raw <br> tags, and unicode bullets.
- * Auto-wraps unwrapped LaTeX commands (\frac, \rightarrow, \alpha, etc.) without wrapping full prose lines in $...$.
+ * Handles double-escaped LaTeX delimiters (\\( -> $...$, \\\[ -> $$...$$) from JSON / AI copy-paste.
+ * Preserves <br> tags inside tables while normalizing outside linebreaks.
+ * Detects ASCII Box Art diagrams and wraps them into monospace ```text ``` code blocks.
+ * Auto-wraps unwrapped LaTeX commands (\frac, \rightarrow, \alpha, \bar, etc.) without wrapping full prose lines in $...$.
  */
 
 export function normalizeMarkdownForRendering(content: string): string {
@@ -20,11 +22,9 @@ export function normalizeMarkdownForRendering(content: string): string {
   // 2. Filter out raw "undefined" or "null" string artifacts accidentally inserted into documents
   result = result.replace(/(?:^|\n)\s*(?:undefined|null)\s*(?=\n|$)/gi, "\n");
 
-  // 3. Repair malformed dollar insertions inside LaTeX commands like $\frac{m}${v} or $\frac${\text{...}} or $\bar${p}
-  result = result.replace(/\$\\frac\$\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
-  result = result.replace(/\$\\frac(\{[\s\S]*?\})\$\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
-  result = result.replace(/\$\\([a-zA-Z]+)\$\s*(\{[\s\S]*?\})/g, '\\$1$2');
-  result = result.replace(/\\([a-zA-Z]+)\$\s*(\{[\s\S]*?\})\$/g, '\\$1$2');
+  // 3. Normalize double-escaped backslashes in LaTeX delimiters: \\( -> \(, \\) -> \), \\\[ -> \[, \\\] -> \]
+  result = result.replace(/\\\\\(/g, '\\(').replace(/\\\\\)/g, '\\)');
+  result = result.replace(/\\\\\[/g, '\\[').replace(/\\\\\]/g, '\\]');
 
   // 4. Convert LaTeX inline delimiters \( ... \) to $ ... $
   result = result.replace(/\\\(([\s\S]*?)\\\)/g, (_, math) => `$${math.trim()}$`);
@@ -32,25 +32,64 @@ export function normalizeMarkdownForRendering(content: string): string {
   // 5. Convert LaTeX display delimiters \[ ... \] to $$ ... $$
   result = result.replace(/\\\[([\s\S]*?)\\\]/g, (_, math) => `\n$$\n${math.trim()}\n$$\n`);
 
-  // 6. Repair AI copy-paste patterns like (\frac{c}{v}\) or (\frac{c}{v}) where closing \ is escaped or un-wrapped
-  result = result.replace(/\\\)\s*$/gm, ")"); // stray escaped closing parenthesis at line ends
-  result = result.replace(/(\(|\s)(\\frac\{[^{}]*\}\{[^{}]*\})\\\)/g, '$1$$$2$$)');
-  result = result.replace(/(\(|\s)(\\frac\{[^{}]*\}\{[^{}]*\})\)/g, '$1$$$2$$)');
+  // 6. Repair malformed dollar insertions inside LaTeX commands like $\frac{m}${v} or $\frac${\text{...}}
+  result = result.replace(/\$\\frac\$\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
+  result = result.replace(/\$\\frac(\{[\s\S]*?\})\$\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
 
-  // 7. Wrap raw LaTeX environments (\begin{matrix|align|...} ... \end{...}) in $$...$$ if not wrapped
+  // 7. Auto-detect ASCII Box Art diagrams and wrap them in ```text ... ``` code blocks
+  const lines = result.split("\n");
+  const processedLines: string[] = [];
+  let inBoxArt = false;
+  let boxArtLines: string[] = [];
+
+  const isBoxSymbol = (l: string) => /[┌┐└┘├┤┬┴┼━┃┏┓┗┛║╔╗╚╝─│▼▲◄►]/.test(l);
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!inBoxArt && isBoxSymbol(line)) {
+      inBoxArt = true;
+      boxArtLines = [line];
+    } else if (inBoxArt) {
+      if (trimmed === "" || trimmed.startsWith("#") || trimmed === "---" || trimmed.startsWith(">")) {
+        inBoxArt = false;
+        processedLines.push("```text");
+        processedLines.push(...boxArtLines);
+        processedLines.push("```");
+        boxArtLines = [];
+        processedLines.push(line.replace(/<br\s*\/?>/gi, "\n"));
+      } else {
+        boxArtLines.push(line);
+      }
+    } else {
+      // Preserve <br> inside tables, replace <br> outside tables
+      if (trimmed.startsWith("|")) {
+        processedLines.push(line);
+      } else {
+        processedLines.push(line.replace(/<br\s*\/?>/gi, "\n"));
+      }
+    }
+  }
+
+  if (inBoxArt) {
+    processedLines.push("```text");
+    processedLines.push(...boxArtLines);
+    processedLines.push("```");
+  }
+
+  result = processedLines.join("\n");
+
+  // 8. Wrap raw LaTeX environments (\begin{matrix|align|...} ... \end{...}) in $$...$$ if not wrapped
   result = result.replace(/(?<!\$\$)\s*(\\begin\{(?:matrix|bmatrix|pmatrix|vmatrix|cases|align|aligned|equation|gather)\}[\s\S]*?\\end\{(?:matrix|bmatrix|pmatrix|vmatrix|cases|align|aligned|equation|gather)\})\s*(?!\$\$)/g, (_, env) => {
     return `\n$$\n${env.trim()}\n$$\n`;
   });
-
-  // 8. Normalize raw <br>, <br/>, <br /> HTML linebreaks to actual newlines
-  result = result.replace(/<br\s*\/?>/gi, "\n");
 
   // 9. Normalize unicode bullet characters (•, ◦, ▪, ►, ▸) at line starts to standard markdown bullet items (- )
   result = result.replace(/^(\s*)[•◦▪►▸]\s*/gm, "$1- ");
 
   // 10. Process line-by-line to wrap unwrapped inline math expressions safely
-  const lines = result.split("\n");
-  const processedLines = lines.map(line => {
+  const finalLines = result.split("\n").map(line => {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('```') || trimmed.startsWith('#') || trimmed.startsWith('>[!') || trimmed.startsWith('> [!')) {
       return line;
@@ -59,7 +98,7 @@ export function normalizeMarkdownForRendering(content: string): string {
     return processLineMath(line);
   });
 
-  return processedLines.join("\n");
+  return finalLines.join("\n");
 }
 
 /**
@@ -89,7 +128,10 @@ function processLineMath(line: string): string {
 
   // Transform non-math segments by auto-wrapping unwrapped LaTeX math symbols
   return parts.map(part => {
-    if (part.isMath) return part.text;
+    if (part.isMath) {
+      // Sanitize < and > inside math for rehypeRaw safety
+      return part.text.replace(/(?<!\\)</g, "\\lt ").replace(/(?<!\\)>/g, "\\gt ");
+    }
 
     let segment = part.text;
 
@@ -102,7 +144,10 @@ function processLineMath(line: string): string {
     // 2. Auto-wrap unwrapped \bar{...}, \text{...}, \vec{...}, \sqrt{...}, \hat{...}
     segment = segment.replace(/(?<!\$)\\(?:bar|vec|sqrt|hat|tilde|mathrm|mathbf)\s*\{([^{}]*)\}(?!\$)/g, (m) => `$${m}$`);
 
-    // 3. Auto-wrap unwrapped LaTeX standalone symbols like \rightarrow, \Rightarrow, \leftrightarrow, \cdot, \times, \implies, \iff, \infty, \alpha, \beta, \gamma, \delta, \Delta, \theta, \pi, \sigma, \omega, \approx, \neq, \le, \ge, \pm, \mp
+    // 3. Auto-wrap unwrapped \bar{p}' or \bar{p}
+    segment = segment.replace(/(?<!\$)\\bar\{[^{}]*\}'?(?!\$)/g, (m) => `$${m}$`);
+
+    // 4. Auto-wrap unwrapped standalone LaTeX math symbols
     segment = segment.replace(/(?<!\$)\\(?:rightarrow|Rightarrow|leftrightarrow|Leftarrow|leftarrow|cdot|times|implies|iff|infty|alpha|beta|gamma|delta|Delta|theta|pi|sigma|omega|approx|neq|le|ge|pm|mp|partial|nabla|sum|int)(?![a-zA-Z\$])/g, (m) => `$${m}$`);
 
     return segment;

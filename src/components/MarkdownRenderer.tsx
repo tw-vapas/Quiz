@@ -194,7 +194,7 @@ export const MarkdownRenderer = memo(function MarkdownRenderer({ content }: Mark
         <ReactMarkdown
           key={idx}
           remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]}
-          rehypePlugins={[rehypeRaw, rehypeKatex]}
+          rehypePlugins={[rehypeKatex, rehypeRaw]}
           components={MARKDOWN_COMPONENTS}
         >
           {blockContent}
@@ -218,7 +218,7 @@ export const InlineMarkdown = memo(function InlineMarkdown({ content, className 
     <span className={cn("inline-markdown", className)}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: true }]]}
-        rehypePlugins={[rehypeRaw, rehypeKatex]}
+        rehypePlugins={[rehypeKatex, rehypeRaw]}
         components={{
           p: ({ children }: any) => <span className="inline">{children}</span>,
           a: ({ href, children }: any) => (
