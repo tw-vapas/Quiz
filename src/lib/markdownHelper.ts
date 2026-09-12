@@ -36,7 +36,7 @@ export function normalizeMarkdownForRendering(content: string): string {
   result = result.replace(/\$\\frac\$\s*(\{[\s\S]*?\})\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
   result = result.replace(/\$\\frac(\{[\s\S]*?\})\$\s*(\{[\s\S]*?\})/g, '\\frac$1$2');
 
-  // 7. Auto-detect ASCII Box Art diagrams and wrap them in ```text ... ``` code blocks
+  // 7. Auto-detect ASCII Box Art diagrams and wrap them in ```diagram ... ``` code blocks
   const lines = result.split("\n");
   const processedLines: string[] = [];
   let inBoxArt = false;
@@ -54,7 +54,7 @@ export function normalizeMarkdownForRendering(content: string): string {
     } else if (inBoxArt) {
       if (trimmed === "" || trimmed.startsWith("#") || trimmed === "---" || trimmed.startsWith(">")) {
         inBoxArt = false;
-        processedLines.push("```text");
+        processedLines.push("```diagram");
         processedLines.push(...boxArtLines);
         processedLines.push("```");
         boxArtLines = [];
@@ -73,7 +73,7 @@ export function normalizeMarkdownForRendering(content: string): string {
   }
 
   if (inBoxArt) {
-    processedLines.push("```text");
+    processedLines.push("```diagram");
     processedLines.push(...boxArtLines);
     processedLines.push("```");
   }

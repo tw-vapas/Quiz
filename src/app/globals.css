@@ -70,54 +70,45 @@ body {
 
 /* KaTeX Math Styling Adjustments & Fraction Overlap Fix */
 .katex {
-  font-size: 1.08em;
-  line-height: 1.25;
+  font-size: 1.05em;
+  line-height: 1.2;
   text-indent: 0;
   text-rendering: auto;
 }
 
 .katex-display {
   display: block;
-  margin: 1em 0 !important;
+  margin: 1.2em 0 !important;
   text-align: center;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.3em 0;
+  padding: 0.4em 0;
 }
 
-/* Fix Tailwind baseline/table resets breaking KaTeX fraction alignment */
-.katex .vlist-t {
-  display: inline-table !important;
-  table-layout: fixed;
-  border-collapse: collapse;
+/* Fix prime symbol (') size - reduce superscript scale for primes like m', p', t', z' */
+.katex .msupsub .vlist-t {
+  font-size: 0.82em;
 }
 
-.katex .vlist-r {
-  display: table-row !important;
+.katex .msupsub .vlist-t .vlist-r .vlist .mord {
+  font-size: 0.9em;
 }
 
-.katex .vlist {
-  display: table-cell !important;
-  vertical-align: bottom;
+/* Ensure fractions (\frac) have proper vertical spacing between numerator, fraction bar, and denominator */
+.katex .mfrac {
+  padding: 0 0.15em;
 }
 
-/* Add vertical padding & spacing around fraction bar to eliminate line overlap */
 .katex .mfrac .frac-line {
-  border-bottom-width: 0.07em !important;
-  margin-top: 0.25em !important;
-  margin-bottom: 0.25em !important;
+  border-bottom-width: 1.2px !important;
+  margin-top: 0.12em !important;
+  margin-bottom: 0.12em !important;
 }
 
-.katex .mfrac .vlist-t {
-  vertical-align: -0.45em !important;
-}
-
-.katex .mfrac .numerator {
-  padding-bottom: 0.2em !important;
-}
-
-.katex .mfrac .denominator {
-  padding-top: 0.35em !important;
+/* Add breathing room around fraction expressions in inline math */
+.katex .mord.mfrac {
+  margin: 0 0.1em;
+  vertical-align: -0.15em;
 }
 
 html {

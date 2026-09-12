@@ -88,12 +88,21 @@ const MARKDOWN_COMPONENTS = {
   code: ({ className, children, ...props }: any) => {
     const match = /language-(\w+)/.exec(className || "");
     const isInline = !match && !String(children).includes("\n");
-    
+    const lang = match ? match[1].toLowerCase() : "";
+
+    if (lang === "diagram" || lang === "ascii") {
+      return (
+        <div className="my-6 p-4 sm:p-6 rounded-2xl bg-slate-100/70 dark:bg-slate-900/80 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800 font-mono text-xs sm:text-sm leading-snug overflow-x-auto shadow-2xs whitespace-pre select-text">
+          <code>{String(children).replace(/\n$/, "")}</code>
+        </div>
+      );
+    }
+
     if (!isInline) {
       // Block code: Use our custom CodeBlock with PrismJS styling and line numbers
       return <CodeBlock content={String(children).replace(/\n$/, "")} />;
     }
-    
+
     // Inline code
     return (
       <code
