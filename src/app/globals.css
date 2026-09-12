@@ -68,6 +68,18 @@ body {
   @apply bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100;
 }
 
+/* KaTeX Math Styling Adjustments */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.5rem 0;
+  margin: 1rem 0 !important;
+}
+
+.katex {
+  font-size: 1.08em;
+}
+
 html {
   font-size: 75%;
 }

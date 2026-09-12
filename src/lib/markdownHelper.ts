@@ -9,6 +9,7 @@ export function splitMarkdownIntoBlocks(content: string): string[] {
   const blocks: string[] = [];
   let currentBlock: string[] = [];
   let inCodeBlock = false;
+  let inMathBlock = false;
   let inTable = false;
 
   for (let i = 0; i < lines.length; i++) {
@@ -37,9 +38,31 @@ export function splitMarkdownIntoBlocks(content: string): string[] {
       continue;
     }
 
+    // 3. Inside Math Block ($$)
+    if (inMathBlock) {
+      currentBlock.push(line);
+      if (trimmed.endsWith("$$") || trimmed === "$$") {
+        inMathBlock = false;
+        blocks.push(currentBlock.join("\n"));
+        currentBlock = [];
+      }
+      continue;
+    }
+
+    // 4. Start of Math Block ($$)
+    if (trimmed.startsWith("$$") && !trimmed.endsWith("$$", trimmed.length - 2)) {
+      if (currentBlock.length > 0) {
+        blocks.push(currentBlock.join("\n"));
+        currentBlock = [];
+      }
+      inMathBlock = true;
+      currentBlock.push(line);
+      continue;
+    }
+
     const isTableRow = trimmed.startsWith("|");
 
-    // 3. Inside Table
+    // 5. Inside Table
     if (inTable) {
       if (isTableRow) {
         currentBlock.push(line);
@@ -62,7 +85,7 @@ export function splitMarkdownIntoBlocks(content: string): string[] {
       continue;
     }
 
-    // 4. Start of Table
+    // 6. Start of Table
     if (isTableRow) {
       if (currentBlock.length > 0) {
         blocks.push(currentBlock.join("\n"));
@@ -73,7 +96,7 @@ export function splitMarkdownIntoBlocks(content: string): string[] {
       continue;
     }
 
-    // 5. Headings
+    // 7. Headings
     if (trimmed.startsWith("#")) {
       if (currentBlock.length > 0) {
         blocks.push(currentBlock.join("\n"));
@@ -83,7 +106,7 @@ export function splitMarkdownIntoBlocks(content: string): string[] {
       continue;
     }
 
-    // 6. Empty Line
+    // 8. Empty Line
     if (trimmed === "") {
       if (currentBlock.length > 0) {
         blocks.push(currentBlock.join("\n"));
@@ -92,7 +115,7 @@ export function splitMarkdownIntoBlocks(content: string): string[] {
       continue;
     }
 
-    // 7. Normal text
+    // 9. Normal text
     currentBlock.push(line);
   }
 
