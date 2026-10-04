@@ -49,6 +49,7 @@ const VirtualSourceCard = React.memo(({
   onReorder,
   localSources
 }: VirtualSourceCardProps) => {
+  const { t } = useTranslation();
   useRenderProfiler(`VirtualSourceCard`);
   const [isDraggable, setIsDraggable] = useState(false);
   const hasDocument = !!(source.document || source.note);
@@ -191,7 +192,7 @@ const VirtualSourceCard = React.memo(({
               onClick={() => toggleEditing(source.id)}
               className="min-h-7 px-1 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-xs font-semibold select-none cursor-pointer"
             >
-              Đặt tên
+              {t("common.rename")}
             </button>
             <button
               onClick={() => onDeleteRequest(source.id)}
@@ -204,7 +205,7 @@ const VirtualSourceCard = React.memo(({
         
         {source.isValid ? (
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 flex items-baseline gap-1.5 leading-none">
-            <span>{source.questionsCount} câu hỏi</span>
+            <span>{source.questionsCount} {t("file_manager.questions_count")}</span>
             <span className="text-slate-400 dark:text-slate-500">•</span>
             <span className="font-mono text-xs">{sourceSizeText}</span>
           </p>
@@ -216,10 +217,10 @@ const VirtualSourceCard = React.memo(({
               useQuizStore.getState().setActiveSection("create");
             }}
             className="text-xs font-bold text-red-600 dark:text-red-400 hover:underline mt-0.5 flex items-center gap-1 cursor-pointer select-none text-left"
-            title={source.error || "Nhấp để chuyển tới File Manager chỉnh sửa"}
+            title={source.error || t("file_manager.invalid_badge_desc")}
           >
             <FileWarning className="w-4 h-4 shrink-0" />
-            <span className="truncate">Chưa hợp lệ (Chỉnh sửa trong File Manager)</span>
+            <span className="truncate">{t("file_manager.invalid_badge_desc")}</span>
           </button>
         )}
       </div>

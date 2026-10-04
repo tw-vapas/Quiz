@@ -10,8 +10,10 @@ import CreateQuizSection from "@/components/CreateQuizSection";
 import NotificationToast from "@/components/NotificationToast";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslation } from "@/locales";
 
 export default function Home() {
+  const { t } = useTranslation();
   const state = useQuizStore((state) => state.state);
   const theme = useQuizStore((state) => state.theme);
   const isSettingsOpen = useQuizStore((state) => state.isSettingsOpen);
@@ -191,7 +193,7 @@ export default function Home() {
                   : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               )}
             >
-              Làm Quiz
+              {t("nav.take_quiz")}
             </button>
             <button
               onClick={() => setActiveSection("create")}
@@ -202,7 +204,7 @@ export default function Home() {
                   : "text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
               )}
             >
-              Tạo Quiz
+              {t("nav.create_quiz")}
             </button>
           </div>
         </div>

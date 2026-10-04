@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useQuizStore, CreatorFile } from "@/store/quizStore";
+import { useTranslation } from "@/locales";
 import { Question, Option, DisplayBlock } from "../lib/parser";
 import MarkdownRenderer from "./MarkdownRenderer";
 import { parseQuizJson, parseQuizText } from "@/lib/parser";
@@ -34,7 +35,6 @@ import {
   Undo2,
   Redo2
 } from "lucide-react";
-import { useTranslation } from "@/locales";
 
 export function isQuestionValid(q: Question): boolean {
   if (!q || !q.text || q.text.trim().length === 0) return false;
@@ -98,6 +98,7 @@ interface QuestionCardProps {
 }
 
 function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps) {
+  const { t } = useTranslation();
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
   const [tagsInput, setTagsInput] = useState(() => question?.tags?.join(", ") || "");
   const [deleteConfirmTarget, setDeleteConfirmTarget] = useState<
@@ -171,14 +172,14 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
   if (!question) return null;
 
-  const typeLabel = question.type === "single_choice" ? "1 đáp án" : "Nhiều đáp án";
+  const typeLabel = question.type === "single_choice" ? t("editor.type_single_short") : t("editor.type_multiple_short");
 
   const handleAddNewAnswer = () => {
     const nextLetter = String.fromCharCode(65 + question.options.length);
     const newAns = {
       id: `ans_${Date.now()}_${Math.random().toString(36).substring(2, 5)}`,
-      text: `Đáp án mới`,
-      originalText: `${nextLetter}. Đáp án mới`
+      text: `${t("editor.options_title")} ${nextLetter}`,
+      originalText: `${nextLetter}. ${t("editor.options_title")} ${nextLetter}`
     };
     onUpdate({ options: [...question.options, newAns] });
   };
@@ -273,7 +274,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
   };
 
   const handleAddExplanation = () => {
-    onUpdate({ explanation: "Giải thích chi tiết..." });
+    onUpdate({ explanation: "" });
   };
 
   const handleRemoveExplanation = () => {
@@ -292,7 +293,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Header index and Delete option */}
       <div className="flex items-center justify-between border-b border-slate-100 dark:border-white/10 pb-2">
         <span className="text-lg font-semibold text-indigo-650 dark:text-indigo-400">
-          Câu hỏi {index + 1}
+          {t("editor.question_number", { index: index + 1 })}
         </span>
         <div className="flex items-center gap-2">
           <div 
@@ -302,14 +303,14 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
                 : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
             )}
-            title={isValid ? "Câu hỏi hợp lệ (Đủ nội dung và đáp án)" : "Câu hỏi chưa hợp lệ (Thiếu nội dung hoặc đáp án đúng)"}
+            title={isValid ? t("file_manager.valid") : t("file_manager.invalid")}
           >
             {isValid ? <Check className="w-3 h-3 stroke-[3]" /> : <X className="w-3 h-3 stroke-[3]" />}
           </div>
           <button 
             onClick={() => setDeleteConfirmTarget({ type: "question" })}
             className="p-1 rounded-md hover:bg-red-50 dark:hover:bg-red-950/20 text-slate-400 dark:text-slate-300 hover:text-red-550 transition-colors cursor-pointer"
-            title="Xóa câu hỏi"
+            title={t("editor.delete_question")}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -319,7 +320,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Question Text Area */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nội dung</h5>
+          <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t("editor.question_content")}</h5>
           <span className={cn("text-xs font-mono font-medium", question.text.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
             {question.text.length}/1000
           </span>
@@ -329,19 +330,19 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           value={question.text}
           onChange={(e) => onUpdate({ text: e.target.value.slice(0, 1000) })}
           className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
-          placeholder="Nhập nội dung câu hỏi (tối đa 1000 ký tự)..."
+          placeholder={t("editor.question_content_placeholder")}
         />
       </div>
 
       {/* Answers Options Area */}
       <div className="space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-1">
-          <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Đáp án</h5>
+          <h5 className="text-sm font-semibold text-slate-700 dark:text-slate-300">{t("editor.options_title")}</h5>
             <button
               onClick={handleAddNewAnswer}
               className="inline-flex items-center gap-1.5 px-2.5 py-1 border border-indigo-200 dark:border-indigo-900 bg-indigo-50/20 dark:bg-indigo-950/20 text-sm text-indigo-750 dark:text-indigo-400 font-medium rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/50 active:scale-95 transition-all cursor-pointer"
             >
-              <Plus className="w-3 h-3" /> Thêm đáp án
+              <Plus className="w-3 h-3" /> {t("editor.add_option")}
             </button>
           </div>
 
@@ -380,8 +381,8 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                       maxLength={150}
                       value={ans.text}
                       onChange={(e) => handleAnswerTextChange(ans.id, e.target.value)}
-                      placeholder={`Nhập đáp án ${String.fromCharCode(65 + idx)} (tối đa 150 ký tự)...`}
-                      className="w-full bg-transparent text-sm font-normal text-slate-850 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed py-0.5 custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                      placeholder={t("editor.option_placeholder", { label: String.fromCharCode(65 + idx) })}
+                      className="w-full bg-transparent text-sm font-normal text-slate-855 dark:text-slate-100 focus:outline-none resize-none overflow-y-auto leading-relaxed py-0.5 custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
                     />
                     {ans.text.length >= 100 && (
                       <span className={cn("text-xs font-mono self-end", ans.text.length >= 150 ? "text-red-500 font-semibold" : "text-slate-400")}>
@@ -393,7 +394,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   <button
                     onClick={() => setDeleteConfirmTarget({ type: "option", optionId: ans.id, optionLabel: String.fromCharCode(65 + idx) })}
                     className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 transition-colors cursor-pointer shrink-0"
-                    title="Xóa đáp án"
+                    title={t("editor.delete_option_title")}
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -406,7 +407,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {/* Type and Tags inputs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5 relative">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Loại câu hỏi</span>
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">{t("editor.question_type")}</span>
             <button
               onClick={() => setIsTypeDropdownOpen(!isTypeDropdownOpen)}
               className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 flex items-center justify-between hover:border-slate-350 cursor-pointer"
@@ -421,20 +422,20 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                   onClick={() => { handleTypeChange("single_choice"); setIsTypeDropdownOpen(false); }}
                   className={cn("w-full p-2 text-left text-sm font-normal rounded-lg cursor-pointer", question.type === "single_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
-                  1 đáp án
+                  {t("editor.type_single_short")}
                 </button>
                 <button
                   onClick={() => { handleTypeChange("multiple_choice"); setIsTypeDropdownOpen(false); }}
                   className={cn("w-full p-2 text-left text-sm font-normal rounded-lg cursor-pointer", question.type === "multiple_choice" ? "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 font-semibold" : "text-slate-750 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5")}
                 >
-                  Nhiều đáp án
+                  {t("editor.type_multiple_short")}
                 </button>
               </div>
             )}
           </div>
 
         <div className="space-y-1.5">
-          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Thẻ phân loại</span>
+          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">{t("editor.tags_title")}</span>
           <input
             type="text"
             value={tagsInput}
@@ -447,7 +448,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               }
             }}
             className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            placeholder="Nhập thẻ phân loại (vd: toán, lý, hóa)..."
+            placeholder={t("editor.tag_placeholder")}
           />
         </div>
       </div>
@@ -460,12 +461,12 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               {/* Top Header Bar with Block Label and Delete Button */}
               <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-1.5">
                 <span className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300">
-                  Khối hiển thị #{blockIdx + 1}
+                  {t("editor.display_block_num", { number: blockIdx + 1 })}
                 </span>
                 <button
                   onClick={() => handleRemoveDisplayBlock(blockIdx)}
                   className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
-                  title="Xóa block"
+                  title={t("editor.delete_block_title")}
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -473,7 +474,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
               <div className="flex flex-col gap-3 w-full">
                 <div className="space-y-1.5 w-full">
-                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Loại khối</span>
+                  <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">{t("editor.display_block_type")}</span>
                   <select
                     value={db.type}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { type: e.target.value })}
@@ -486,14 +487,14 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
 
                 <div className="w-full space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">Nội dung</span>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">{t("common.content")}</span>
                     <span className={cn("text-xs font-mono font-medium", db.content.length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                       {db.content.length}/1000
                     </span>
                   </div>
                   <textarea
                     maxLength={1000}
-                    placeholder="Nhập nội dung khối hiển thị (tối đa 1000 ký tự)..."
+                    placeholder={t("editor.display_block_placeholder")}
                     value={db.content}
                     onChange={(e) => handleDisplayBlockChange(blockIdx, { content: e.target.value.slice(0, 1000) })}
                     className="w-full h-28 p-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:font-sans placeholder:text-slate-400 dark:placeholder:text-slate-500"
@@ -509,7 +510,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
       {question.explanation !== undefined && question.explanation !== null && (
         <div className="p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/30 space-y-2.5 relative">
           <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-1.5">
-            <label className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 block">Giải thích</label>
+            <label className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 block">{t("editor.explanation_title")}</label>
             <div className="flex items-center gap-3">
               <span className={cn("text-xs font-mono font-medium", (question.explanation || "").length >= 1000 ? "text-red-500 font-semibold" : "text-slate-400")}>
                 {(question.explanation || "").length}/1000
@@ -517,7 +518,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               <button
                 onClick={handleRemoveExplanation}
                 className="p-1 rounded-md text-slate-400 dark:text-slate-300 hover:text-red-500 cursor-pointer"
-                title="Xóa giải thích"
+                title={t("editor.delete_explanation_title")}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -528,7 +529,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             value={question.explanation}
             onChange={(e) => handleExplanationChange(e.target.value.slice(0, 1000))}
             className="w-full h-28 p-2.5 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50/50 dark:bg-slate-950/40 text-sm font-normal text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            placeholder="Nhập nội dung giải thích (tối đa 1000 ký tự)..."
+            placeholder={t("editor.explanation_placeholder")}
           />
         </div>
       )}
@@ -541,7 +542,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               onClick={handleAddDisplayBlock}
               className="flex-1 py-2 border border-dashed border-slate-250 dark:border-slate-600 hover:border-indigo-500/50 rounded-xl font-bold text-[10px] text-slate-650 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all cursor-pointer"
             >
-              Thêm khối hiển thị ({(question.display_blocks || []).length}/2)
+              {t("editor.add_display_block_btn", { current: (question.display_blocks || []).length })}
             </button>
           )}
           {canAddExplanation && (
@@ -549,7 +550,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
               onClick={handleAddExplanation}
               className="flex-1 py-2 border border-dashed border-slate-250 dark:border-slate-600 hover:border-indigo-500/50 rounded-xl font-bold text-[10px] text-slate-650 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-all cursor-pointer"
             >
-              Thêm giải thích
+              {t("editor.add_explanation_btn")}
             </button>
           )}
         </div>
@@ -561,7 +562,9 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                {deleteConfirmTarget.type === "question" ? "Xác nhận xóa câu hỏi" : `Xác nhận xóa đáp án ${deleteConfirmTarget.optionLabel}`}
+                {deleteConfirmTarget.type === "question" 
+                  ? t("editor.delete_confirm_title") 
+                  : t("editor.delete_option_confirm_title", { label: deleteConfirmTarget.optionLabel })}
               </h3>
               <button
                 onClick={() => setDeleteConfirmTarget(null)}
@@ -572,15 +575,15 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               {deleteConfirmTarget.type === "question"
-                ? "Bạn có chắc chắn muốn xóa câu hỏi này?"
-                : `Bạn có chắc chắn muốn xóa đáp án ${deleteConfirmTarget.optionLabel}?`}
+                ? t("editor.delete_confirm_desc")
+                : t("editor.delete_option_confirm_desc", { label: deleteConfirmTarget.optionLabel })}
             </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setDeleteConfirmTarget(null)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => {
@@ -593,7 +596,7 @@ function QuestionCard({ index, question, onUpdate, onDelete }: QuestionCardProps
                 }}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
               >
-                Xóa
+                {t("common.delete")}
               </button>
             </div>
           </div>
@@ -777,6 +780,87 @@ Output:
 - Không thêm lời mở đầu, nhận xét hoặc text bên ngoài tài liệu.
 - Mục tiêu cuối cùng là tạo một master study document có cấu trúc rõ ràng, đầy đủ, chi tiết và có thể dùng trực tiếp để học, ôn tập và tạo câu hỏi trắc nghiệm.`;
 
+const QUIZ_QUESTION_PROMPT_EN = `MCQ GENERATION REQUIREMENTS 
+- Generate exactly 50 questions. 
+- Properly cover important knowledge points in the document, distributed according to importance without focusing on a small part. 
+- Each question must test a specific knowledge point or reasoning capability without unnecessary dependence on external knowledge. 
+- Ensure difficulty diversity: recall/theory → comprehension → application → advanced application. 
+- Hard questions must be difficult due to reasoning/application, not ambiguous wording. 
+- Diverse question types: definition, comparison, cause-effect, scenario, application, analysis, decision-making... 
+- Avoid repeating the same knowledge point in the same way. 
+- Each question has exactly one correct answer. 
+- Distractors must be plausible, based on common misconceptions or flawed reasoning. 
+- Options are relatively balanced in length, structure, and specificity; do not reveal the correct answer by wording, length, or pattern. 
+- Do not use unreasonable distractors or multiple potentially correct answers. 
+- Each option A, B, C, D must have a maximum length of 150 characters. This is a hard limit as content exceeding 150 characters will be truncated. 
+- Prioritize concise, direct, and complete wording; do not add redundant information just to make options longer. 
+- Before outputting, self-check the length of each option and ensure no option exceeds 150 characters. 
+- Before outputting, self-check the quantity, coverage, difficulty, diversity, clarity, uniqueness of correct answer, distractor quality, and 150 character limit of all options. 
+- Output the final result only. 
+
+Output requirements:
+- Only include questions and options A, B, C, D. 
+- No explanations, correct answers, difficulty, topic/tag, headings, or extra text. 
+- No dividers; only one blank line between questions. 
+- Must have exactly 50 questions.`;
+
+const SUBCOMPONENTS_PROMPT_EN = `Based on the list of multiple choice questions generated in the previous step, carefully read each question and options A, B, C, D to:
+1. Accurately identify the correct option for each question.
+2. Write a concise explanation clearly stating why the option is correct.
+3. Identify relevant Tags corresponding to the tested knowledge topic.
+
+Requirements:
+- Preserve the exact order of questions.
+- Each input question must map to exactly one object in the output.
+- Do not omit or add extra questions.
+- "CorrectOptions" contains the letters of the correct option(s), e.g. ["A"] or ["A", "C"].
+- If the question has only one correct answer, return a single letter.
+- "Explanation" must be based on the question content and related knowledge, without speculation.
+- "Tags" is an optional array for topic classification; if undetermined, use [].
+
+Output Format:
+- Return only a valid JSON array.
+- Do not use Markdown code blocks.
+- Do not add headings, commentary, or text outside the JSON.
+
+[
+  {
+    "Question": 1,
+    "CorrectOptions": ["A"],
+    "Explanation": "Explanation of why the option is correct.",
+    "Tags": ["Math"]
+  }
+]`;
+
+const DOCUMENT_PROMPT_EN = `You are an expert study document creator.
+
+Based on ALL provided files, synthesize them into a complete study document in Markdown (.md) format.
+
+Content requirements:
+- Synthesize knowledge across all files, not just summarizing individual files.
+- Comprehensively cover major topics, concepts, and key knowledge points.
+- Prioritize foundational, critical, and educational content.
+- Clearly explain definitions, principles, formulas, rules, and applications.
+- Clarify relationships, differences, and cause-effect links between concepts.
+- Provide illustrative examples or scenarios where appropriate.
+- Eliminate duplicate content and unnecessary fluff.
+- Do not add unsupported claims.
+- Important/complex content should be elaborated in greater detail.
+
+Structure:
+Organize by general flow → foundation → main content → details → application → summary.
+Fully utilize:
+- \`#\`, \`##\`, \`###\` for hierarchy.
+- Bullet/numbered lists.
+- **Bold** for key terms or ideas.
+- Tables for comparisons.
+- Blockquote \`>\` for important notes.
+
+Output:
+- Return Markdown content only.
+- Do not include introductory remarks or commentary.
+- Final goal is a clear, structured master study document suitable for study, review, and quiz generation.`;
+
 interface SupplementComponentModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -785,6 +869,7 @@ interface SupplementComponentModalProps {
 }
 
 function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: SupplementComponentModalProps) {
+  const { t, language } = useTranslation();
   const [mainMode, setMainMode] = useState<"RAW_TEXT_QUESTIONS" | "ANSWERS_EXPLANATION">("RAW_TEXT_QUESTIONS");
   const [jsonText, setJsonText] = useState("");
 
@@ -803,7 +888,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
 
   const handleCopyPrompt = (promptText: string) => {
     navigator.clipboard.writeText(promptText);
-    useQuizStore.getState().showNotification("Đã sao chép prompt thành công!", "success");
+    useQuizStore.getState().showNotification(t("toast.saved_success"), "success");
   };
 
   const analysis = useMemo(() => {
@@ -818,14 +903,14 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
     try {
       parsed = JSON.parse(cleaned);
     } catch (err: any) {
-      return { error: `Định dạng JSON không hợp lệ: ${err.message}` };
+      return { error: `JSON Error: ${err.message}` };
     }
 
     if (!Array.isArray(parsed)) {
       if (typeof parsed === "object" && parsed !== null && Array.isArray(parsed.questions)) {
         parsed = parsed.questions;
       } else {
-        return { error: "Dữ liệu JSON phải là một mảng danh sách [ { ... }, { ... } ]" };
+        return { error: "JSON data must be an array [ { ... }, { ... } ]" };
       }
     }
 
@@ -837,13 +922,13 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
     parsed.forEach((item: any, index: number) => {
       const itemStt = item.Question ?? item.question ?? (index + 1);
       if (typeof itemStt !== "number" || isNaN(itemStt)) {
-        warnings.push(`Mục thứ ${index + 1}: Trường "Question" không hợp lệ (không phải dạng số).`);
+        warnings.push(`Item ${index + 1}: "Question" field is invalid.`);
         return;
       }
 
       const qIndex = itemStt - 1;
       if (qIndex < 0 || qIndex >= totalQuestions) {
-        warnings.push(`Câu STT ${itemStt}: Không tồn tại trong tệp hiện tại (Tệp có tổng cộng ${totalQuestions} câu hỏi).`);
+        warnings.push(`Question #${itemStt}: Does not exist in current file.`);
         return;
       }
 
@@ -873,7 +958,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         if (letterIdx >= 0 && letterIdx < targetQuestion.options.length) {
           correctOptionIds.push(targetQuestion.options[letterIdx].id);
         } else {
-          warnings.push(`Câu STT ${itemStt}: Đáp án "${letter}" không tồn tại (Câu này có ${targetQuestion.options.length} lựa chọn A-${String.fromCharCode(64 + targetQuestion.options.length)}).`);
+          warnings.push(`Question #${itemStt}: Option "${letter}" does not exist.`);
         }
       });
 
@@ -926,7 +1011,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         totalCount: 0,
         validCount: 0,
         questions: [],
-        error: `Lỗi phân tích cú pháp: ${err.message}`
+        error: `Parse error: ${err.message}`
       };
     }
   }, [isOpen, mainMode, rawText, activeFile]);
@@ -979,7 +1064,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
         <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
           <div className="flex items-center gap-3">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              Tạo Quiz Nhanh
+              {t("editor.ai_modal_title")}
             </h3>
           </div>
 
@@ -1003,7 +1088,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            <span>Câu hỏi trắc nghiệm</span>
+            <span>{t("editor.tab_raw_questions")}</span>
           </button>
           <button
             type="button"
@@ -1015,7 +1100,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 : "border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            <span>Các thành phần phụ</span>
+            <span>{t("editor.tab_subcomponents")}</span>
           </button>
         </div>
 
@@ -1029,27 +1114,27 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold text-sm">
                     <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <span>Hướng dẫn nhập câu hỏi trắc nghiệm</span>
+                    <span>{t("editor.guide_raw_title")}</span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopyPrompt(QUIZ_QUESTION_PROMPT)}
+                    onClick={() => handleCopyPrompt(language === "en" ? QUIZ_QUESTION_PROMPT_EN : QUIZ_QUESTION_PROMPT)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
-                    title="Sao chép prompt mẫu để yêu cầu AI tạo câu hỏi trắc nghiệm chuẩn định dạng"
+                    title="Prompt"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Prompt</span>
                   </button>
                 </div>
                 <p className="text-sm font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Hãy nhập các file tài liệu cho các AI chatbots như NotebookLM (đề xuất), Gemini, ChatGPT... và sử dụng prompt để tạo ra các câu hỏi trắc nghiệm sau đó dán vào mục nội dung bên dưới
+                  {t("editor.guide_raw_desc")}
                 </p>
               </div>
 
               {/* Import Strategy selector (Compact Segmented UI) */}
               <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800 w-full">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">
-                  Chế độ áp dụng:
+                  {t("editor.apply_mode")}
                 </label>
                 <div className="grid grid-cols-2 gap-1 bg-slate-200/60 dark:bg-slate-900 p-1 rounded-md w-full">
                   <button
@@ -1061,9 +1146,8 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                     )}
-                    title="Nối vào cuối tệp hiện tại"
                   >
-                    Thêm nối tiếp
+                    {t("editor.mode_append")}
                   </button>
                   <button
                     type="button"
@@ -1074,9 +1158,8 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                         ? "bg-indigo-600 text-white shadow-xs"
                         : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
                     )}
-                    title="Xóa bộ cũ & thay bằng bộ mới"
                   >
-                    Thay thế toàn bộ
+                    {t("editor.mode_replace")}
                   </button>
                 </div>
               </div>
@@ -1084,12 +1167,12 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
               {/* Raw Textarea */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Nội dung
+                  {t("common.content")}
                 </label>
                 <textarea
                   value={rawText}
                   onChange={(e) => setRawText(e.target.value)}
-                  placeholder={`Nhập nội dung câu hỏi thô (Ví dụ:\nCâu 1: Thủ đô của Việt Nam là gì?\nA. Hà Nội\nB. TP. Hồ Chí Minh\nC. Đà Nẵng\nD. Cần Thơ)...`}
+                  placeholder={t("editor.raw_input_placeholder")}
                   className="w-full h-40 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -1108,7 +1191,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>
-                            Đã bóc tách thành công <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{rawTextAnalysis.totalCount}</strong> câu hỏi ({rawTextAnalysis.validCount} câu hợp lệ).
+                            {t("editor.questions_parsed_success", { total: rawTextAnalysis.totalCount, valid: rawTextAnalysis.validCount })}
                           </span>
                         </div>
                       </div>
@@ -1118,7 +1201,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                         <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 style-scrollbar">
                           <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                            <span>Thông tin STT văn bản gốc:</span>
+                            <span>{t("editor.stt_warning_title")}</span>
                           </div>
                           <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
                             {rawTextAnalysis.warnings?.map((w: string, idx: number) => (
@@ -1139,31 +1222,31 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-semibold text-sm">
                     <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <span>Hướng dẫn bổ sung thành phần phụ</span>
+                    <span>{t("editor.guide_sub_title")}</span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleCopyPrompt(SUBCOMPONENTS_PROMPT)}
+                    onClick={() => handleCopyPrompt(language === "en" ? SUBCOMPONENTS_PROMPT_EN : SUBCOMPONENTS_PROMPT)}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
-                    title="Sao chép prompt mẫu để yêu cầu AI tạo dữ liệu đáp án & giải thích chuẩn JSON"
+                    title="Prompt"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Prompt</span>
                   </button>
                 </div>
                 <p className="text-sm font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
-                  Hãy nhập các file tài liệu cho các AI chatbots như NotebookLM (đề xuất), Gemini, ChatGPT... và sử dụng prompt để bổ sung các thành phần phụ vào các câu hỏi trắc nghiệm có sẵn sau đó dán vào mục nội dung bên dưới
+                  {t("editor.guide_sub_desc")}
                 </p>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Nội dung (Đáp án, Giải thích &amp; Tags)
+                  {t("editor.sub_content_label")}
                 </label>
                 <textarea
                   value={jsonText}
                   onChange={(e) => setJsonText(e.target.value)}
-                  placeholder={`Nhập dữ liệu trắc nghiệm JSON (Ví dụ:\n[\n  { "Question": 1, "CorrectOptions": ["A"], "Explanation": "...", "Tags": ["Môn Toán"] }\n])...`}
+                  placeholder={t("editor.json_input_placeholder")}
                   className="w-full h-44 p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 font-mono text-sm font-normal text-slate-800 dark:text-slate-200 outline-none focus:outline-none ring-0 focus:ring-0 focus:border-indigo-500 resize-none style-scrollbar shadow-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -1183,7 +1266,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                           <span>
-                            Đã tìm thấy <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.totalItems}</strong> mục JSON. Đủ điều kiện bổ sung cho <strong className="font-extrabold text-emerald-700 dark:text-emerald-200">{analysis.matchedCount} / {activeFile.questions.length}</strong> câu hỏi.
+                            {t("editor.json_found_success", { total: analysis.totalItems ?? 0, matched: analysis.matchedCount ?? 0, all: activeFile.questions.length })}
                           </span>
                         </div>
                       </div>
@@ -1193,7 +1276,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
                         <div className="p-3.5 rounded-lg bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs space-y-1.5 max-h-36 overflow-y-auto style-scrollbar">
                           <div className="font-bold flex items-center gap-1.5 text-amber-900 dark:text-amber-200">
                             <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                            <span>Cảnh báo ({analysis.warnings?.length || 0}):</span>
+                            <span>{t("editor.warnings_label", { count: analysis.warnings?.length || 0 })}</span>
                           </div>
                           <ul className="list-disc list-inside space-y-0.5 text-[11px] text-amber-700 dark:text-amber-300 pl-1">
                             {analysis.warnings?.map((w, idx) => (
@@ -1218,7 +1301,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             onClick={onClose}
             className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer transition-colors"
           >
-            Hủy
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -1230,7 +1313,7 @@ function SupplementComponentModal({ isOpen, onClose, activeFile, onApply }: Supp
             }
             className="px-5 py-2 rounded-lg bg-indigo-650 hover:bg-indigo-755 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium shadow-md cursor-pointer transition-all active:scale-95 flex items-center gap-1.5"
           >
-            <span>Xác nhận</span>
+            <span>{t("common.confirm")}</span>
           </button>
         </div>
 
@@ -1588,24 +1671,25 @@ export default function QuestionModification({
                   onClick={() => setDocSubTab("PREVIEW")}
                   className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors", docSubTab === "PREVIEW" ? "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
                 >
-                  Xem trước
+                  {t("common.preview")}
                 </button>
                 <button 
                   onClick={() => setDocSubTab("EDIT")}
                   className={cn("px-3 py-1.5 rounded-lg text-[10px] font-bold cursor-pointer transition-colors", docSubTab === "EDIT" ? "bg-indigo-500/10 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400" : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800")}
                 >
-                  Chỉnh sửa
+                  {t("common.edit")}
                 </button>
               </div>
 
               <button
                 type="button"
                 onClick={() => {
-                  navigator.clipboard.writeText(DOCUMENT_PROMPT);
-                  useQuizStore.getState().showNotification("Đã sao chép prompt thành công!", "success");
+                  const currentLang = useQuizStore.getState().language;
+                  navigator.clipboard.writeText(currentLang === "en" ? DOCUMENT_PROMPT_EN : DOCUMENT_PROMPT);
+                  useQuizStore.getState().showNotification(t("toast.saved_success"), "success");
                 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95 shrink-0"
-                title="Sao chép prompt mẫu để yêu cầu AI tạo tài liệu học tập chuẩn định dạng Markdown"
+                title="Prompt"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span>Prompt</span>
@@ -1619,7 +1703,7 @@ export default function QuestionModification({
                   {activeFile.document ? (
                     <MarkdownRenderer content={activeFile.document} />
                   ) : (
-                    <div className="text-center py-12 text-slate-400">Tài liệu trống. Hãy nhấn nút Chỉnh sửa để thêm nội dung.</div>
+                    <div className="text-center py-12 text-slate-400">{t("document.empty_doc")}</div>
                   )}
                 </div>
               </div>
@@ -1628,7 +1712,7 @@ export default function QuestionModification({
                 <textarea
                   value={activeFile.document}
                   onChange={(e) => updateCreatorFile(activeFile.id, { document: e.target.value })}
-                  placeholder="Nhập nội dung tài liệu học tập bằng định dạng Markdown (.md)..."
+                  placeholder={t("export.note_placeholder")}
                   className="w-full flex-1 min-h-0 p-4 border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-sm font-mono text-slate-700 dark:text-slate-300 resize-none focus:outline-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -1646,7 +1730,7 @@ export default function QuestionModification({
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  Tổng cộng: {activeFile.questions.length} câu hỏi
+                  {t("editor.total_questions_count", { count: activeFile.questions.length })}
                 </span>
               </div>
 
@@ -1661,10 +1745,10 @@ export default function QuestionModification({
                       ? "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-650 dark:text-indigo-400 font-semibold"
                       : "bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200"
                   )}
-                  title="Bổ sung đáp án đúng, lời giải thích và thẻ nhãn từ AI (JSON)"
+                  title={t("editor.ai_quick_generate")}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                  <span>Tạo Quiz Nhanh</span>
+                  <span>{t("editor.ai_quick_generate")}</span>
                 </button>
 
                 {/* 2. Thêm câu hỏi (Add New Question) */}
@@ -1674,7 +1758,7 @@ export default function QuestionModification({
                   className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700/80 text-slate-700 dark:text-slate-200 font-medium text-sm cursor-pointer transition-all active:scale-95 flex items-center gap-1.5 select-none"
                 >
                   <Plus className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Thêm câu hỏi</span>
+                  <span>{t("editor.add_question")}</span>
                 </button>
               </div>
             </div>
@@ -1698,14 +1782,14 @@ export default function QuestionModification({
                     />
                   ) : (
                     <div className="text-center py-12 border border-dashed rounded-lg text-slate-400">
-                      Chọn câu hỏi bên bảng danh sách để bắt đầu chỉnh sửa.
+                      {t("editor.select_question_hint")}
                     </div>
                   )}
                 </div>
 
                 {/* Section 2: Question List (List selector bottom 1/3 on mobile, right on desktop) */}
                 <div className="flex-1 md:col-span-4 xl:col-span-3 h-full border border-slate-200 dark:border-slate-800/80 rounded-xl bg-white dark:bg-slate-900/60 p-4 flex flex-col min-h-0 min-w-0 shadow-xs">
-                  <h5 className="text-xs font-semibold text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">Danh Sách Câu Hỏi</h5>
+                  <h5 className="text-xs font-semibold text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-1.5 mb-2 shrink-0">{t("editor.question_list_title")}</h5>
                   <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1">
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map((q, idx) => {
@@ -1728,7 +1812,7 @@ export default function QuestionModification({
                             )}
                           >
                             <div className="flex justify-between items-center mb-1">
-                              <span className="font-semibold text-xs text-indigo-650 dark:text-indigo-400">CÂU {idx + 1}</span>
+                              <span className="font-semibold text-xs text-indigo-650 dark:text-indigo-400">{t("editor.question_tag_short", { index: idx + 1 })}</span>
                               <button
                                 type="button"
                                 onClick={(e) => {
@@ -1736,12 +1820,12 @@ export default function QuestionModification({
                                   setDeleteConfirmQuestionId(q.id);
                                 }}
                                 className="p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
-                                title="Xóa câu hỏi"
+                                title={t("editor.delete_question")}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
                             </div>
-                            <p className="text-sm font-normal text-slate-700 dark:text-slate-300 truncate">{q.text || "(Chưa có nội dung câu hỏi)"}</p>
+                            <p className="text-sm font-normal text-slate-700 dark:text-slate-300 truncate">{q.text || t("editor.no_content_placeholder")}</p>
                             {q.tags && q.tags.filter(Boolean).length > 0 && (
                               <div className="flex flex-wrap gap-1 mt-1.5">
                                 {q.tags.filter(Boolean).map((t, tagIdx) => {
@@ -1761,7 +1845,7 @@ export default function QuestionModification({
                         );
                       })
                     ) : (
-                      <div className="text-center py-6 text-xs text-slate-400 font-medium select-none">Danh sách trống.</div>
+                      <div className="text-center py-6 text-xs text-slate-400 font-medium select-none">{t("editor.empty_list")}</div>
                     )}
                   </div>
                 </div>
@@ -1777,7 +1861,7 @@ export default function QuestionModification({
             <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                  Xác nhận xóa câu hỏi
+                  {t("editor.delete_confirm_title")}
                 </h3>
                 <button
                   onClick={() => setDeleteConfirmQuestionId(null)}
@@ -1787,14 +1871,14 @@ export default function QuestionModification({
                 </button>
               </div>
               <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                Bạn có chắc chắn muốn xóa câu hỏi này?
+                {t("editor.delete_confirm_desc")}
               </p>
               <div className="flex gap-3 pt-2">
                 <button
                   onClick={() => setDeleteConfirmQuestionId(null)}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
                 >
-                  Hủy
+                  {t("common.cancel")}
                 </button>
                 <button
                   onClick={() => {
@@ -1806,7 +1890,7 @@ export default function QuestionModification({
                   }}
                   className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
                 >
-                  Xóa
+                  {t("common.delete")}
                 </button>
               </div>
             </div>

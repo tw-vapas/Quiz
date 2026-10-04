@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { SourceFile } from "@/store/quizStore";
-
+import { useTranslation } from "@/locales";
 import { cn, useRenderProfiler } from "@/lib/utils";
 
 const SOURCE_COLORS = [
@@ -266,11 +266,13 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
 
     onChange(newAlloc);
   };
+  const { t } = useTranslation();
+
   if (activeSources.length === 0 || totalQuestions <= 0) return null;
 
   return (
     <div className="mt-6 bg-slate-100/50 dark:bg-slate-800/50 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
-      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4">Tỉ lệ câu hỏi</h3>
+      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 mb-4">{t("allocation.ratio_title")}</h3>
       
       {/* Allocation Bar */}
       <div 
@@ -352,7 +354,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
 
       <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium">
         <span>0</span>
-        <span>{totalQuestions} câu hỏi</span>
+        <span>{totalQuestions} {t("file_manager.questions_count")}</span>
       </div>
 
       {/* Legend / Control Panel */}
@@ -370,7 +372,7 @@ export default function SourceAllocation({ sources, totalQuestions, allocations,
                   {source.customName || source.name}
                 </div>
                 <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">
-                  Tối đa {source.questionsCount} câu ({percentage}%)
+                  {t("allocation.max_limit_text", { max: source.questionsCount, percent: percentage })}
                 </div>
               </div>
               

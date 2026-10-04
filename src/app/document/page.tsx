@@ -136,6 +136,7 @@ interface DocumentPickerEntryProps {
 }
 
 function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEntryProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredSources = useMemo(() => {
@@ -146,13 +147,13 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800/80 rounded-3xl p-5 md:p-10 shadow-xl transition-all duration-200 w-full max-w-4xl mx-auto flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
         <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100">
-          Danh sách tài liệu
+          {t("document.doc_list_title")}
         </h2>
         {sources.length > 5 && (
           <div className="relative w-full md:w-72 shrink-0">
             <input
               type="text"
-              placeholder="Nhập từ khóa tìm kiếm tài liệu..."
+              placeholder={t("document.search_doc_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full min-h-11 pl-9 pr-10 py-2 text-sm border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
@@ -161,7 +162,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
             {searchQuery && (
               <button 
                 onClick={() => setSearchQuery("")} 
-                className="absolute right-1 top-1/2 -translate-y-1/2 min-w-11 min-h-11 flex items-center justify-center text-slate-450 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
+                className="absolute right-1 top-1/2 -translate-y-1/2 min-w-11 min-h-11 flex items-center justify-center text-slate-455 hover:text-slate-650 dark:text-slate-500 dark:hover:text-slate-350 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -173,7 +174,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
       <div className="w-full">
         {filteredSources.length === 0 ? (
           <div className="text-center py-12 text-slate-450 dark:text-slate-500">
-            Không tìm thấy tài liệu phù hợp.
+            {t("document.no_docs_found")}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 pb-2">
@@ -211,7 +212,7 @@ function DocumentPickerEntry({ sources, onSelect, formatDate }: DocumentPickerEn
                     <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-2">
                       <span className="flex items-center gap-1 font-medium">
                         <Hash className="w-3.5 h-3.5 text-slate-400" />
-                        {src.questions.length} câu hỏi
+                        {src.questions.length} {t("file_manager.questions_count")}
                       </span>
                       {src.metadata?.last_modified && (
                         <>
@@ -243,6 +244,7 @@ interface DocumentPickerModalProps {
 }
 
 function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }: DocumentPickerModalProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
 
   // Reset search when modal opens
@@ -273,7 +275,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
         {/* Header container with Title on left and Close button on right on SAME ROW */}
         <div className="flex items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-100 dark:border-slate-800/60 shrink-0">
           <h2 className="text-lg md:text-xl font-extrabold text-slate-800 dark:text-slate-100 truncate">
-            Danh sách tài liệu
+            {t("document.doc_list_title")}
           </h2>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -281,7 +283,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
               <div className="relative w-44 sm:w-60 shrink-0">
                 <input
                   type="text"
-                  placeholder="Nhập từ khóa tìm kiếm tài liệu..."
+                  placeholder={t("document.search_doc_placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full min-h-9 pl-8 pr-7 py-1 text-xs border border-slate-250 dark:border-slate-700/80 rounded-xl bg-slate-50/50 dark:bg-slate-950/20 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
@@ -301,7 +303,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
             <button
               onClick={onClose}
               className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors cursor-pointer"
-              title="Đóng hộp thoại"
+              title={t("common.close")}
             >
               <X className="w-5 h-5" />
             </button>
@@ -311,7 +313,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
         <div className="flex-1 overflow-y-auto min-h-0 pr-1">
           {filteredSources.length === 0 ? (
             <div className="text-center py-12 text-slate-450 dark:text-slate-500">
-              Không tìm thấy tài liệu phù hợp.
+              {t("document.no_docs_found")}
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 pb-2">
@@ -349,7 +351,7 @@ function DocumentPickerModal({ sources, onSelect, formatDate, onClose, isOpen }:
                       <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mt-2">
                         <span className="flex items-center gap-1 font-medium">
                           <Hash className="w-3.5 h-3.5 text-slate-400" />
-                          {src.questions.length} câu hỏi
+                          {src.questions.length} {t("file_manager.questions_count")}
                         </span>
                         {src.metadata?.last_modified && (
                           <>
@@ -488,7 +490,7 @@ export default function DocumentViewerPage() {
       return (
         <div className="bg-slate-100/55 dark:bg-slate-900/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center text-xs text-slate-400 dark:text-slate-500 flex items-center justify-center gap-2 transition-colors">
           <AlertCircle className="w-4 h-4 text-slate-350 dark:text-slate-650" />
-          Tài liệu này không chứa ghi chú từ tác giả.
+          {t("document.no_author_notes")}
         </div>
       );
     }
@@ -498,14 +500,14 @@ export default function DocumentViewerPage() {
           <Info className="w-5 h-5" />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="text-xs md:text-sm font-bold text-amber-850 dark:text-amber-400 uppercase tracking-wider mb-1">Ghi chú từ tác giả</h2>
+          <h2 className="text-xs md:text-sm font-bold text-amber-850 dark:text-amber-400 uppercase tracking-wider mb-1">{t("document.author_notes")}</h2>
           <p className="text-sm md:text-base text-amber-800 dark:text-amber-300 whitespace-pre-wrap leading-relaxed">
             {selectedSource.note}
           </p>
         </div>
       </div>
     );
-  }, [activeDocumentId, selectedSource, sources]);
+  }, [activeDocumentId, selectedSource, sources, t]);
 
   const memoizedDocument = useMemo(() => {
     if (!selectedSource) return null;
@@ -516,12 +518,12 @@ export default function DocumentViewerPage() {
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 md:p-8 shadow-sm transition-colors duration-200 overflow-hidden">
         <h2 className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-6 border-b border-slate-100 dark:border-slate-800 pb-3 flex items-center gap-2">
           <FileText className="w-4 h-4" />
-          Nội dung tài liệu học tập
+          {t("document.study_doc_content")}
         </h2>
         <MarkdownRenderer content={selectedSource.document} />
       </div>
     );
-  }, [activeDocumentId, selectedSource, sources]);
+  }, [activeDocumentId, selectedSource, sources, t]);
 
   const formatDate = (timestamp?: any) => {
     if (!timestamp) return "N/A";
@@ -558,7 +560,7 @@ export default function DocumentViewerPage() {
         </span>
         <span className="flex items-center gap-1.5">
           <Hash className="w-3.5 h-3.5" />
-          {selectedSource.questions.length} câu hỏi
+          {selectedSource.questions.length} {t("file_manager.questions_count")}
         </span>
       </div>
     );
@@ -570,9 +572,9 @@ export default function DocumentViewerPage() {
         <div className="py-8 md:py-16 px-4 md:px-8">
           <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-sm p-6 md:p-12 transition-all max-w-4xl mx-auto">
           <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-700 animate-pulse" />
-          <h2 className="text-xl font-extrabold text-slate-855 dark:text-slate-100 mb-3">Chưa có nguồn tài liệu</h2>
+          <h2 className="text-xl font-extrabold text-slate-855 dark:text-slate-100 mb-3">{t("document.no_doc_source_title")}</h2>
           <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-            Vui lòng tải lên các file trắc nghiệm để xem tài liệu đính kèm của nó
+            {t("document.no_doc_source_desc")}
           </p>
           </div>
         </div>
