@@ -660,7 +660,6 @@ export default function DocumentViewerPage() {
         )}
 
         <div className="flex items-center gap-2">
-          <LanguageSwitcher variant="pills" />
           {selectedDocumentSourceId !== null && (
             <button
               onClick={() => setUiState("PICKER_MODAL")}

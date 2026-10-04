@@ -332,7 +332,7 @@ export default function FileManager() {
                         {f.name}
                       </span>
                       <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">
-                        {f.questions?.length || 0} câu hỏi
+                        {t("file_manager.questions_count_num", { count: f.questions?.length || 0 })}
                       </span>
                     </div>
                   </div>
@@ -345,7 +345,7 @@ export default function FileManager() {
                     <button 
                       onClick={() => setConfirmDeleteId(f.id)}
                       className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-400 hover:text-red-500 opacity-60 group-hover:opacity-100 transition-all cursor-pointer shrink-0"
-                      title="Xóa tệp trắc nghiệm"
+                      title={t("common.delete")}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -355,7 +355,7 @@ export default function FileManager() {
             })
           ) : (
             <div className="text-center py-8 text-xs text-slate-400">
-              Chưa có tệp trắc nghiệm nào được tạo.
+              {t("file_manager.no_files_desc")}
             </div>
           )}
         </div>
@@ -369,7 +369,7 @@ export default function FileManager() {
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <div>
                 <h3 className="text-lg font-bold text-slate-850 dark:text-slate-100">
-                  Tạo tệp câu hỏi mới
+                  {t("file_manager.create_modal_title")}
                 </h3>
               </div>
               <button 
@@ -387,13 +387,13 @@ export default function FileManager() {
               {/* File Name Input */}
               <div className="space-y-1.5">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">
-                  Tên tệp tin <span className="text-red-500">*</span>
+                  {t("file_manager.file_name")} <span className="text-red-500">*</span>
                 </label>
                 <input 
                   type="text" 
                   value={newFileNameInput}
                   onChange={(e) => setNewFileNameInput(e.target.value)}
-                  placeholder="Nhập tên tệp trắc nghiệm (vd: Đề thi Toán Học Phần 1)..."
+                  placeholder={t("file_manager.create_modal_placeholder")}
                   className="w-full px-3.5 py-2.5 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-slate-50/50 dark:bg-slate-950/40 text-slate-800 dark:text-slate-100 outline-none focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                 />
               </div>
@@ -401,7 +401,7 @@ export default function FileManager() {
               {/* Data Mode Selection (3 Clean Option Tabs) */}
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">
-                  Phương thức khởi tạo dữ liệu
+                  {t("file_manager.init_method")}
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -414,7 +414,7 @@ export default function FileManager() {
                         : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
                     )}
                   >
-                    Dữ liệu trống
+                    {t("file_manager.mode_blank")}
                   </button>
                   <button
                     type="button"
@@ -426,7 +426,7 @@ export default function FileManager() {
                         : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
                     )}
                   >
-                    Dữ liệu từ máy
+                    {t("file_manager.mode_import")}
                   </button>
                   <button
                     type="button"
@@ -438,7 +438,7 @@ export default function FileManager() {
                         : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-700"
                     )}
                   >
-                    Gộp dữ liệu
+                    {t("file_manager.mode_merge")}
                   </button>
                 </div>
               </div>
@@ -466,7 +466,7 @@ export default function FileManager() {
                     <div className="flex flex-col items-center py-2">
                       <div className="w-7 h-7 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mb-2"></div>
                       <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 animate-pulse">
-                        {parseStatus || "Đang phân tích tệp tin..."}
+                        {parseStatus || t("file_manager.parsing_file")}
                       </span>
                     </div>
                   ) : (
@@ -475,10 +475,10 @@ export default function FileManager() {
                         <Upload className="w-4 h-4" />
                       </div>
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                        {importedData ? `Đã nạp: ${newFileNameInput}` : "Kéo thả hoặc nhấp để chọn tệp từ máy"}
+                        {importedData ? t("file_manager.file_loaded", { name: newFileNameInput }) : t("file_manager.drop_or_click")}
                       </span>
                       <span className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-normal">
-                        {importedData ? `${importedData.questions.length} câu hỏi trắc nghiệm tìm thấy` : "Hỗ trợ định dạng .TXT, .DOCX, .PDF, .JSON và Hình ảnh"}
+                        {importedData ? t("file_manager.questions_found", { count: importedData.questions.length }) : t("file_manager.supported_formats")}
                       </span>
                     </>
                   )}
@@ -490,7 +490,7 @@ export default function FileManager() {
                 <div className="space-y-2 pt-1">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                      Chọn các tệp để gộp câu hỏi:
+                      {t("file_manager.merge_modal_select")}
                     </span>
                     {creatorFiles.length > 0 && (
                       <button
@@ -505,7 +505,7 @@ export default function FileManager() {
                         }}
                         className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
                       >
-                        {creatorFiles.every(f => selectedSourceIds[f.id]) ? "Bỏ chọn tất cả" : "Chọn tất cả"}
+                        {creatorFiles.every(f => selectedSourceIds[f.id]) ? t("file_manager.deselect_all") : t("file_manager.select_all")}
                       </button>
                     )}
                   </div>
@@ -563,7 +563,7 @@ export default function FileManager() {
                                   {file.name}
                                 </span>
                                 <span className="text-xs font-medium text-slate-400 dark:text-slate-500 block">
-                                  {file.questions?.length || 0} câu hỏi
+                                  {t("file_manager.questions_count_num", { count: file.questions?.length || 0 })}
                                 </span>
                               </div>
                             </div>
@@ -578,7 +578,7 @@ export default function FileManager() {
                       })
                     ) : (
                       <div className="text-center py-4 text-xs text-slate-400 font-normal">
-                        Chưa có Quiz File nào trong File Manager để gộp.
+                        {t("file_manager.no_files_to_merge")}
                       </div>
                     )}
                   </div>
@@ -600,7 +600,7 @@ export default function FileManager() {
                     : "border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
                 )}
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button 
                 type="button"
@@ -613,7 +613,7 @@ export default function FileManager() {
                     : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-500/20 active:scale-98"
                 )}
               >
-                <span>Tạo tệp</span>
+                <span>{t("file_manager.create_new")}</span>
               </button>
             </div>
           </div>
@@ -626,7 +626,7 @@ export default function FileManager() {
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                Xác nhận xóa
+                {t("file_manager.delete_confirm_title")}
               </h3>
               <button
                 onClick={() => setConfirmDeleteId(null)}
@@ -636,16 +636,14 @@ export default function FileManager() {
               </button>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Bạn có chắc chắn muốn xóa <span className="font-bold text-slate-800 dark:text-slate-200">
-                {creatorFiles.find(f => f.id === confirmDeleteId)?.name}
-              </span>?
+              {t("file_manager.delete_confirm_desc", { name: creatorFiles.find(f => f.id === confirmDeleteId)?.name || "" })}
             </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setConfirmDeleteId(null)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => {
@@ -654,7 +652,7 @@ export default function FileManager() {
                 }}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
               >
-                Xóa
+                {t("common.delete")}
               </button>
             </div>
           </div>

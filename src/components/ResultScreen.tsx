@@ -138,7 +138,7 @@ const ResultScreen = memo(function ResultScreen() {
         </motion.div>
 
         {Object.entries(questionsBySource).map(([sourceId, sourceQuestions], sIdx) => {
-          const sourceName = sourceQuestions[0]?.sourceName || 'Tệp không tên';
+          const sourceName = sourceQuestions[0]?.sourceName || t("result.unknown_file");
           
           const sortedQuestions = [...sourceQuestions].sort((a, b) => {
             const timeA = questionTimes[a.id] || 0;
@@ -172,7 +172,7 @@ const ResultScreen = memo(function ResultScreen() {
               transition={{ delay: 0.1 + sIdx * 0.1 }}
               className="bg-white dark:bg-slate-800 rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm border border-slate-100 dark:border-slate-700 transition-colors duration-300 overflow-hidden"
             >
-              <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">Thống kê thời gian: {sourceName}</h2>
+              <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 mb-6">{t("result.time_stats", { source: sourceName })}</h2>
               
               <div className="mt-6 md:mt-8 overflow-x-auto pb-2">
                 <div className="flex h-48 md:h-64 min-w-[340px]">
@@ -250,24 +250,24 @@ const ResultScreen = memo(function ResultScreen() {
               </div>
 
               <div className="text-center mt-2 md:mt-4 text-xs font-medium text-slate-400 uppercase tracking-widest">
-                Các câu hỏi (sắp xếp theo thời gian tăng dần)
+                {t("result.questions_time_sorted")}
               </div>
 
               {/* Statistics Summary */}
               <div className="grid grid-cols-3 gap-2 md:gap-4 mt-6 pt-6 border-t border-slate-100 dark:border-slate-700/50">
                 <div className="text-center">
-                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Thời gian</div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t("result.time_label")}</div>
                   <div className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100">{formatTime(Math.floor(sourceTotalTimeMs / 1000))}</div>
                 </div>
                 <div className="text-center border-l border-r border-slate-100 dark:border-slate-700/50">
-                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Số câu đúng</div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t("result.correct_count_label")}</div>
                   <div className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100">
                     <span className="text-green-500 dark:text-green-400">{sourceCorrectCount}</span>
                     <span className="text-slate-400 dark:text-slate-500">/{sourceTotalQuestions}</span>
                   </div>
                 </div>
                 <div className="text-center">
-                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">Tỷ lệ đúng</div>
+                  <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">{t("result.accuracy_rate_label")}</div>
                   <div className="text-sm md:text-base font-bold text-slate-800 dark:text-slate-100">{sourceAccuracy}%</div>
                 </div>
               </div>
@@ -285,7 +285,7 @@ const ResultScreen = memo(function ResultScreen() {
             <div className="flex items-center justify-between mb-4 md:mb-6 px-2">
               <div className="flex items-center gap-2 md:gap-3">
                 <AlertTriangle className="w-5 h-5 md:w-6 md:h-6 text-red-500" />
-                <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Các câu trả lời sai cần xem lại</h2>
+                <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">{t("result.incorrect_review_title")}</h2>
               </div>
             </div>
 
@@ -312,7 +312,7 @@ const ResultScreen = memo(function ResultScreen() {
                         <div className="flex items-start gap-3 p-3 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/50">
                           <XCircle className="w-5 h-5 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-1">Bạn chọn</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-1">{t("result.you_selected")}</div>
                             <div className="space-y-1">
                               {selectedOptions.map(opt => {
                                 const optIdx = q.options.findIndex(o => o.id === opt.id);
@@ -330,8 +330,8 @@ const ResultScreen = memo(function ResultScreen() {
                         <div className="flex items-start gap-3 p-3 bg-slate-100 dark:bg-slate-700/50 text-slate-700 dark:text-slate-300 rounded-xl border border-slate-200 dark:border-slate-600/50">
                           <AlertTriangle className="w-5 h-5 shrink-0 mt-0.5 text-slate-500 dark:text-slate-400" />
                           <div>
-                            <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">Trạng thái</div>
-                            <div className="text-sm md:text-base">Chưa trả lời</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1">{t("result.status")}</div>
+                            <div className="text-sm md:text-base">{t("result.unanswered")}</div>
                           </div>
                         </div>
                       )}
@@ -340,7 +340,7 @@ const ResultScreen = memo(function ResultScreen() {
                         <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-400 rounded-xl border border-green-100 dark:border-green-900/50">
                           <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5" />
                           <div className="flex-1 min-w-0">
-                            <div className="text-xs font-bold uppercase tracking-wider text-green-600 dark:text-green-500 mb-1">Đáp án đúng</div>
+                            <div className="text-xs font-bold uppercase tracking-wider text-green-600 dark:text-green-500 mb-1">{t("result.correct_answer")}</div>
                             <div className="space-y-1">
                               {correctOptions.map(opt => {
                                 const optIdx = q.options.findIndex(o => o.id === opt.id);
@@ -361,7 +361,7 @@ const ResultScreen = memo(function ResultScreen() {
                       <div className="mt-4 p-4 rounded-xl border border-amber-200 dark:border-amber-900/50 bg-amber-50/50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 text-sm leading-relaxed flex gap-3">
                         <AlertTriangle className="w-5 h-5 shrink-0 text-amber-500 mt-0.5" />
                         <div>
-                          <div className="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">Giải thích</div>
+                          <div className="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-1">{t("result.explanation")}</div>
                           <div><InlineMarkdown content={q.explanation} /></div>
                         </div>
                       </div>
@@ -392,7 +392,7 @@ const ResultScreen = memo(function ResultScreen() {
               className="bg-white dark:bg-slate-900 w-full max-w-lg h-[100dvh] md:h-auto md:max-h-[85vh] rounded-none md:rounded-3xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col relative"
             >
               <div className="p-5 md:p-6 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">Làm lại câu sai</h2>
+                <h2 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100">{t("result.retry_incorrect_modal_title")}</h2>
                 <button 
                   onClick={() => setIsRetryModalOpen(false)}
                   className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors flex items-center justify-center cursor-pointer"
@@ -403,7 +403,7 @@ const ResultScreen = memo(function ResultScreen() {
 
               <div className="p-5 md:p-6 space-y-6 flex-1 overflow-y-auto">
                 <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-900/50 flex items-center justify-between">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Tổng số câu trả lời sai:</span>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{t("result.total_incorrect")}</span>
                   <span className="text-xl font-bold text-red-600 dark:text-red-400">{incorrectQuestions.length}</span>
                 </div>
 
@@ -415,7 +415,7 @@ const ResultScreen = memo(function ResultScreen() {
                       onChange={(e) => setAddExtra(e.target.checked)}
                       className="w-5 h-5 rounded text-indigo-600 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 focus:ring-indigo-500"
                     />
-                    <span className="font-medium text-slate-700 dark:text-slate-300">Bổ sung thêm câu hỏi</span>
+                    <span className="font-medium text-slate-700 dark:text-slate-300">{t("result.add_extra_questions")}</span>
                   </label>
 
                   <AnimatePresence>
@@ -427,7 +427,7 @@ const ResultScreen = memo(function ResultScreen() {
                         className="pl-8 space-y-4 overflow-hidden"
                       >
                         <div>
-                          <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">Số lượng câu hỏi bổ sung:</label>
+                          <label className="block text-sm text-slate-500 dark:text-slate-400 mb-2">{t("result.extra_questions_count")}</label>
                           <input 
                             type="number" 
                             min="1"
@@ -446,7 +446,7 @@ const ResultScreen = memo(function ResultScreen() {
                               onChange={() => setExtraMode('TIME')}
                               className="mt-1 w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700"
                             />
-                            <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">Bổ sung những câu hỏi tốn nhiều thời gian</span>
+                            <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{t("result.extra_mode_time")}</span>
                           </label>
                           <label className="flex items-start gap-3 cursor-pointer">
                             <input 
@@ -456,7 +456,7 @@ const ResultScreen = memo(function ResultScreen() {
                               onChange={() => setExtraMode('RANDOM')}
                               className="mt-1 w-4 h-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700"
                             />
-                            <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">Bổ sung câu hỏi ngẫu nhiên</span>
+                            <span className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{t("result.extra_mode_random")}</span>
                           </label>
                         </div>
                       </motion.div>
@@ -470,7 +470,7 @@ const ResultScreen = memo(function ResultScreen() {
                   onClick={() => setIsRetryModalOpen(false)}
                   className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                 >
-                  Hủy
+                  {t("common.cancel")}
                 </button>
                 <button 
                   onClick={() => {
@@ -481,7 +481,7 @@ const ResultScreen = memo(function ResultScreen() {
                   className="flex-1 min-h-11 py-3 px-4 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors shadow-md active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <PlayCircle className="w-5 h-5" />
-                  Bắt đầu
+                  {t("result.start")}
                 </button>
               </div>
             </motion.div>
@@ -540,24 +540,24 @@ const ResultScreen = memo(function ResultScreen() {
                 style={{ width: `${tooltipWidth}px` }}
               >
                 <div className="mb-2 text-xs font-bold text-slate-400 flex justify-between items-center">
-                  <span>Thời gian: {formatTime(Math.floor(timeMs / 1000))}</span>
+                  <span>{t("result.tooltip_time", { time: formatTime(Math.floor(timeMs / 1000)) })}</span>
                   <span className={cn(
                     "text-[10px] px-1.5 py-0.5 rounded font-extrabold uppercase tracking-wide",
                     isCorrect ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
                   )}>
-                    {isCorrect ? "Đúng" : "Sai"}
+                    {isCorrect ? t("quiz.correct_badge") : t("quiz.incorrect_badge")}
                   </span>
                 </div>
                 <div className="mb-3 line-clamp-3 leading-relaxed font-medium">{q.text}</div>
                 
                 <div className="space-y-2 text-[10px] md:text-xs border-t border-slate-800 dark:border-slate-700/50 pt-2">
                   <div className="flex gap-2">
-                    <span className={cn("shrink-0 font-bold", isCorrect ? "text-green-400" : "text-red-400")}>Bạn chọn:</span>
+                    <span className={cn("shrink-0 font-bold", isCorrect ? "text-green-400" : "text-red-400")}>{t("result.you_selected")}:</span>
                     <span className="line-clamp-2">{renderOptionsText(q, userOptions)}</span>
                   </div>
                   {!isCorrect && correctOptions.length > 0 && (
                     <div className="flex gap-2">
-                      <span className="shrink-0 font-bold text-green-400">Đáp án:</span>
+                      <span className="shrink-0 font-bold text-green-400">{t("result.correct_answer")}:</span>
                       <span className="line-clamp-2">{renderOptionsText(q, correctOptions)}</span>
                     </div>
                   )}

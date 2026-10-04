@@ -133,25 +133,25 @@ export default function SettingExport({
   }
 
   // --- AUTO EVALUATE STATUS ---
-  const fileStatus = (() => {
+  const fileStatusKey = (() => {
     if (activeFile.questions.length === 0 && !activeFile.document && !activeFile.note) {
-      return "Tệp rỗng";
+      return "file_manager.status_empty";
     }
     const jsonStr = getFileJson(activeFile);
     const parsed = parseQuizJson(jsonStr);
     if (!parsed.isValid) {
       if (parsed.error?.includes("thiếu trường 'question'") || parsed.error?.includes("thiếu trường 'text'")) {
-        return "Lỗi cú pháp";
+        return "file_manager.status_syntax_error";
       }
       if (parsed.error?.includes("thiếu hoặc rỗng danh sách 'options'")) {
-        return "Thiếu lựa chọn đáp án";
+        return "file_manager.status_missing_options";
       }
       if (parsed.error?.includes("thiếu đáp án đúng")) {
-        return "Thiếu đáp án đúng";
+        return "file_manager.status_missing_correct";
       }
-      return "Lỗi cú pháp";
+      return "file_manager.status_syntax_error";
     }
-    return "Tệp hợp lệ";
+    return "file_manager.valid";
   })();
 
   // --- NOTES WITH STRICT 200 WORDS LIMIT ---
@@ -256,16 +256,17 @@ export default function SettingExport({
     setIsExportModalOpen(false);
   };
 
-  const getStatusColor = (status: FileStatusType) => {
-    switch (status) {
-      case "Tệp hợp lệ":
+  const getStatusColor = (statusKey: string) => {
+    switch (statusKey) {
+      case "file_manager.valid":
         return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-200/50 dark:border-green-900/30";
-      case "Thiếu lựa chọn đáp án":
-      case "Thiếu đáp án đúng":
+      case "file_manager.status_missing_options":
+      case "file_manager.status_missing_correct":
         return "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-200/50 dark:border-amber-900/30";
-      case "Lỗi cú pháp":
+      case "file_manager.status_syntax_error":
         return "bg-red-500/10 text-red-650 dark:text-red-400 border-red-200/50 dark:border-red-900/30";
-      case "Tệp rỗng":
+      case "file_manager.status_empty":
+      default:
         return "bg-slate-500/10 text-slate-500 dark:text-slate-400 border-slate-200/50 dark:border-slate-800/30";
     }
   };
@@ -298,7 +299,7 @@ export default function SettingExport({
               value={activeFile.name}
               onChange={(e) => updateCreatorFile(activeFile.id, { name: e.target.value, metadata: { ...activeFile.metadata, file_name: e.target.value } })}
               className="w-full px-3 py-2 text-sm font-normal border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              placeholder="Nhập tên tệp tin..."
+              placeholder={t("file_manager.create_modal_placeholder")}
             />
           </div>
 
@@ -310,10 +311,10 @@ export default function SettingExport({
             <div
               className={cn(
                 "w-full px-3 py-2 text-sm font-medium border rounded-xl flex items-center justify-between select-none",
-                getStatusColor(fileStatus)
+                getStatusColor(fileStatusKey)
               )}
             >
-              <span>{fileStatus}</span>
+              <span>{t(fileStatusKey as any)}</span>
             </div>
           </div>
 
@@ -372,10 +373,10 @@ export default function SettingExport({
             <div className="flex items-center justify-between pb-3.5 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <div className="min-w-0">
                 <h3 className="text-lg font-bold text-slate-850 dark:text-slate-100 truncate">
-                  Xuất bản tệp tin
+                  {t("export.modal_title")}
                 </h3>
                 <p className="text-xs text-slate-400 dark:text-slate-500 font-medium truncate" title={activeFile.name}>
-                  {activeFile.name} ({activeFile.questions.length} câu hỏi)
+                  {activeFile.name} ({t("file_manager.questions_count_num", { count: activeFile.questions.length })})
                 </p>
               </div>
               <button 
@@ -393,15 +394,15 @@ export default function SettingExport({
               {/* Question Quantity Mode Selection */}
               <div className="space-y-2.5">
                 <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block">
-                  Số lượng câu hỏi xuất bản
+                  {t("export.slice_options")}
                 </label>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   {[
-                    { id: "ALL", label: "Tất cả câu hỏi", desc: `Toàn bộ ${activeFile.questions.length} câu` },
-                    { id: "FIRST", label: "N câu đầu tiên", desc: "Lấy từ đầu danh sách" },
-                    { id: "LAST", label: "N câu cuối cùng", desc: "Lấy từ cuối danh sách" },
-                    { id: "RANGE", label: "Khoảng chỉ định", desc: "Chỉ định vị trí Từ - Đến" }
+                    { id: "ALL", label: t("export.slice_all_label"), desc: t("export.slice_all_desc", { total: activeFile.questions.length }) },
+                    { id: "FIRST", label: t("export.slice_first_label"), desc: t("export.slice_first_desc") },
+                    { id: "LAST", label: t("export.slice_last_label"), desc: t("export.slice_last_desc") },
+                    { id: "RANGE", label: t("export.slice_range_label"), desc: t("export.slice_range_desc") }
                   ].map((mode) => {
                     const isActive = quantityMode === mode.id;
                     return (
@@ -433,7 +434,7 @@ export default function SettingExport({
                 {/* Range Numeric Inputs */}
                 {quantityMode === "FIRST" && (
                   <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">Lấy số lượng:</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">{t("export.take_count")}</span>
                     <CustomNumberInput 
                       value={firstCount}
                       min={1}
@@ -441,14 +442,14 @@ export default function SettingExport({
                       onChange={(val) => setFirstCount(val)}
                     />
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      / {activeFile.questions.length} câu đầu tiên
+                      {t("export.first_questions_suffix", { total: activeFile.questions.length })}
                     </span>
                   </div>
                 )}
 
                 {quantityMode === "LAST" && (
                   <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40">
-                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">Lấy số lượng:</span>
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 shrink-0">{t("export.take_count")}</span>
                     <CustomNumberInput 
                       value={lastCount}
                       min={1}
@@ -456,7 +457,7 @@ export default function SettingExport({
                       onChange={(val) => setLastCount(val)}
                     />
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                      / {activeFile.questions.length} câu cuối cùng
+                      {t("export.last_questions_suffix", { total: activeFile.questions.length })}
                     </span>
                   </div>
                 )}
@@ -464,7 +465,7 @@ export default function SettingExport({
                 {quantityMode === "RANGE" && (
                   <div className="flex items-center justify-start gap-4 md:gap-5 p-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 text-xs font-semibold text-slate-700 dark:text-slate-300">
                     <div className="flex items-center gap-2">
-                      <span className="shrink-0">Từ câu:</span>
+                      <span className="shrink-0">{t("export.from_question")}</span>
                       <CustomNumberInput 
                         value={rangeStart}
                         min={1}
@@ -473,7 +474,7 @@ export default function SettingExport({
                       />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="shrink-0">Đến câu:</span>
+                      <span className="shrink-0">{t("export.to_question")}</span>
                       <CustomNumberInput 
                         value={rangeEnd}
                         min={rangeStart}
@@ -494,7 +495,7 @@ export default function SettingExport({
                 onClick={() => setIsExportModalOpen(false)}
                 className="flex-1 py-2.5 border border-slate-200 dark:border-slate-800 rounded-2xl font-bold text-xs text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button 
                 type="button"
@@ -502,7 +503,7 @@ export default function SettingExport({
                 className="flex-1 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs rounded-2xl shadow-md shadow-indigo-500/20 active:scale-98 transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <Download className="w-4 h-4" />
-                <span>Xuất Bản</span>
+                <span>{t("export.action_export")}</span>
               </button>
             </div>
 

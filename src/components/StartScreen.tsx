@@ -26,7 +26,6 @@ const StartScreen = memo(function StartScreen() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:p-8 relative overflow-x-hidden">
       <div className="absolute top-4 right-4 md:top-8 md:right-8 flex items-center gap-2">
-        <LanguageSwitcher variant="pills" />
         <button 
           onClick={() => setSettingsOpen(true)}
           title={t("start.open_settings")}
