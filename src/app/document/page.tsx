@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
+import { useTranslation } from "@/locales";
 
 function DocumentSkeleton() {
   return (
@@ -74,12 +76,13 @@ function DocumentSkeleton() {
 }
 
 function EmptyDocumentState() {
+  const { t } = useTranslation();
   return (
     <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800/80 shadow-sm p-6 md:p-10 w-full transition-colors duration-300">
       <FileText className="w-16 h-16 mx-auto mb-4 text-slate-350 dark:text-slate-650 animate-pulse" />
-      <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">Tài liệu trống</h3>
+      <h3 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-2">{t("document.empty_doc")}</h3>
       <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
-        File này chưa có nội dung hoặc chưa được cấu hình note/document.
+        {t("document.empty_doc_desc")}
       </p>
     </div>
   );
@@ -385,6 +388,7 @@ function resolveDocumentState(source: SourceFile | undefined): DocumentRenderSta
 }
 
 export default function DocumentViewerPage() {
+  const { t } = useTranslation();
   const theme = useQuizStore((state) => state.theme);
   const sources = useQuizStore((state) => state.sources);
   const selectedDocumentSourceId = useQuizStore((state) => state.selectedDocumentSourceId);
@@ -629,14 +633,14 @@ export default function DocumentViewerPage() {
             href="/"
             onClick={() => useQuizStore.getState().clearNotification()}
             className="min-w-11 min-h-11 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-250 transition-colors flex items-center justify-center cursor-pointer"
-            title="Quay lại trang chủ"
+            title={t("document.back_to_app")}
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <span className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:inline" />
           <h1 className="text-lg md:text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-            <span>Xem tài liệu</span>
+            <span>{t("document.title")}</span>
           </h1>
         </div>
 
@@ -644,30 +648,32 @@ export default function DocumentViewerPage() {
           <div className="hidden lg:flex items-center gap-6 text-xs text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5" />
-              Cập nhật: {formatDate(selectedSource.metadata?.last_modified)}
+              {formatDate(selectedSource.metadata?.last_modified)}
             </span>
             <span className="flex items-center gap-1.5">
               <Hash className="w-3.5 h-3.5" />
-              Tổng số câu: {selectedSource.questions.length}
+              {selectedSource.questions.length}
             </span>
           </div>
         )}
 
-        {selectedDocumentSourceId !== null && (
-          <button
-            onClick={() => setUiState("PICKER_MODAL")}
-            className={cn(
-              "min-w-11 min-h-11 p-2.5 rounded-xl border transition-all flex items-center justify-center gap-2 hover:shadow-sm cursor-pointer",
-              uiState === "PICKER_MODAL"
-                ? "border-indigo-300 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 font-semibold"
-                : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
-            )}
-            title="Chọn nguồn tài liệu"
-          >
-            <Menu className="w-3.5 h-3.5 shrink-0" />
-            <span className="text-xs font-semibold hidden md:inline">Nguồn tài liệu</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <LanguageSwitcher variant="pills" />
+          {selectedDocumentSourceId !== null && (
+            <button
+              onClick={() => setUiState("PICKER_MODAL")}
+              className={cn(
+                "min-w-11 min-h-11 p-2.5 rounded-xl border transition-all flex items-center justify-center gap-2 hover:shadow-sm cursor-pointer",
+                uiState === "PICKER_MODAL"
+                  ? "border-indigo-300 dark:border-indigo-900 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-750 dark:text-indigo-400 font-semibold"
+                  : "border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+              )}
+            >
+              <Menu className="w-3.5 h-3.5 shrink-0" />
+              <span className="text-xs font-semibold hidden md:inline">{t("creator.tab_files")}</span>
+            </button>
+          )}
+        </div>
       </header>
 
       {/* Main Workspace */}

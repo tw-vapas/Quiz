@@ -29,6 +29,7 @@ export default function Home() {
   const timeLimitMinutes = useQuizStore((state) => state.timeLimitMinutes);
   const creatorFiles = useQuizStore((state) => state.creatorFiles);
   const activeFileId = useQuizStore((state) => state.activeFileId);
+  const language = useQuizStore((state) => state.language);
 
   const [hasHydrated, setHasHydrated] = useState(false);
 
@@ -47,6 +48,15 @@ export default function Home() {
       const savedSettings = localStorage.getItem("vapas_quiz_settings");
       const savedCreatorFiles = localStorage.getItem("vapas_quiz_creator_files");
       const savedActiveFileId = localStorage.getItem("vapas_quiz_creator_active_id");
+      const savedLanguage = localStorage.getItem("vapas_quiz_language");
+
+      if (savedLanguage === "vi" || savedLanguage === "en") {
+        useQuizStore.setState({ language: savedLanguage });
+      } else {
+        const browserLang = navigator.language?.toLowerCase().startsWith("en") ? "en" : "vi";
+        useQuizStore.setState({ language: browserLang });
+      }
+
       if (savedSources) {
         try {
           const parsed = JSON.parse(savedSources);
@@ -117,6 +127,17 @@ export default function Home() {
       }
     }
   }, [activeFileId, hasHydrated]);
+
+  // Save language to localStorage when it changes
+  useEffect(() => {
+    if (hasHydrated) {
+      try {
+        localStorage.setItem("vapas_quiz_language", language);
+      } catch (e) {
+        console.warn("localStorage quota exceeded when saving language");
+      }
+    }
+  }, [language, hasHydrated]);
 
   // Save settings to localStorage when they change, only after hydration is complete
   useEffect(() => {

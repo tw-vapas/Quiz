@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { InlineMarkdown } from "@/components/MarkdownRenderer";
 import { isQuestionCorrect, Question, Option } from "@/lib/parser";
 import { DisplayBlockRenderer } from "@/components/DisplayBlockRenderer";
+import { useTranslation } from "@/locales";
 
 const renderOptionsText = (q: Question, opts: Option[]) => {
   if (opts.length === 0) return "Chưa trả lời";
@@ -19,6 +20,7 @@ const renderOptionsText = (q: Question, opts: Option[]) => {
 };
 
 const ResultScreen = memo(function ResultScreen() {
+  const { t } = useTranslation();
   const questions = useQuizStore(state => state.questions);
   const answers = useQuizStore(state => state.answers);
   const totalTime = useQuizStore(state => state.totalTime);
@@ -84,24 +86,24 @@ const ResultScreen = memo(function ResultScreen() {
           <div className="inline-flex items-center justify-center p-4 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full mb-6">
             <Target className="w-12 h-12" />
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">Hoàn thành bài kiểm tra!</h1>
-          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-8">Dưới đây là kết quả chi tiết của bạn.</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">{t("result.title")}</h1>
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-8">{t("result.subtitle")}</p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 rounded-2xl">
-              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Điểm số</div>
+              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{t("result.score")}</div>
               <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{score10}</div>
             </div>
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 rounded-2xl">
-              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Chính xác</div>
+              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{t("result.accuracy")}</div>
               <div className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">{correctCount}<span className="text-base md:text-lg text-slate-400 dark:text-slate-500">/{total}</span></div>
             </div>
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 rounded-2xl">
-              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Thời gian</div>
+              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{t("result.total_time")}</div>
               <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{formatTime(totalSeconds)}</div>
             </div>
             <div className="bg-slate-50 dark:bg-slate-900/50 p-4 md:p-6 rounded-2xl">
-              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Trung bình/câu</div>
+              <div className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{t("result.avg_time_per_question")}</div>
               <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-slate-100">{avgTime}s</div>
             </div>
           </div>
@@ -112,7 +114,7 @@ const ResultScreen = memo(function ResultScreen() {
               className="min-h-11 flex items-center justify-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
             >
               <RotateCcw className="w-5 h-5" />
-              Làm lại toàn bộ bài
+              {t("result.retry_all")}
             </button>
             <button
               onClick={() => setIsRetryModalOpen(true)}
@@ -124,13 +126,13 @@ const ResultScreen = memo(function ResultScreen() {
               )}
             >
               <PlayCircle className="w-5 h-5" />
-              Làm lại các câu sai
+              {t("result.retry_incorrect", { count: incorrectQuestions.length })}
             </button>
             <button
               onClick={resetApp}
               className="min-h-11 flex items-center justify-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 px-6 md:px-8 py-3 md:py-4 rounded-xl font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-95 text-sm md:text-base cursor-pointer"
             >
-              Quay lại trang chủ
+              {t("result.back_to_home")}
             </button>
           </div>
         </motion.div>

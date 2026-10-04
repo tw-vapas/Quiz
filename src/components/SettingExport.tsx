@@ -12,6 +12,7 @@ import {
   ChevronUp,
   ChevronDown
 } from "lucide-react";
+import { useTranslation } from "@/locales";
 
 function sanitizeFileName(name: string): string {
   if (!name || !name.trim()) return `quiz_export.json`;
@@ -95,6 +96,7 @@ type FileStatusType =
 export default function SettingExport({ 
   className
 }: SettingExportProps) {
+  const { t } = useTranslation();
   const activeFileId = useQuizStore(state => state.activeFileId);
   const creatorFiles = useQuizStore(state => state.creatorFiles);
   const updateCreatorFile = useQuizStore(state => state.updateCreatorFile);
@@ -124,8 +126,8 @@ export default function SettingExport({
     return (
       <div className={cn("flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all duration-300 shadow-sm items-center justify-center p-8", className)}>
         <Settings2 className="w-16 h-16 text-indigo-500/30 mb-4" />
-        <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">No File Selected</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">Chọn một tệp từ Quản Lý Tệp để hiển thị thiết lập.</p>
+        <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">{t("creator.no_active_file")}</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">{t("creator.select_file_hint")}</p>
       </div>
     );
   }
@@ -276,7 +278,7 @@ export default function SettingExport({
         <div className="flex items-center gap-2">
           <Settings2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 tracking-wider">
-            Xuất Bản
+            {t("creator.tab_export")}
           </h3>
         </div>
       </div>
@@ -289,7 +291,7 @@ export default function SettingExport({
           {/* Name Input */}
           <div className="space-y-1.5">
             <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-              Tên tệp tin
+              {t("file_manager.file_name")}
             </label>
             <input 
               type="text" 
@@ -303,7 +305,7 @@ export default function SettingExport({
           {/* Status Display */}
           <div className="space-y-1.5 relative">
             <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-              Trạng thái
+              {t("file_manager.status")}
             </label>
             <div
               className={cn(
@@ -318,7 +320,7 @@ export default function SettingExport({
           {/* Last Changed Field */}
           <div className="space-y-1.5 relative">
             <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-              Chỉnh sửa lần cuối
+              {t("file_manager.last_modified")}
             </label>
             <div className="px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center gap-2 text-sm font-medium text-slate-800 dark:text-slate-200 select-none">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
@@ -331,20 +333,20 @@ export default function SettingExport({
         <div className="space-y-1.5 pt-1">
           <div className="flex items-center justify-between">
             <label className="text-sm font-semibold text-slate-500 dark:text-slate-400">
-              Ghi chú
+              {t("export.note_title")}
             </label>
             <span className={cn(
               "text-xs font-mono font-medium",
               noteWordCount > 180 ? "text-red-500 font-semibold" : "text-slate-400"
             )}>
-              {noteWordCount}/200 từ
+              {t("export.word_count", { current: noteWordCount })}
             </span>
           </div>
           <textarea
             value={activeFile.note}
             onChange={(e) => handleNoteChange(e.target.value)}
             className="w-full h-56 p-3 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 text-sm font-normal text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 leading-relaxed resize-none overflow-y-auto custom-scrollbar placeholder:text-slate-400 dark:placeholder:text-slate-500"
-            placeholder="Nhập ghi chú cho tệp tin này (tối đa 200 từ)..."
+            placeholder={t("export.note_placeholder")}
           />
         </div>
 
@@ -357,7 +359,7 @@ export default function SettingExport({
           className="w-full min-h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-base rounded-xl shadow-md cursor-pointer transition-all active:scale-[0.98] flex items-center justify-center gap-2"
         >
           <Download className="w-4 h-4" />
-          <span>Xuất bản</span>
+          <span>{t("export.download_btn")}</span>
         </button>
       </div>
 

@@ -9,6 +9,7 @@ import { isQuestionCorrect, Question } from "@/lib/parser";
 
 import { InlineMarkdown } from "@/components/MarkdownRenderer";
 import { DisplayBlockRenderer } from "@/components/DisplayBlockRenderer";
+import { useTranslation } from "@/locales";
 
 const Timer = memo(() => {
   const startTime = useQuizStore(state => state.startTime);
@@ -115,6 +116,7 @@ const QuestionCard = memo(function QuestionCard({
   nextQuestion,
   onQuestionActive
 }: QuestionCardProps) {
+  const { t } = useTranslation();
   const [question] = useState(initialQuestion);
   const [currentIndex] = useState(initialCurrentIndex);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
@@ -422,7 +424,7 @@ const QuestionCard = memo(function QuestionCard({
           >
             <InfoIcon className={cn("w-5 h-5 shrink-0 mt-0.5", iconColor)} />
             <div>
-              <div className={cn("font-bold text-xs uppercase tracking-wider mb-1", explanationTitle)}>Giải thích</div>
+              <div className={cn("font-bold text-xs uppercase tracking-wider mb-1", explanationTitle)}>{t("quiz.explanation")}</div>
               <div>
                 <InlineMarkdown content={question.explanation} />
               </div>
@@ -439,7 +441,7 @@ const QuestionCard = memo(function QuestionCard({
         if (!isSubmitted) {
           if (!autoNext || question.type === "multiple_choice") {
             showButton = true;
-            buttonText = question.type === "multiple_choice" ? "Xác nhận đáp án" : "Xác nhận";
+            buttonText = t("common.confirm");
             const hasSelection = question.type === "multiple_choice" ? selectedOptionIds.length > 0 : selectedOptionId !== null;
             isButtonDisabled = !hasSelection || phase === 'transitioning';
           }
@@ -448,7 +450,7 @@ const QuestionCard = memo(function QuestionCard({
           const willAutoAdvance = showResultAfterQuestion && isCorrectNow && autoNext;
           if (showResultAfterQuestion && !willAutoAdvance) {
             showButton = true;
-            buttonText = "Câu tiếp theo";
+            buttonText = t("quiz.next");
             isButtonDisabled = phase === 'transitioning';
           }
         }
@@ -474,6 +476,7 @@ const QuestionCard = memo(function QuestionCard({
 QuestionCard.displayName = "QuestionCard";
 
 const MainQuiz = memo(function MainQuiz() {
+  const { t } = useTranslation();
   const questions = useQuizStore(state => state.questions);
   const currentIndex = useQuizStore(state => state.currentIndex);
   const submitAnswer = useQuizStore(state => state.submitAnswer);
@@ -517,9 +520,7 @@ const MainQuiz = memo(function MainQuiz() {
       <header className="px-3 sm:px-4 md:px-8 py-2 md:py-4 flex flex-wrap gap-2 justify-between items-center border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm sticky top-1 z-10 transition-colors duration-300">
         <div className="flex items-center gap-2 md:gap-6 min-w-0">
           <div className="text-xs md:text-sm font-bold text-slate-500 dark:text-slate-450 uppercase tracking-widest flex items-center">
-            <span className="hidden sm:inline mr-1">Câu hỏi</span>
-            <span className="sm:hidden mr-1">Câu</span>
-            <span className="text-indigo-600 dark:text-indigo-400 text-base md:text-lg mx-1">{activeCurrentIndex + 1}</span> / {total}
+            {t("quiz.question_index", { current: activeCurrentIndex + 1, total })}
           </div>
           <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-slate-700 dark:text-slate-300 font-medium text-xs md:text-sm">
             <Clock className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500 dark:text-slate-450" />
@@ -533,21 +534,21 @@ const MainQuiz = memo(function MainQuiz() {
             className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 rounded-lg font-medium transition-colors text-xs md:text-sm cursor-pointer"
           >
             <CheckSquare className="w-4 h-4 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Nộp bài</span>
+            <span className="hidden sm:inline">{t("quiz.submit")}</span>
           </button>
           <button
             onClick={pauseQuiz}
             className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg font-medium transition-colors text-xs md:text-sm cursor-pointer"
           >
             <Pause className="w-4 h-4 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Tạm dừng</span>
+            <span className="hidden sm:inline">{t("quiz.pause")}</span>
           </button>
           <button
             onClick={() => setShowExitConfirm(true)}
             className="min-w-11 min-h-11 flex items-center justify-center gap-1.5 md:gap-2 px-2.5 md:px-4 md:py-2 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 rounded-lg font-medium transition-colors text-xs md:text-sm cursor-pointer"
           >
             <LogOut className="w-4 h-4 md:w-4 md:h-4" />
-            <span className="hidden sm:inline">Thoát</span>
+            <span className="hidden sm:inline">{t("quiz.exit_quiz")}</span>
           </button>
         </div>
       </header>
@@ -558,8 +559,8 @@ const MainQuiz = memo(function MainQuiz() {
             <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <Pause className="w-8 h-8" />
             </div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Đã tạm dừng</h2>
-            <p className="text-sm md:text-base text-slate-500 dark:text-slate-450 mb-8">Thời gian đã được dừng lại. Bạn có thể tiếp tục bất cứ lúc nào.</p>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t("quiz.paused_title")}</h2>
+            <p className="text-sm md:text-base text-slate-500 dark:text-slate-450 mb-8">{t("quiz.paused_desc")}</p>
             
             <div className="space-y-3">
               <button
@@ -567,14 +568,14 @@ const MainQuiz = memo(function MainQuiz() {
                 className="w-full flex justify-center items-center gap-2 bg-indigo-600 dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 <Play className="w-5 h-5 fill-current" />
-                Tiếp tục làm bài
+                {t("quiz.resume")}
               </button>
               <button
                 onClick={() => setShowExitConfirm(true)}
                 className="w-full flex justify-center items-center gap-2 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base cursor-pointer"
               >
                 <LogOut className="w-5 h-5" />
-                Thoát
+                {t("quiz.exit_quiz")}
               </button>
             </div>
           </div>
@@ -587,15 +588,15 @@ const MainQuiz = memo(function MainQuiz() {
             <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <LogOut className="w-8 h-8" />
             </div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Thoát làm bài?</h2>
-            <p className="text-sm md:text-base text-slate-500 dark:text-slate-450 mb-8">Kết quả hiện tại của bạn sẽ không được lưu lại. Bạn có chắc chắn muốn thoát?</p>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t("quiz.exit_confirm_title")}</h2>
+            <p className="text-sm md:text-base text-slate-500 dark:text-slate-450 mb-8">{t("quiz.exit_confirm_desc")}</p>
             
             <div className="flex gap-3">
               <button
                 onClick={() => setShowExitConfirm(false)}
                 className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base cursor-pointer"
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => {
@@ -604,7 +605,7 @@ const MainQuiz = memo(function MainQuiz() {
                 }}
                 className="flex-1 bg-red-600 dark:bg-red-500 hover:bg-red-700 dark:hover:bg-red-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
               >
-                Thoát ngay
+                {t("quiz.exit_quiz")}
               </button>
             </div>
           </div>
@@ -617,15 +618,15 @@ const MainQuiz = memo(function MainQuiz() {
             <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckSquare className="w-8 h-8" />
             </div>
-            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">Nộp bài sớm?</h2>
-            <p className="text-sm md:text-base text-slate-500 dark:text-slate-450 mb-8">Bạn sẽ kết thúc phiên làm bài tại đây và xem kết quả ngay lập tức.</p>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 mb-2">{t("quiz.submit_confirm_title")}</h2>
+            <p className="text-sm md:text-base text-slate-500 dark:text-slate-450 mb-8">{t("quiz.submit_confirm_desc", { unanswered: 0 })}</p>
             
             <div className="flex gap-3">
               <button
                 onClick={() => setShowSubmitConfirm(false)}
                 className="flex-1 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 py-3 px-4 rounded-xl font-bold transition-all active:scale-95 text-sm md:text-base cursor-pointer"
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => {
@@ -634,7 +635,7 @@ const MainQuiz = memo(function MainQuiz() {
                 }}
                 className="flex-1 bg-green-600 dark:bg-green-500 hover:bg-green-700 dark:hover:bg-green-600 text-white py-3 px-4 rounded-xl font-bold transition-all shadow-md hover:shadow-lg active:scale-95 text-sm md:text-base cursor-pointer"
               >
-                Nộp bài
+                {t("quiz.submit")}
               </button>
             </div>
           </div>

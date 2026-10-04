@@ -18,9 +18,11 @@ import {
   FolderKanban
 } from "lucide-react";
 import { cn, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytes, getQuizStorageUsedBytesExcept, getItemBytes, formatBytes } from "@/lib/utils";
+import { useTranslation } from "@/locales";
 
 export default function FileManager() {
   const FILE_LIMIT = 10;
+  const { t } = useTranslation();
 
   const creatorFiles = useQuizStore(state => state.creatorFiles);
   const activeFileId = useQuizStore(state => state.activeFileId);
@@ -230,7 +232,7 @@ export default function FileManager() {
         <div className="flex items-center gap-2">
           <FolderOpen className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 tracking-wider">
-            Quản Lý Tệp
+            {t("creator.tab_files")}
           </h3>
         </div>
       </div>
@@ -249,7 +251,7 @@ export default function FileManager() {
                 ? "bg-amber-500/10 text-amber-500" 
                 : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
           )}>
-            {storagePercent >= 90 ? "Sắp đầy!" : `${storagePercent.toFixed(0)}%`}
+            {storagePercent >= 90 ? t("settings.storage_near_limit") : `${storagePercent.toFixed(0)}%`}
           </span>
         </div>
 
@@ -264,13 +266,13 @@ export default function FileManager() {
                   : "bg-gradient-to-r from-indigo-500 to-indigo-600"
             )}
             style={{ width: `${Math.max(2, storagePercent)}%` }}
-            title={`Dung lượng tệp trắc nghiệm: ${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`}
+            title={`Quiz Files storage: ${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`}
           />
         </div>
 
         {isStorageFull && (
           <div className="text-xs text-red-500 font-medium mt-1">
-            Đã đạt giới hạn dung lượng. Vui lòng xóa bớt file để tạo mới.
+            {t("settings.storage_near_limit")}
           </div>
         )}
       </div>
@@ -278,7 +280,7 @@ export default function FileManager() {
       {/* 2. SCROLLABLE FILES LIST */}
       <div className="flex-1 overflow-y-auto p-5 space-y-4">
         <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 tracking-widest border-b border-slate-100 dark:border-slate-800 pb-2 flex items-center justify-between gap-2">
-          <span>Danh Sách Tệp ({creatorFiles.length}/{FILE_LIMIT})</span>
+          <span>{t("file_manager.title")} ({creatorFiles.length}/{FILE_LIMIT})</span>
           <button 
             type="button"
             onClick={() => setIsCreateModalOpen(true)}
@@ -291,7 +293,7 @@ export default function FileManager() {
             )}
           >
             <Plus className="w-3.5 h-3.5 text-slate-500" />
-            <span>Tạo tệp</span>
+            <span>{t("file_manager.create_new")}</span>
           </button>
         </h4>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useQuizStore, CreatorFile } from "@/store/quizStore";
 import { Question, Option, DisplayBlock } from "../lib/parser";
 import MarkdownRenderer from "./MarkdownRenderer";
@@ -34,6 +34,7 @@ import {
   Undo2,
   Redo2
 } from "lucide-react";
+import { useTranslation } from "@/locales";
 
 export function isQuestionValid(q: Question): boolean {
   if (!q || !q.text || q.text.trim().length === 0) return false;
@@ -1271,6 +1272,7 @@ export default function QuestionModification({
   selectedTagsFilter,
   setSelectedTagsFilter
 }: QuestionModificationProps) {
+  const { t } = useTranslation();
   const activeFileId = useQuizStore(state => state.activeFileId);
   const creatorFiles = useQuizStore(state => state.creatorFiles);
   const updateCreatorFile = useQuizStore(state => state.updateCreatorFile);
@@ -1322,6 +1324,7 @@ export default function QuestionModification({
   const [displayMode, setDisplayMode] = useState<"List" | "Cards" | "Panel">("Panel");
   const [selectedPanelQuestionId, setSelectedPanelQuestionId] = useState<string | null>(null);
   const [deleteConfirmQuestionId, setDeleteConfirmQuestionId] = useState<string | null>(null);
+  const questionItemRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   // Keyboard Hotkey for deleting question in panel list: Enter to confirm deletion
   useEffect(() => {
@@ -1500,55 +1503,18 @@ export default function QuestionModification({
     return activeFile?.questions || [];
   }, [activeFile?.questions]);
 
-  // Panel view selected item state
-  const questionItemRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
-  
   const panelQuestion = useMemo(() => {
-    if (filteredQuestions.length === 0) return null;
-    return filteredQuestions.find(q => q.id === selectedPanelQuestionId) || filteredQuestions[0];
+    if (!filteredQuestions.length) return null;
+    return filteredQuestions.find((q) => q.id === selectedPanelQuestionId) || filteredQuestions[0];
   }, [filteredQuestions, selectedPanelQuestionId]);
-
-  // Auto scroll the selected question item into view in the list panel
-  useEffect(() => {
-    if (activeTab !== "QUESTION_VIEW" || displayMode !== "Panel" || !panelQuestion?.id) return;
-    const el = questionItemRefs.current[panelQuestion.id];
-    if (el) {
-      el.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "nearest"
-      });
-    }
-  }, [activeTab, displayMode, panelQuestion?.id]);
-
-  // Arrow key navigation for Question View panel
-  useEffect(() => {
-    if (activeTab !== "QUESTION_VIEW" || displayMode !== "Panel") return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight" && e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
-      const target = e.target as HTMLElement;
-      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) return;
-      e.preventDefault();
-      const currentIdx = filteredQuestions.findIndex(q => q.id === panelQuestion?.id);
-      if ((e.key === "ArrowRight" || e.key === "ArrowDown") && currentIdx < filteredQuestions.length - 1) {
-        setSelectedPanelQuestionId(filteredQuestions[currentIdx + 1].id);
-      } else if ((e.key === "ArrowLeft" || e.key === "ArrowUp") && currentIdx > 0) {
-        setSelectedPanelQuestionId(filteredQuestions[currentIdx - 1].id);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeTab, displayMode, filteredQuestions, panelQuestion]);
-
-
 
   // Render empty state if no active file
   if (!activeFile) {
     return (
       <div className={cn("flex flex-col h-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden transition-all duration-300 shadow-sm items-center justify-center p-8", className)}>
         <FileCode className="w-16 h-16 text-indigo-500/30 mb-4" />
-        <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">No File Selected</h3>
-        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">Chọn một tệp từ Quản Lý Tệp hoặc tạo tệp mới để bắt đầu chỉnh sửa câu hỏi.</p>
+        <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2">{t("creator.no_active_file")}</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 text-center max-w-xs leading-relaxed">{t("creator.select_file_hint")}</p>
       </div>
     );
   }
@@ -1560,7 +1526,7 @@ export default function QuestionModification({
       <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/50 flex flex-row items-center justify-between gap-2 shrink-0 overflow-x-auto no-scrollbar">
         <div className="flex items-center gap-2 min-w-0 shrink">
           <FileCode className="w-5 h-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-          <span className="text-base sm:text-lg font-bold text-slate-850 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
+          <span className="text-base sm:text-lg font-bold text-slate-855 dark:text-slate-100 tracking-wider truncate" title={activeFile.name}>
             {activeFile.name}
           </span>
         </div>
@@ -1574,7 +1540,7 @@ export default function QuestionModification({
               onClick={() => undo()}
               disabled={!canUndo}
               className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
-              title="Hoàn tác (Ctrl+Z)"
+              title="Ctrl+Z"
             >
               <Undo2 className="w-4 h-4" />
             </button>
@@ -1583,7 +1549,7 @@ export default function QuestionModification({
               onClick={() => redo()}
               disabled={!canRedo}
               className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95"
-              title="Làm lại (Ctrl+Y)"
+              title="Ctrl+Y"
             >
               <Redo2 className="w-4 h-4" />
             </button>
@@ -1601,8 +1567,8 @@ export default function QuestionModification({
                     : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
                 )}
               >
-                {tab === "DOCUMENT" && "Tài Liệu"}
-                {tab === "QUESTION_VIEW" && "Câu Hỏi"}
+                {tab === "DOCUMENT" && t("nav.document")}
+                {tab === "QUESTION_VIEW" && t("creator.tab_editor")}
               </button>
             ))}
           </div>

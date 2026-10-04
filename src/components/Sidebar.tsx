@@ -8,6 +8,8 @@ import { getSourceDisplayName } from "@/lib/sourceHelper";
 import SourceAllocation from "./SourceAllocation";
 import { Plus, Trash2, FileText, FileWarning, X, GripVertical, BookOpen } from "lucide-react";
 import { cn, useRenderProfiler, STORAGE_LIMIT_BYTES, getQuizStorageUsedBytesExcept, getQuizStorageUsedBytesByKey, getItemBytes, formatBytes } from "@/lib/utils";
+import { useTranslation } from "@/locales";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 // --- Virtualized Source Card Item (HTML5 Drag & Drop) ---
 interface VirtualSourceCardProps {
@@ -341,19 +343,27 @@ const SidebarControls = React.memo(({
   setLocalAllocations
 }: SidebarControlsProps) => {
   useRenderProfiler("SidebarControls");
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col shrink-0 bg-white dark:bg-slate-900">
       {/* Sticky Header for Tùy chỉnh chung */}
       <div className="sticky top-0 z-40 px-5 md:px-6 py-3.5 bg-slate-100 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-        <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">Tùy chỉnh chung</h2>
+        <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">{t("settings.title")}</h2>
       </div>
 
       <div className="p-5 md:p-6 space-y-6">
-        {/* 1. Giao diện & Thời gian (Cùng 1 hàng với vạch ngăn cách có khoảng cách bằng độ rộng chữ "diện") */}
-        <div className="flex items-start">
+        {/* Language Selection */}
+        <div className="flex items-center justify-between">
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">{t("common.language")}</h3>
+          <LanguageSwitcher variant="pills" />
+        </div>
+
+        {/* 1. Giao diện & Thời gian */}
+        <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80 flex items-start">
           {/* Giao diện */}
           <div className="shrink-0">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Giao diện</h3>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">{t("settings.theme")}</h3>
             <div className="space-y-3">
               <label className="flex items-center space-x-2.5 cursor-pointer">
                 <input
@@ -364,7 +374,7 @@ const SidebarControls = React.memo(({
                   onChange={() => setLocalTheme('light')}
                   className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
                 />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Sáng</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("settings.theme_light")}</span>
               </label>
               <label className="flex items-center space-x-2.5 cursor-pointer">
                 <input
@@ -375,23 +385,18 @@ const SidebarControls = React.memo(({
                   onChange={() => setLocalTheme('dark')}
                   className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
                 />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tối</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("settings.theme_dark")}</span>
               </label>
             </div>
           </div>
 
-          {/* Space 1: Width equal to text "diện" (~32px) */}
           <div className="w-[32px] shrink-0" />
-
-          {/* Vertical Divider */}
           <div className="w-px h-full min-h-[76px] bg-slate-200 dark:bg-slate-700/80 self-stretch shrink-0" />
-
-          {/* Space 2: Width equal to text "diện" (~32px) */}
           <div className="w-[32px] shrink-0" />
 
           {/* Thời gian */}
           <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Thời gian</h3>
+            <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">{t("settings.time_limit")}</h3>
             <div className="space-y-3">
               <label className="flex items-center space-x-2.5 cursor-pointer">
                 <input
@@ -401,7 +406,7 @@ const SidebarControls = React.memo(({
                   onChange={() => setLocalTimeLimitMode('UNLIMITED')}
                   className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
                 />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Không giới hạn</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("settings.unlimited")}</span>
               </label>
               <div className="flex items-center space-x-1.5">
                 <label className="flex items-center space-x-1.5 cursor-pointer shrink-0">
@@ -412,7 +417,7 @@ const SidebarControls = React.memo(({
                     onChange={() => setLocalTimeLimitMode('LIMITED')}
                     className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer shrink-0"
                   />
-                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Giới hạn:</span>
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("settings.limited")}</span>
                 </label>
                 <input
                   type="number"
@@ -440,7 +445,7 @@ const SidebarControls = React.memo(({
                   }}
                   className="w-16 px-1.5 py-0.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900/50"
                 />
-                <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">phút</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">{t("settings.minutes")}</span>
               </div>
             </div>
           </div>
@@ -448,7 +453,7 @@ const SidebarControls = React.memo(({
 
         {/* 2. Tương tác */}
         <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Tương tác</h3>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">{t("settings.interaction")}</h3>
           <div className="space-y-3">
             <label className="flex items-start space-x-3 cursor-pointer group">
               <div className="relative flex items-center pt-0.5">
@@ -466,7 +471,7 @@ const SidebarControls = React.memo(({
                   )}
                 </div>
               </div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Hiển thị kết quả sau mỗi câu</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">{t("settings.show_explanation_immediately")}</span>
             </label>
 
             <label className="flex items-start space-x-3 cursor-pointer group">
@@ -485,14 +490,14 @@ const SidebarControls = React.memo(({
                   )}
                 </div>
               </div>
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">Chuyển sang câu tiếp theo lập tức sau khi chọn</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-snug pt-0.5">{t("settings.auto_next")}</span>
             </label>
           </div>
         </div>
 
         {/* 3. Số lượng câu hỏi */}
         <div className="pt-5 border-t border-slate-200 dark:border-slate-700/80">
-          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">Số lượng câu hỏi</h3>
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 mb-3">{t("settings.question_count")}</h3>
           <div className="space-y-3">
             <label className="flex items-center space-x-3 cursor-pointer">
               <input
@@ -503,7 +508,7 @@ const SidebarControls = React.memo(({
                 onChange={() => setLocalCountMode('ALL')}
                 className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
               />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tất cả ({totalAvailable})</span>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("settings.count_all", { total: totalAvailable })}</span>
             </label>
 
             <div className="flex items-center space-x-3">
@@ -516,7 +521,7 @@ const SidebarControls = React.memo(({
                   onChange={() => setLocalCountMode('CUSTOM')}
                   className="w-4 h-4 text-indigo-600 dark:text-indigo-500 focus:ring-indigo-500 border-slate-300 dark:border-slate-600 cursor-pointer"
                 />
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Tùy chỉnh:</span>
+                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{t("settings.count_custom")}</span>
               </label>
               <input
                 type="number"
@@ -591,6 +596,7 @@ const SidebarList = React.memo(({
   parentScrollRef
 }: SidebarListProps) => {
   useRenderProfiler("SidebarList");
+  const { t } = useTranslation();
   const router = useRouter();
 
   const handleViewDocument = useCallback((sourceId: string) => {
@@ -626,12 +632,12 @@ const SidebarList = React.memo(({
     <div className="flex flex-col shrink-0 relative bg-slate-50/50 dark:bg-slate-900/50">
       {/* Sticky Header */}
       <div className="sticky top-0 z-40 px-5 md:px-6 py-3.5 bg-slate-100 dark:bg-slate-800 border-y border-slate-200 dark:border-slate-700 flex items-center justify-between shadow-sm">
-        <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">Nguồn dữ liệu</h2>
+        <h2 className="text-base md:text-lg font-bold text-slate-800 dark:text-slate-100">{t("settings.sources_list")}</h2>
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploading || isStorageFull}
           className="w-11 h-11 md:w-8 md:h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center hover:bg-indigo-200 dark:hover:bg-indigo-900/80 transition-colors disabled:opacity-50 shadow-sm cursor-pointer"
-          title={isStorageFull ? "Đã đạt giới hạn dung lượng" : "Tải lên tệp .txt, .json, .docx, .pdf, hình ảnh"}
+          title={isStorageFull ? t("settings.storage_near_limit") : t("file_manager.import_files")}
         >
           <Plus className="w-5 h-5" />
         </button>
@@ -649,7 +655,7 @@ const SidebarList = React.memo(({
       <div className="px-5 md:px-6 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 space-y-1.5">
         <div className="flex items-center justify-between text-xs font-medium">
           <span className="text-slate-600 dark:text-slate-400">
-            Dung lượng lưu trữ: <span className="font-mono text-slate-800 dark:text-slate-200 font-semibold">{(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB</span> / {(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB
+            {t("settings.storage_used", { used: `${(storageUsedBytes / (1024 * 1024)).toFixed(2)} MB`, limit: `${(STORAGE_LIMIT_BYTES / (1024 * 1024)).toFixed(1)} MB` })}
           </span>
           <span className={cn(
             "font-semibold px-1.5 py-0.5 rounded text-xs",
@@ -659,7 +665,7 @@ const SidebarList = React.memo(({
                 ? "bg-amber-500/10 text-amber-500" 
                 : "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400"
           )}>
-            {storagePercent >= 90 ? "Bộ nhớ sắp đầy!" : `${storagePercent.toFixed(0)}%`}
+            {storagePercent >= 90 ? t("settings.storage_near_limit") : `${storagePercent.toFixed(0)}%`}
           </span>
         </div>
 
@@ -679,10 +685,10 @@ const SidebarList = React.memo(({
         </div>
 
         <div className="flex items-center justify-between text-xs text-slate-400 dark:text-slate-500 font-medium">
-          <span>{localSources.length} / 10 Tệp Tin</span>
+          <span>{localSources.length} / 10 {t("file_manager.file_name")}</span>
           {isStorageFull && (
             <span className="text-red-500 font-medium">
-              Đã đạt giới hạn dung lượng bộ nhớ.
+              {t("settings.storage_near_limit")}
             </span>
           )}
         </div>
@@ -692,8 +698,8 @@ const SidebarList = React.memo(({
         {localSources.length === 0 ? (
           <div className="text-center py-8 text-slate-500 dark:text-slate-400 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl">
             <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300 dark:text-slate-600" />
-            <p className="text-sm">Chưa có tệp nào được tải lên.</p>
-            <p className="text-xs mt-1">Hỗ trợ .docx, .txt, .json</p>
+            <p className="text-sm">{t("file_manager.no_files_title")}</p>
+            <p className="text-xs mt-1">.docx, .txt, .json, .pdf</p>
           </div>
         ) : (
           <VirtualSourcesList
@@ -717,7 +723,7 @@ const SidebarList = React.memo(({
           <div className="w-full max-w-sm bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-extrabold text-sm text-slate-800 dark:text-slate-200 uppercase tracking-wider">
-                Xác nhận xóa
+                {t("file_manager.delete_confirm_title")}
               </h3>
               <button
                 onClick={() => setConfirmDeleteId(null)}
@@ -727,14 +733,14 @@ const SidebarList = React.memo(({
               </button>
             </div>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              Bạn có chắc chắn muốn xóa nguồn dữ liệu <span className="font-bold text-slate-800 dark:text-slate-200">{getSourceDisplayName(confirmSource)}</span>?
+              {t("file_manager.delete_confirm_desc", { name: getSourceDisplayName(confirmSource) })}
             </p>
             <div className="flex gap-3 pt-2">
               <button
                 onClick={() => setConfirmDeleteId(null)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer"
               >
-                Hủy
+                {t("common.cancel")}
               </button>
               <button
                 onClick={() => {
@@ -743,7 +749,7 @@ const SidebarList = React.memo(({
                 }}
                 className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white text-xs font-bold transition-all cursor-pointer"
               >
-                Xóa
+                {t("common.delete")}
               </button>
             </div>
           </div>
@@ -759,6 +765,7 @@ SidebarList.displayName = "SidebarList";
 // --- Top-Level Sidebar Orchestrator Container ---
 export default function Sidebar() {
   useRenderProfiler("SidebarContainer");
+  const { t } = useTranslation();
 
   const setSettingsOpen = useQuizStore(state => state.setSettingsOpen);
 
@@ -906,7 +913,7 @@ export default function Sidebar() {
       {/* Fixed Modal Header */}
       <div className="p-4 md:p-6 border-b border-slate-200 dark:border-slate-700 shrink-0 bg-white dark:bg-slate-900 z-20">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">Cài đặt</h2>
+          <h2 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-100">{t("settings.title")}</h2>
           <div className="flex items-center gap-2">
             <button 
               onClick={() => setSettingsOpen(false)} 
@@ -962,7 +969,7 @@ export default function Sidebar() {
           onClick={() => setSettingsOpen(false)}
           className="flex-1 min-h-11 py-3 px-4 rounded-2xl font-bold text-slate-700 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-all active:scale-[0.98] text-sm cursor-pointer"
         >
-          Hủy
+          {t("common.cancel")}
         </button>
         <button
           onClick={handleSave}
@@ -973,7 +980,7 @@ export default function Sidebar() {
               : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600"
           )}
         >
-          {isSaved ? "Đã lưu!" : "Lưu"}
+          {isSaved ? t("common.saved") : t("common.save")}
         </button>
       </div>
     </div>

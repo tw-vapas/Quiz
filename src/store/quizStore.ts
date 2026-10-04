@@ -50,6 +50,9 @@ export interface QuizStore {
   theme: 'light' | 'dark';
   setTheme: (val: 'light' | 'dark') => void;
   
+  language: 'vi' | 'en';
+  setLanguage: (val: 'vi' | 'en') => void;
+  
   activeSection: 'quiz' | 'create';
   setActiveSection: (val: 'quiz' | 'create') => void;
   
@@ -175,6 +178,9 @@ export const useQuizStore = create<QuizStore>((set, get) => ({
   
   theme: 'light',
   setTheme: (val) => set({ theme: val }),
+
+  language: 'vi',
+  setLanguage: (val) => set({ language: val }),
 
   activeSection: 'quiz',
   setActiveSection: (val) => set({ activeSection: val }),

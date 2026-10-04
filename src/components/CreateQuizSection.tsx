@@ -4,8 +4,11 @@ import QuestionModification from "./QuestionModification";
 import SettingExport from "./SettingExport";
 import { FolderOpen, FileEdit, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "@/locales";
 
 export default function CreateQuizSection() {
+  const { t } = useTranslation();
+
   // Shared filter states between QuestionModification (Column 2) and SettingExport (Column 3)
   const [filterType, setFilterType] = useState({
     singleChoice: true,
@@ -37,7 +40,7 @@ export default function CreateQuizSection() {
           )}
         >
           <FolderOpen className="w-3.5 h-3.5" />
-          <span className="truncate">Quản lý tệp</span>
+          <span className="truncate">{t("creator.tab_files")}</span>
         </button>
 
         <button
@@ -51,7 +54,7 @@ export default function CreateQuizSection() {
           )}
         >
           <FileEdit className="w-3.5 h-3.5" />
-          <span className="truncate">Biên soạn</span>
+          <span className="truncate">{t("creator.tab_editor")}</span>
         </button>
 
         <button
@@ -65,7 +68,7 @@ export default function CreateQuizSection() {
           )}
         >
           <Settings2 className="w-3.5 h-3.5" />
-          <span className="truncate">Xuất Bản</span>
+          <span className="truncate">{t("creator.tab_export")}</span>
         </button>
       </div>
 

@@ -5,8 +5,11 @@ import { useQuizStore } from "@/store/quizStore";
 import { Play, Settings, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useTranslation } from "@/locales";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const StartScreen = memo(function StartScreen() {
+  const { t } = useTranslation();
   const sources = useQuizStore(state => state.sources);
   const startQuiz = useQuizStore(state => state.startQuiz);
   const setSettingsOpen = useQuizStore(state => state.setSettingsOpen);
@@ -22,12 +25,16 @@ const StartScreen = memo(function StartScreen() {
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 md:p-8 relative overflow-x-hidden">
-      <button 
-        onClick={() => setSettingsOpen(true)}
-        className="absolute top-4 right-4 md:top-8 md:right-8 min-w-11 min-h-11 p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md active:scale-95 cursor-pointer"
-      >
-        <Settings className="w-6 h-6" />
-      </button>
+      <div className="absolute top-4 right-4 md:top-8 md:right-8 flex items-center gap-2">
+        <LanguageSwitcher variant="pills" />
+        <button 
+          onClick={() => setSettingsOpen(true)}
+          title={t("start.open_settings")}
+          className="min-w-11 min-h-11 p-3 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all hover:shadow-md active:scale-95 cursor-pointer flex items-center justify-center"
+        >
+          <Settings className="w-5 h-5" />
+        </button>
+      </div>
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
@@ -38,20 +45,26 @@ const StartScreen = memo(function StartScreen() {
           <Play className="w-8 h-8 md:w-10 md:h-10 text-indigo-600 dark:text-indigo-400 ml-1" />
         </div>
         
-        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 md:mb-4 tracking-tight">Chuẩn bị làm bài</h1>
+        <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-3 md:mb-4 tracking-tight">
+          {t("start.welcome_title")}
+        </h1>
         
         <p className="text-base font-normal text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
-          Vui lòng chọn các nguồn dữ liệu ở phần cài đặt. Hệ thống sẽ trộn các câu hỏi và lựa chọn để bắt đầu.
+          {t("start.welcome_desc")}
         </p>
 
         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-4 md:p-5 mb-8 grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-700">
           <div>
             <div className="text-xl font-bold text-slate-800 dark:text-slate-200">{activeSources.length}</div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Tệp chọn</div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+              {t("file_manager.file_name")}
+            </div>
           </div>
           <div>
             <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">{displayedTotalQuestions}</div>
-            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Câu hỏi</div>
+            <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+              {t("file_manager.questions_count")}
+            </div>
           </div>
         </div>
 
@@ -60,7 +73,7 @@ const StartScreen = memo(function StartScreen() {
           disabled={totalAvailable === 0 || displayedTotalQuestions === 0}
           className="w-full min-h-11 bg-indigo-600 dark:bg-indigo-500 text-white font-medium text-base py-3 md:py-4 px-8 rounded-2xl transition-all shadow-lg hover:shadow-indigo-500/30 dark:hover:shadow-indigo-900/30 hover:bg-indigo-700 dark:hover:bg-indigo-600 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transform active:scale-[0.98] cursor-pointer"
         >
-          Bắt đầu
+          {t("start.start_quiz")}
         </button>
 
         <Link
@@ -69,7 +82,7 @@ const StartScreen = memo(function StartScreen() {
           className="mt-3 w-full min-h-11 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 font-medium text-base py-3 md:py-4 px-8 rounded-2xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all transform active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
         >
           <BookOpen className="w-5 h-5 shrink-0" />
-          <span>Xem tài liệu</span>
+          <span>{t("nav.document")}</span>
         </Link>
       </motion.div>
     </div>
